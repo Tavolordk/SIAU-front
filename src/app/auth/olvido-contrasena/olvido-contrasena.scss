@@ -1,0 +1,76 @@
+.forgot-password-container {
+  max-width: 400px;
+  margin: 5rem auto;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.forgot-password-container h2 {
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.forgot-password-container p {
+  color: #666;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+}
+
+.form-group {
+  margin-top: 1.5rem;
+  text-align: left;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.validation-message {
+  color: #e51040;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.btn-enviar {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 1.5rem;
+  background-color: #751D41;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-enviar:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
+}
+
+.mensaje {
+  margin-top: 1rem;
+  color: green;
+  font-weight: bold;
+  font-size: 0.95rem;
+}
+
+.btn-switch {
+  background: none;
+  border: none;
+  margin-top: 1rem;
+  color: #751D41;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 0.95rem;
+}

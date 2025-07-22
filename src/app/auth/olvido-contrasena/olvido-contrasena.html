@@ -1,1 +1,31 @@
-<p>olvido-contrasena works!</p>
+<div class="forgot-password-container">
+  <h2>¿Olvidaste tu contraseña?</h2>
+  <p>
+    Introduce tu correo electrónico y te enviaremos instrucciones para restablecerla.
+  </p>
+
+  <form [formGroup]="form" (ngSubmit)="enviar()">
+    <div class="form-group">
+      <label for="correo">Correo electrónico</label>
+      <input
+        id="correo"
+        type="email"
+        class="form-control"
+        formControlName="correo" />
+      <div *ngIf="form.get('correo')?.touched && form.get('correo')?.invalid" class="validation-message">
+        <div *ngIf="form.get('correo')?.hasError('required')">El correo es obligatorio.</div>
+        <div *ngIf="form.get('correo')?.hasError('email')">Formato de correo inválido.</div>
+      </div>
+    </div>
+
+    <button class="btn-enviar" type="submit" [disabled]="cargando">
+      Enviar Correo
+    </button>
+
+    <div *ngIf="mensaje" class="mensaje">{{ mensaje }}</div>
+  </form>
+
+  <button class="btn-switch" (click)="alternarModo()">
+    ¿Recordaste tu contraseña?
+  </button>
+</div>

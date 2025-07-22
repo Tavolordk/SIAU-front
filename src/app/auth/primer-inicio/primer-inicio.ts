@@ -1,6 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+  AbstractControl,
+  ValidationErrors
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import { UsuarioService } from '../../services/usuario.service';
 
@@ -11,7 +18,7 @@ import { UsuarioService } from '../../services/usuario.service';
   templateUrl: './primer-inicio.html',
   styleUrls: ['./primer-inicio.scss']
 })
-export class PrimerInicioComponent implements OnInit {
+export class PrimerInicioComponent implements OnInit, AfterViewInit {
   form!: FormGroup;
   mensaje = '';
   cuenta = '';
@@ -23,37 +30,47 @@ export class PrimerInicioComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Inicializar formulario
-    this.form = this.fb.group({
-      nuevaPassword: ['', [Validators.required, Validators.minLength(8)]],
-      confirmarPassword: ['', Validators.required]
-    }, { validators: this.passwordsMatch });
-
-    // Obtener cuenta del usuario autenticado
+    this.form = this.fb.group(
+      {
+        nuevaPassword: ['', [Validators.required, Validators.minLength(8)]],
+        confirmarPassword: ['', Validators.required]
+      },
+      { validators: this.passwordsMatch }
+    );
     this.cuenta = this.usuarioService.getUsername();
   }
 
-  /** Valida que las contraseñas coincidan */
-  private passwordsMatch(group: AbstractControl): ValidationErrors | null {
-    const pwd = group.get('nuevaPassword')?.value;
-    const confirm = group.get('confirmarPassword')?.value;
-    return pwd === confirm ? null : { notMatching: true };
+  ngAfterViewInit(): void {
+    if (typeof (window as any).ocultarNavbar === 'function') {
+      (window as any).ocultarNavbar();
+    }
   }
 
-  /** Maneja el envío del formulario */
+  private passwordsMatch(group: AbstractControl): ValidationErrors | null {
+    const np = group.get('nuevaPassword')?.value;
+    const cp = group.get('confirmarPassword')?.value;
+    return np === cp ? null : { mismatch: true };
+  }
+
   onSubmit(): void {
-    if (this.form.invalid) return;
-    const { nuevaPassword } = this.form.value;
-    this.usuarioService.cambiarPasswordPrimerInicioAsync(this.cuenta, nuevaPassword)
-      .subscribe(success => {
-        if (success) {
-          this.mensaje = 'Contraseña actualizada correctamente. Redirigiendo...';
-          setTimeout(() => this.router.navigate(['/']), 2000);
-        } else {
-          this.mensaje = 'Hubo un error al cambiar la contraseña.';
-        }
-      }, () => {
-        this.mensaje = 'Error inesperado.';
-      });
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    this.mensaje = '';
+    const nueva = this.form.get('nuevaPassword')!.value;
+    this.usuarioService
+      .cambiarPasswordPrimerInicioAsync(this.cuenta, nueva)
+      .subscribe(
+        ok => {
+          if (ok) {
+            this.mensaje = 'Contraseña actualizada correctamente. Redirigiendo...';
+            setTimeout(() => this.router.navigate(['/login']), 2000);
+          } else {
+            this.mensaje = 'Hubo un error al cambiar la contraseña.';
+          }
+        },
+        () => (this.mensaje = 'Error inesperado.')
+      );
   }
 }

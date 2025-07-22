@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { SolicitudesService, Solicitud } from '../../services/solicitudes.services';
+import { SolicitudesService, Solicitud } from '../../services/solicitudes.service';
 
 @Component({
   selector: 'app-solicitudes',

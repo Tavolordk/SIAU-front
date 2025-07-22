@@ -1,8 +1,10 @@
-import { Component }   from '@angular/core';
+// File: src/app/auth/login/login.component.ts
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule }  from '@angular/forms';
-import { Router }       from '@angular/router';
-import { AuthService }  from '../../services/auth.service';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { UsuarioService } from '../../services/usuario.service';
+import { LoginResponse } from '../../models/login-response.model';
 
 @Component({
   selector: 'app-login',
@@ -18,7 +20,7 @@ export class LoginComponent {
   loading = false;
 
   constructor(
-    private auth: AuthService,
+    private usuarioService: UsuarioService,
     private router: Router
   ) {}
 
@@ -31,10 +33,16 @@ export class LoginComponent {
     this.mensajeError = null;
     this.loading = true;
 
-    this.auth.login(this.cuenta, this.password).subscribe({
-      next: () => {
+    this.usuarioService.loginAsync(this.cuenta, this.password).subscribe({
+      next: (res: LoginResponse | null) => {
         this.loading = false;
-        this.router.navigate(['/solicitudes']);
+        if (res && res.token) {
+          // Guarda el token y demás datos en storage o servicio de auth
+          localStorage.setItem('authToken', res.token);
+          this.router.navigate(['/solicitudes']);
+        } else {
+          this.mensajeError = 'Usuario o contraseña incorrectos.';
+        }
       },
       error: (err) => {
         this.loading = false;

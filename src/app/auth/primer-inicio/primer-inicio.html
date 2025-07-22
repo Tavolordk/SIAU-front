@@ -2,28 +2,51 @@
   <div class="form-box">
     <h2>Cambiar Contraseña Inicial</h2>
     <p class="mensaje-ayuda">
-      Por seguridad, debes establecer una nueva contraseña personalizada. Esta reemplazará la contraseña predeterminada asignada a tu cuenta.
+      Por seguridad, debes establecer una nueva contraseña personalizada.
+      Esta reemplazará la contraseña predeterminada asignada a tu cuenta.
     </p>
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
       <div class="form-group">
         <label for="nuevaPassword">Nueva Contraseña</label>
-        <input id="nuevaPassword" type="password" class="form-control-custom" formControlName="nuevaPassword" />
-        <div *ngIf="form.get('nuevaPassword')?.touched && form.get('nuevaPassword')?.errors" class="validation-message">
-          <div *ngIf="form.get('nuevaPassword')?.hasError('required')">La nueva contraseña es obligatoria.</div>
-          <div *ngIf="form.get('nuevaPassword')?.hasError('minlength')">Debe tener al menos 8 caracteres.</div>
+        <input
+          id="nuevaPassword"
+          type="password"
+          class="form-control-custom"
+          formControlName="nuevaPassword"
+        />
+        <div
+          *ngIf="
+            form.get('nuevaPassword')?.touched &&
+            form.get('nuevaPassword')?.invalid
+          "
+          class="validation-message"
+        >
+          <div *ngIf="form.get('nuevaPassword')?.hasError('required')">
+            La nueva contraseña es obligatoria.
+          </div>
+          <div *ngIf="form.get('nuevaPassword')?.hasError('minlength')">
+            Debe tener al menos 8 caracteres.
+          </div>
         </div>
       </div>
 
       <div class="form-group">
         <label for="confirmarPassword">Confirmar Contraseña</label>
-        <input id="confirmarPassword" type="password" class="form-control-custom" formControlName="confirmarPassword" />
-        <div *ngIf="form.touched && form.hasError('notMatching')" class="validation-message">
+        <input
+          id="confirmarPassword"
+          type="password"
+          class="form-control-custom"
+          formControlName="confirmarPassword"
+        />
+        <div *ngIf="form.touched && form.hasError('mismatch')" class="validation-message">
           Las contraseñas no coinciden.
         </div>
       </div>
 
-      <button class="btn-custom" type="submit" [disabled]="form.invalid">Guardar Contraseña</button>
+      <button class="btn-custom" type="submit" [disabled]="form.invalid">
+        Guardar Contraseña
+      </button>
     </form>
 
     <div *ngIf="mensaje" class="mensaje-alerta">{{ mensaje }}</div>

@@ -4,7 +4,6 @@
   align-items: center;
   min-height: calc(100dvh - 181px);
   background-color: transparent;
-  overflow: hidden;
 }
 
 .form-box {
@@ -41,12 +40,17 @@
   font-size: 0.95rem;
   border: 1px solid #ccc;
   border-radius: 6px;
-  transition: border-color 0.3s ease;
 }
 
 .form-control-custom:focus {
   border-color: #007bff;
   outline: none;
+}
+
+.validation-message {
+  color: #e51040;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
 }
 
 .btn-custom {
@@ -70,4 +74,5 @@
   text-align: center;
   color: #0066cc;
   font-size: 0.95rem;
+  font-weight: bold;
 }
