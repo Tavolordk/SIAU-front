@@ -1,0 +1,149 @@
+.cdindi-form-container {
+  padding: 2rem;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 1000px;
+  margin: 2rem auto;
+}
+
+.cdindi-section {
+  margin-bottom: 2rem;
+}
+
+.cdindi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.cdindi-grid-two-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.cdindi-input,
+select,
+textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #aaa;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+  margin-top: 0.25rem;
+}
+
+select {
+  background-color: white;
+}
+
+textarea {
+  min-height: 4rem;
+  resize: vertical;
+}
+
+.validation-message {
+  color: #e51040;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.label-obligatorio::after {
+  content: " *";
+  color: #d9534f;
+}
+
+.cdindi-checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.checkbox-wrapper-47 {
+  position: relative;
+  padding-left: 2em;
+  cursor: pointer;
+}
+
+.checkbox-wrapper-47 input[type="checkbox"] {
+  position: absolute;
+  left: 0;
+  top: 0.15em;
+  width: 1em;
+  height: 1em;
+}
+
+.botones-final {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.btn-grande,
+.btn-chico {
+  cursor: pointer;
+}
+
+/* Perfiles */
+.perfil-input-group {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.cdindi-btn {
+  padding: 0.5rem 1rem;
+  background-color: var(--verde);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+.perfil-chip {
+  display: inline-flex;
+  align-items: center;
+  background-color: #f0f0f0;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  margin: 0.25rem;
+}
+
+.perfil-chip button {
+  background: none;
+  border: none;
+  margin-left: 0.5rem;
+  cursor: pointer;
+}
+
+.loaderlogin-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(255,255,255,0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.loaderlogin-spinner {
+  border: 6px solid rgba(255,255,255,0.3);
+  border-top: 6px solid #751D41;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

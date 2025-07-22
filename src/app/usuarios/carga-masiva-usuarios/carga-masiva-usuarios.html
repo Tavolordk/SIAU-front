@@ -1,1 +1,111 @@
-<p>carga-masiva-usuarios works!</p>
+<ng-container *ngIf="loading || shouldRedirect">
+  <div class="loaderlogin-overlay">
+    <div class="loaderlogin-spinner"></div>
+    <p>{{ !loading ? 'Cargando...' : 'Redirigiendo al login...' }}</p>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="!loading">
+  <!-- User Dropdown -->
+  <div *ngIf="isLoggedIn" class="user-dropdown-container user-float">
+    <button class="user-button" (click)="toggleUserMenu()">
+      <span class="user-name-text">{{ session.nombreCompleto }}</span>
+      <span class="user-divider">|</span>
+      <span class="user-icon">▼</span>
+    </button>
+    <div class="user-menu" [class.show]="menuOpen">
+      <div class="user-card">
+        <div class="user-role">{{ session.rol }}</div>
+        <div class="user-permission">{{ session.permiso }}</div>
+        <div class="user-entity">{{ session.entidad }}</div>
+        <div class="user-version">Version 0.1.0</div>
+      </div>
+      <a routerLink="/solicitudes" class="dropdown-link">📄 Solicitudes</a>
+      <a routerLink="/login" class="dropdown-link">🚪 Cerrar sesión</a>
+    </div>
+  </div>
+
+  <!-- Main Overlay -->
+  <div class="main-overlay" style="top:80px !important"></div>
+
+  <!-- Solicitudes Masiva Table -->
+  <div class="solicitudes_masiva-container">
+    <div class="solicitudes_masiva-tabla-contenedor">
+      <table class="solicitudes_masiva-tabla">
+        <thead>
+          <tr>
+            <th style="width:5%">NO.</th>
+            <th style="width:25%">NOMBRE</th>
+            <th style="width:10%; text-align:center;">STATUS</th>
+            <th style="width:50%">DESCRIPCION</th>
+            <th style="width:10%; text-align:center;">ACCION</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!listaSolicitud?.length">
+            <td colspan="5">No hay solicitudes.</td>
+          </tr>
+          <tr *ngFor="let cedula of listaSolicitudPaginated">
+            <td>{{ cedula.fill1 }}</td>
+            <td class="cdindi-checkbox-group">
+              <label class="checkbox-wrapper-47-alt">
+                <input type="checkbox" [(ngModel)]="cedula.descargar" />
+                {{ cedula.nombre }} {{ cedula.apellidoPaterno }} {{ cedula.apellidoMaterno }}
+              </label>
+            </td>
+            <td class="solicitudes_masiva-tdicons" style="text-align:center">
+              <img *ngIf="cedula.ok" class="ok" src="assets/Imagenes/file_approva_ico.png" />
+              <img *ngIf="!cedula.ok" class="nook" src="assets/Imagenes/file_rejected_ico.png" />
+            </td>
+            <td>{{ cedula.descripcionerror }}</td>
+            <td class="solicitudes_masiva-tdicons" style="text-align:center">
+              <img *ngIf="cedula.ok" src="assets/Imagenes/file_download_pdf_ico.png" class="upload" (click)="downloadPDF(cedula)" />
+              <img *ngIf="!cedula.ok" src="assets/Imagenes/file_edit_ico.png" class="warning" (click)="irIndividual(cedula)" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <div class="solicitudes_masiva-paginacion">
+        <button class="solicitudes_masiva-pagina-btn" (click)="cambiarPagina(currentPage - 1)" [disabled]="currentPage === 1">«</button>
+        <button *ngFor="let p of pages" class="solicitudes_masiva-pagina-btn" [class.active]="p === currentPage" (click)="cambiarPagina(p)">{{ p }}</button>
+        <button class="solicitudes_masiva-pagina-btn" (click)="cambiarPagina(currentPage + 1)" [disabled]="currentPage === totalPages">»</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="botones-final">
+    <div class="fila fila-1">
+      <input type="file" id="fileInput" (change)="handleFileSelection($event)" hidden />
+      <button class="btn-grande" (click)="openFilePicker()" [disabled]="selectedFile">
+        {{ selectedFile ? selectedFile.name : 'SELECCIONAR ARCHIVO' }}
+      </button>
+    </div>
+    <div class="fila fila-2">
+      <button class="btn-chico" (click)="descargarPDFsMasivos()">DESCARGAR</button>
+      <button class="btn-chico" (click)="sendSolicitudMasiva()">CARGAR</button>
+    </div>
+  </div>
+
+  <!-- Overlay Loader -->
+  <div id="overlay-loader" *ngIf="overlayLoaderVisible">
+    <span class="loader"></span>
+  </div>
+
+  <!-- Car Masiva Loader -->
+  <div class="carmasiv-overlay" *ngIf="carmasivMostrandoLoader">
+    <div class="carmasiv-loader-box">
+      <div class="carmasiv-barra-contenedor">
+        <div class="carmasiv-barra-progreso" [style.width.%]="carmasivProgreso"></div>
+      </div>
+      <p>{{ carmasivProgreso }}%</p>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div *ngIf="showToast" class="toast-container" [class.toast-hide]="isHiding" [class.toast-show]="!isHiding" [style.background-color]="toastColor">
+    {{ toastMessage }}
+  </div>
+</ng-container>

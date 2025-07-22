@@ -1,1 +1,221 @@
-<p>carga-usuario works!</p>
+<form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="cdindi-form-container">
+  <h1>Cédula Única de Registro de Usuarios</h1>
+
+  <!-- Spinner durante carga -->
+  <div class="loaderlogin-overlay" *ngIf="loading">
+    <div class="loaderlogin-spinner"></div>
+    <p>Cargando…</p>
+  </div>
+
+  <!-- Sección Oficio y Opciones -->
+  <div class="cdindi-section">
+    <label class="label-obligatorio">Número de oficio de solicitud</label>
+    <input formControlName="fill1" class="cdindi-input" maxlength="20" />
+    <div *ngIf="userForm.get('fill1')?.invalid && userForm.get('fill1')?.touched" class="validation-message">
+      Este campo es requerido.
+    </div>
+
+    <label class="label-obligatorio">Seleccione las opciones que aplican</label>
+    <div class="cdindi-checkbox-group">
+      <label *ngFor="let opt of opciones; let i = index" class="checkbox-wrapper-47">
+        <input type="checkbox" [formControlName]="'checkBox'+(i+1)" /> {{ opt }}
+      </label>
+    </div>
+  </div>
+
+  <!-- Sección Datos Generales -->
+  <div class="cdindi-section">
+    <h2>Datos Generales del Usuario</h2>
+    <div class="cdindi-grid">
+      <div>
+        <label class="label-obligatorio">Nombre(s)</label>
+        <input formControlName="nombre" />
+        <div *ngIf="userForm.get('nombre')?.invalid && userForm.get('nombre')?.touched" class="validation-message">
+          Es requerido.
+        </div>
+      </div>
+      <div>
+        <label class="label-obligatorio">Apellido Paterno</label>
+        <input formControlName="apellidoPaterno" />
+        <div *ngIf="userForm.get('apellidoPaterno')?.invalid && userForm.get('apellidoPaterno')?.touched" class="validation-message">
+          Es requerido.
+        </div>
+      </div>
+      <div>
+        <label>Apellido Materno</label>
+        <input formControlName="apellidoMaterno" />
+      </div>
+      <div>
+        <label class="label-obligatorio">Fecha de Solicitud</label>
+        <input type="date" formControlName="fechaSolicitud" />
+        <div *ngIf="userForm.get('fechaSolicitud')?.invalid && userForm.get('fechaSolicitud')?.touched" class="validation-message">
+          Es requerido.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección Identificación -->
+  <div class="cdindi-section">
+    <h2>Identificación</h2>
+    <div class="cdindi-grid-two-columns">
+      <div>
+        <label class="label-obligatorio">RFC</label>
+        <input formControlName="rfc" maxlength="13" />
+        <div *ngIf="userForm.get('rfc')?.invalid && userForm.get('rfc')?.touched" class="validation-message">
+          RFC válido requerido.
+        </div>
+      </div>
+      <div>
+        <label>CURP</label>
+        <input formControlName="curp" maxlength="18" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección Contacto -->
+  <div class="cdindi-section">
+    <h2>Contacto</h2>
+    <div class="cdindi-grid-two-columns">
+      <div>
+        <label class="label-obligatorio">Correo Electrónico</label>
+        <input type="email" formControlName="correoElectronico" />
+        <div *ngIf="userForm.get('correoElectronico')?.invalid && userForm.get('correoElectronico')?.touched" class="validation-message">
+          Correo válido requerido.
+        </div>
+      </div>
+      <div>
+        <label>Teléfono</label>
+        <input formControlName="telefono" maxlength="10" />
+      </div>
+      <div>
+        <label>CUIP</label>
+        <input formControlName="cuip" maxlength="20" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección Adscripción del Usuario -->
+  <div class="cdindi-section">
+    <h2>Adscripción del Usuario</h2>
+    <div class="cdindi-grid">
+      <div>
+        <label class="label-obligatorio">Tipo de Usuario</label>
+        <select formControlName="tipoUsuario">
+          <option [ngValue]="null">Seleccione...</option>
+          <option *ngFor="let t of tiposUsuario" [ngValue]="t.id">{{ t.nombre }}</option>
+        </select>
+      </div>
+      <div>
+        <label class="label-obligatorio">Entidad</label>
+        <select formControlName="entidad">
+          <option [ngValue]="null">Seleccione...</option>
+          <option *ngFor="let e of entidades" [ngValue]="e.id">{{ e.nombre }}</option>
+        </select>
+      </div>
+      <div>
+        <label class="label-obligatorio">Municipio</label>
+        <select formControlName="municipio">
+          <option [ngValue]="null">Seleccione...</option>
+          <option *ngFor="let m of municipios" [ngValue]="m.id">{{ m.nombre }}</option>
+        </select>
+      </div>
+      <div>
+        <label class="label-obligatorio">Institución</label>
+        <select formControlName="institucion">
+          <option [ngValue]="null">Seleccione...</option>
+          <option *ngFor="let ins of institucionOptions" [ngValue]="ins.id">{{ ins.nombre }}</option>
+        </select>
+      </div>
+      <div>
+        <label class="label-obligatorio">Dependencia</label>
+        <select formControlName="dependencia">
+          <option [ngValue]="null">Seleccione...</option>
+          <option *ngFor="let d of dependencias" [ngValue]="d.id">{{ d.nombre }}</option>
+        </select>
+      </div>
+      <div>
+        <label class="label-obligatorio">Corporación</label>
+        <select formControlName="corporacion">
+          <option [ngValue]="null">Seleccione...</option>
+          <option *ngFor="let c of corporaciones" [ngValue]="c.id">{{ c.nombre }}</option>
+        </select>
+      </div>
+      <div>
+        <label>Área</label>
+        <select formControlName="area">
+          <option [ngValue]="null">Seleccione...</option>
+          <option *ngFor="let a of areaOptions" [ngValue]="a.id">{{ a.nombre }}</option>
+        </select>
+      </div>
+      <div>
+        <label class="label-obligatorio">Cargo</label>
+        <input formControlName="cargo" maxlength="100" />
+      </div>
+      <div>
+        <label class="label-obligatorio">Funciones</label>
+        <textarea formControlName="funciones"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección Comisionado -->
+  <div class="cdindi-section">
+    <h2>En caso de estar comisionado</h2>
+    <div class="cdindi-grid">
+      <div>
+        <label>Entidad</label>
+        <select formControlName="entidad2">
+          <option [ngValue]="null">Seleccione...</option>
+          <option *ngFor="let e2 of entidades" [ngValue]="e2.id">{{ e2.nombre }}</option>
+        </select>
+      </div>
+      <div>
+        <label class="label-obligatorio">Municipio</label>
+        <select formControlName="municipio2">
+          <option [ngValue]="null">Seleccione...</option>
+          <option *ngFor="let m2 of municipios2" [ngValue]="m2.id">{{ m2.nombre }}</option>
+        </select>
+      </div>
+      <div>
+        <label>País</label>
+        <input formControlName="pais" />
+      </div>
+      <div>
+        <label>Corporación</label>
+        <input formControlName="corporacion2" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección Perfiles de Usuario -->
+  <div class="cdindi-section">
+    <h2>Perfiles de Usuario</h2>
+    <div class="cdindi-grid-two-columns cdindi-operacion">
+      <div class="perfil-input-group">
+        <input list="consultaOptions"
+               class="cdindi-input"
+               placeholder="Escribe o selecciona..."
+               [(ngModel)]="perfilConsultaInput"
+               name="perfilConsultaInput"
+               (keydown.enter)="agregarPerfilConsulta(); $event.preventDefault()" />
+        <datalist id="consultaOptions">
+          <option *ngFor="let perfil of perfiles" [value]="perfil.nombre"></option>
+        </datalist>
+        <button type="button" class="cdindi-btn" (click)="agregarPerfilConsulta()">Agregar</button>
+      </div>
+      <div *ngFor="let key of getConsultaTextosKeys()">
+        <div class="perfil-chip">
+          <span>Consulta - Perfil {{ key }}: {{ userForm.value.consultaTextos[key] }}</span>
+          <button type="button" (click)="quitarConsulta(key)">❌</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botones de acción -->
+  <div class="botones-final">
+    <button class="btn-grande" type="submit" [disabled]="userForm.invalid">Guardar Solicitud</button>
+    <button class="btn-chico" type="button" (click)="onCancel()">Cancelar</button>
+  </div>
+</form>
