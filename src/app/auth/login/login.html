@@ -1,0 +1,58 @@
+<!-- src/app/auth/login/login.component.html -->
+<!-- Fondo fijo -->
+<div class="login-background"></div>
+
+<!-- Overlay con logo, formulario y versión -->
+<div class="login-overlay">
+  <!-- Logo -->
+  <img
+    src="assets/images/SSPC.png"
+    alt="Logo"
+    class="login-logo"
+  />
+
+  <!-- Formulario -->
+  <div class="login-form-container">
+    <!-- Mensaje de error -->
+    <div
+      style="position:relative;width:100%;text-align:center;color:darkred;font-weight:bold;"
+      *ngIf="mensajeError"
+    >
+      <span>{{ mensajeError }}</span>
+    </div>
+
+    <!-- Usuario -->
+    <div class="login-field">
+      <label for="email">Usuario</label>
+      <input
+        type="text"
+        id="email"
+        placeholder="Usuario"
+        [(ngModel)]="cuenta"
+      />
+    </div>
+
+    <!-- Contraseña -->
+    <div class="login-field">
+      <label for="password">Contraseña</label>
+      <input
+        type="password"
+        id="password"
+        placeholder="••••••••"
+        [(ngModel)]="password"
+      />
+    </div>
+
+    <br />
+
+    <!-- Botón de login -->
+    <button class="login-button" (click)="iniciarSesion()">
+      Iniciar sesión
+    </button>
+  </div>
+
+  <!-- Línea dorada con versión -->
+  <div class="gold-line">
+    <span class="version-label">V 0.1.0</span>
+  </div>
+</div>
