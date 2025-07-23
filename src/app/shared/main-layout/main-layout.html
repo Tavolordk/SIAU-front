@@ -1,4 +1,24 @@
-<app-nav-menu></app-nav-menu>
-<main class="container mt-4">
-  <router-outlet></router-outlet>
-</main>
+<div class="page">
+<div class="header-container">
+  <!-- 1. Logo a la izquierda -->
+  <div class="header-left">
+    <img src="assets/images/SSPC.png" alt="Logo" class="header-logo">
+  </div>
+
+  <!-- 2. Título en el centro -->
+  <div class="header-center">
+    <h1>SISTEMA INTEGRAL DE ADMINISTRACION DE USUARIOS</h1>
+  </div>
+
+  <!-- 3. Dropdown a la derecha -->
+  <div class="header-right">
+    <app-nav-menu [class.d-none]="hideNavbarClass"></app-nav-menu>
+  </div>
+
+</div>
+
+
+  <div class="main-content">
+    <router-outlet></router-outlet>
+  </div>
+</div>

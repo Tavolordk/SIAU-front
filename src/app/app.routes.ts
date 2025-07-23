@@ -1,45 +1,41 @@
 import { Routes } from '@angular/router';
+import { AuthGuard } from './auth/guards/auth.guard';
 
-import { LoginComponent } from './auth/login/login';
+import { LoginComponent }            from './auth/login/login';
+import { PrimerInicioComponent }     from './auth/primer-inicio/primer-inicio';
+import { ResetContrasenaComponent }  from './auth/reset-contrasena/reset-contrasena';
+import { CambiarContrasenaComponent }from './auth/cambiar-contrasena/cambiar-contrasena';
 import { OlvidoContrasenaComponent } from './auth/olvido-contrasena/olvido-contrasena';
-import { ResetContrasenaComponent } from './auth/reset-contrasena/reset-contrasena';
-import { CambiarContrasenaComponent } from './auth/cambiar-contrasena/cambiar-contrasena';
-import { PrimerInicioComponent } from './auth/primer-inicio/primer-inicio';
-import { MainLayoutComponent } from './shared/main-layout/main-layout';
-import { SolicitudesComponent } from './solicitudes/solicitudes/solicitudes';
-import { CargaUsuarioComponent } from './usuarios/carga-usuario/carga-usuario';
+
+import { MainLayoutComponent }       from './shared/main-layout/main-layout';
+import { SolicitudesComponent }      from './solicitudes/solicitudes/solicitudes';
+import { CargaUsuarioComponent }     from './usuarios/carga-usuario/carga-usuario';
 import { CargaMasivaUsuariosComponent } from './usuarios/carga-masiva-usuarios/carga-masiva-usuarios';
-import { ErrorComponent } from './shared/error/error';
+import { ErrorComponent }            from './shared/error/error';
 
-/**
- * Enrutamiento de la aplicación
- * Rutas públicas (sin layout) y protegidas (con layout + guard)
- */
 export const routes: Routes = [
-  // Rutas públicas
-  { path: '',               redirectTo: 'login', pathMatch: 'full' },
-  { path: 'login',          component: LoginComponent },
-  { path: 'olvido-contrasena', component: OlvidoContrasenaComponent },
-  { path: 'restablecer-contrasena', component: ResetContrasenaComponent },
-  { path: 'cambiar-contrasena',     component: CambiarContrasenaComponent },
+  // RUTAS PÚBLICAS SIN LAYOUT
+  { path: '',       redirectTo: 'login', pathMatch: 'full' },
+  { path: 'login',  component: LoginComponent },
 
-  // Rutas protegidas con layout principal y AuthGuard
+  // RUTAS QUE USAN TU LAYOUT (header/fondo) PERO ALGUNAS SON PÚBLICAS
   {
     path: '',
-    component: MainLayoutComponent,
-    // canActivate: [AuthGuard], // <-- agregar guard si se requiere
+    component: MainLayoutComponent, 
     children: [
-      // Primer inicio de sesión (requiere estar autenticado)
-      { path: 'primer-inicio', component: PrimerInicioComponent },
-
-      // Módulos internos
-      { path: 'solicitudes',          component: SolicitudesComponent },
-      { path: 'cargausuario',         component: CargaUsuarioComponent },
-      { path: 'cargausuario/:indice', component: CargaUsuarioComponent },
-      { path: 'cargamasiva',          component: CargaMasivaUsuariosComponent },
+      // Olvido-contraseña queda aquí, sin AuthGuard
+      { path: 'olvido-contrasena', component: OlvidoContrasenaComponent, data: { hideNavbar: true } },
+  { path: 'restablecer-contrasena',  component: ResetContrasenaComponent, data: { hideNavbar: true } },
+  { path: 'cambiar-contrasena',      component: CambiarContrasenaComponent, data: { hideNavbar: true } },
+      // El resto sí requieren sesión
+      { path: 'solicitudes',         component: SolicitudesComponent, canActivate: [AuthGuard] },
+      { path: 'primer-inicio',           component: PrimerInicioComponent, canActivate:[AuthGuard] },
+      { path: 'cargausuario',        component: CargaUsuarioComponent, canActivate: [AuthGuard] },
+      { path: 'cargausuario/:indice',component: CargaUsuarioComponent, canActivate: [AuthGuard] },
+      { path: 'cargamasiva',         component: CargaMasivaUsuariosComponent, canActivate: [AuthGuard] },
     ]
   },
 
-  // Ruta comodín para errores 404
-  { path: '**', component: ErrorComponent },
+  // Wildcard
+  { path: '**', component: ErrorComponent }
 ];

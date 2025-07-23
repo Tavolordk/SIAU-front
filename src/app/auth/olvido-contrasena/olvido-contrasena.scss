@@ -33,11 +33,13 @@
   border: 1px solid #ccc;
   box-sizing: border-box;
 }
-
 .validation-message {
   color: #e51040;
   font-size: 0.85rem;
   margin-top: 0.25rem;
+}
+.header-rightS {
+  display: none !important;
 }
 
 .btn-enviar {

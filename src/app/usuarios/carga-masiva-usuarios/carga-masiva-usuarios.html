@@ -6,25 +6,6 @@
 </ng-container>
 
 <ng-container *ngIf="!loading">
-  <!-- User Dropdown -->
-  <div *ngIf="isLoggedIn" class="user-dropdown-container user-float">
-    <button class="user-button" (click)="toggleUserMenu()">
-      <span class="user-name-text">{{ session.nombreCompleto }}</span>
-      <span class="user-divider">|</span>
-      <span class="user-icon">▼</span>
-    </button>
-    <div class="user-menu" [class.show]="menuOpen">
-      <div class="user-card">
-        <div class="user-role">{{ session.rol }}</div>
-        <div class="user-permission">{{ session.permiso }}</div>
-        <div class="user-entity">{{ session.entidad }}</div>
-        <div class="user-version">Version 0.1.0</div>
-      </div>
-      <a routerLink="/solicitudes" class="dropdown-link">📄 Solicitudes</a>
-      <a routerLink="/login" class="dropdown-link">🚪 Cerrar sesión</a>
-    </div>
-  </div>
-
   <!-- Main Overlay -->
   <div class="main-overlay" style="top:80px !important"></div>
 
@@ -59,8 +40,8 @@
             </td>
             <td>{{ cedula.descripcionerror }}</td>
             <td class="solicitudes_masiva-tdicons" style="text-align:center">
-              <img *ngIf="cedula.ok" src="assets/Imagenes/file_download_pdf_ico.png" class="upload" (click)="downloadPDF(cedula)" />
-              <img *ngIf="!cedula.ok" src="assets/Imagenes/file_edit_ico.png" class="warning" (click)="irIndividual(cedula)" />
+              <img *ngIf="cedula.ok" src="assets/images/file_download_pdf_ico.png" class="upload" (click)="downloadPDF(cedula)" />
+              <img *ngIf="!cedula.ok" src="assets/images/file_edit_ico.png" class="warning" (click)="irIndividual(cedula)" />
             </td>
           </tr>
         </tbody>

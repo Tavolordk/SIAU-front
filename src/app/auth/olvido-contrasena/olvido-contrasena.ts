@@ -3,11 +3,11 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { UsuarioService } from '../../services/usuario.service';
-
+import { MainLayoutComponent } from "../../shared/main-layout/main-layout";
 @Component({
   selector: 'app-olvido-contrasena',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, MainLayoutComponent],
   templateUrl: './olvido-contrasena.html',
   styleUrls: ['./olvido-contrasena.scss']
 })

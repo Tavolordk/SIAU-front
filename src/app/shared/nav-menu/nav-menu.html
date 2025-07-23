@@ -1,32 +1,20 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <div class="container-fluid">
-    <a class="navbar-brand" routerLink="/">OSUsuarios</a>
-    <button class="navbar-toggler" type="button"
-            (click)="isCollapsed = !isCollapsed"
-            [attr.aria-expanded]="!isCollapsed">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+<div class="user-dropdown-container user-float">
+  <!-- Botón siempre visible con nombre completo y username -->
+  <button class="user-button" (click)="toggleUserMenu()">
+    <span class="user-name-text">{{ session.nombreCompleto }}</span>
+    <span class="user-divider">|</span>
+    <span class="user-icon">▼</span>
+  </button>
 
-    <div [ngClass]="{'collapse navbar-collapse': true, 'show': !isCollapsed}">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/">Home</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/solicitudes">Solicitudes</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/cargausuario">Crear Usuario</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/cargamasiva">Carga Masiva</a>
-        </li>
-      </ul>
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/login">Login</a>
-        </li>
-      </ul>
+  <!-- Dropdown: aparece al hacer toggle -->
+  <div class="user-menu" [class.show]="menuOpen">
+    <div class="user-card">
+      <div class="user-username">{{ userName }}</div>
+      <div class="user-role">{{ session.rol }}</div>
+      <div class="user-entity">{{ session.entidad }}</div>
+      <div class="user-version">{{ session.version }}</div>
     </div>
+    <a routerLink="/solicitudes" class="dropdown-link">📄 Solicitudes</a>
+    <a (click)="logout()" class="dropdown-link">🚪 Cerrar sesión</a>
   </div>
-</nav>
+</div>

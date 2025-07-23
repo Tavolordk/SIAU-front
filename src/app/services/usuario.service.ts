@@ -15,13 +15,28 @@ export class UsuarioService {
   /**
    * Autentica usuario y obtiene tokens
    */
-  loginAsync(cuenta: string, password: string): Observable<LoginResponse | null> {
-    const request = { Username: cuenta, Password: password };
-    return this.http.post<LoginResponse>(`${this.baseUrl}/user/login`, request)
-      .pipe(
-        catchError(() => of(null))
-      );
-  }
+loginAsync(cuenta: string, password: string): Observable<LoginResponse | null> {
+  const request = { Username: cuenta, Password: password };
+  return this.http.post<LoginResponse>(`${this.baseUrl}/user/login`, request).pipe(
+    map(res => {
+      if (res) {
+        // Guarda el perfil completo
+        localStorage.setItem('profile', JSON.stringify(res));
+        // Guarda la cuenta que enviaste
+        localStorage.setItem('username', cuenta);
+      }
+      return res;
+    }),
+    catchError(() => of(null))
+  );
+}
+
+
+getStoredProfile(): LoginResponse | null {
+  const json = localStorage.getItem('profile');
+  return json ? JSON.parse(json) as LoginResponse : null;
+}
+
 
   /**
    * Cambia la contraseña en primer inicio

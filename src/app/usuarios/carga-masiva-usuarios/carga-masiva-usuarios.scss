@@ -3,6 +3,7 @@
   max-width: 1200px;
   margin: 1.5rem auto;
   padding: 0 1rem;
+  z-index: 100;
 }
 
 .solicitudes_masiva-tabla-contenedor {
@@ -115,6 +116,7 @@
   align-items: center;
   margin: 1.5rem auto;
   gap: 1rem;
+  z-index: 100;
 }
 
 .fila {
