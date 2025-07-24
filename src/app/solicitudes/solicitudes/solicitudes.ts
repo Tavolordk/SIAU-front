@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { SolicitudesService, Solicitud } from '../../services/solicitudes.service';
+import { UsuarioService } from '../../services/usuario.service';
 
 @Component({
   selector: 'app-solicitudes',
@@ -24,13 +25,17 @@ export class SolicitudesComponent implements OnInit {
 
   constructor(
     private svc: SolicitudesService,
+    private usuarioSvc: UsuarioService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.loadPage(1);
   }
-
+  formatDate(item: Solicitud): Date {
+    // Nota: mes - 1 porque en JS los meses van de 0 (enero) a 11 (diciembre)
+    return new Date(item.año, item.mes - 1, item.dia);
+  }
   private buildPages(): void {
     const pages: (number|'...')[] = [];
     if (this.currentPage > 1) {
@@ -45,17 +50,28 @@ export class SolicitudesComponent implements OnInit {
     this.pages = pages;
   }
 
-  loadPage(page: number): void {
+ loadPage(page: number): void {
     this.isLoading = true;
-    this.svc.getPage(page).subscribe({
+
+    const uid = this.usuarioSvc.getUserId();
+    if (uid === null) {
+      console.error('No hay userId en localStorage');
+      this.isLoading = false;
+      return;
+    }
+
+    this.svc.getPage(page, uid).subscribe({
       next: res => {
-        this.lista = res.items;
-        this.totalPages = res.totalPages;
+        this.lista       = res.items;
+        this.totalPages  = res.totalPages;
         this.currentPage = page;
         this.buildPages();
-        this.isLoading = false;
+        this.isLoading   = false;
       },
-      error: () => this.isLoading = false
+      error: err => {
+        console.error('Error al cargar solicitudes:', err);
+        this.isLoading = false;
+      }
     });
   }
 

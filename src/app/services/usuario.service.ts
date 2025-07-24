@@ -106,4 +106,10 @@ getStoredProfile(): LoginResponse | null {
   getUsername(): string {
     return localStorage.getItem('username') || '';
   }
+
+  /** Devuelve el ID del usuario autenticado, o null si no hay */
+  getUserId(): number | null {
+    const perfil = this.getStoredProfile();
+    return perfil?.userId ?? null;
+  }
 }

@@ -1,9 +1,7 @@
 <!-- src/app/solicitudes/solicitudes/solicitudes.component.html -->
 
 <!-- Spinner full‑screen durante carga o descarga -->
-<div
-  class="loaderlogin-overlay"
-  *ngIf="isLoading || overlayLoading">
+<div class="loaderlogin-overlay" *ngIf="isLoading || overlayLoading">
   <div class="loaderlogin-spinner"></div>
   <p>{{ !isLoading ? 'Descargando PDF…' : 'Cargando solicitudes…' }}</p>
 </div>
@@ -34,15 +32,13 @@
         <tr *ngFor="let item of lista; let i = index">
           <td>{{ (currentPage - 1) * pages.length + i + 1 }}</td>
           <td>{{ item.folio }}</td>
-          <td>{{ item.oficio }}</td>
-          <td>{{ item.nombre }}</td>
-          <td>{{ item.usuario }}</td>
+          <td>{{ item.fill1 }}</td>
+          <td>{{ item.nombre }} {{item.apellidoPaterno}} {{item.apellidoMaterno}}</td>
+          <td>{{ item.cuentaUsuario }}</td>
           <td>{{ item.entidad || '-' }}</td>
-          <td>{{ item.fecha | date:'yyyy-MM-dd' }}</td>
+          <td>{{ formatDate(item) | date:'yyyy-MM-dd' }}</td>
           <td style="text-align:center">
-            <a
-              style="font-size:16px; cursor:pointer"
-              (click)="download(item)">📄</a>
+            <a style="font-size:16px; cursor:pointer" (click)="download(item)">📄</a>
           </td>
         </tr>
       </tbody>
@@ -50,55 +46,39 @@
 
     <!-- Paginación -->
     <div class="solicitudes_principales-paginacion">
-  <button
-    class="solicitudes_principales-pagina-btn"
-    (click)="previousPage()"
-    [disabled]="currentPage === 1">«</button>
+      <button class="solicitudes_principales-pagina-btn" (click)="previousPage()"
+        [disabled]="currentPage === 1">«</button>
 
-  <ng-container *ngFor="let p of pages">
-    <button
-      *ngIf="p === '...'; else numBtn"
-      class="solicitudes_principales-pagina-btn solicitudes_principales-pagina-ellipsis">
-      …
-    </button>
-    <ng-template #numBtn>
-      <button
-        class="solicitudes_principales-pagina-btn"
-        [class.active]="p === currentPage"
-        (click)="goToPage(p)">
-        {{ p }}
-      </button>
-    </ng-template>
-  </ng-container>
+      <ng-container *ngFor="let p of pages">
+        <button *ngIf="p === '...'; else numBtn"
+          class="solicitudes_principales-pagina-btn solicitudes_principales-pagina-ellipsis">
+          …
+        </button>
+        <ng-template #numBtn>
+          <button class="solicitudes_principales-pagina-btn" [class.active]="p === currentPage" (click)="goToPage(p)">
+            {{ p }}
+          </button>
+        </ng-template>
+      </ng-container>
 
-  <button
-    class="solicitudes_principales-pagina-btn"
-    (click)="nextPage()"
-    [disabled]="currentPage === totalPages">»</button>
-</div>
+      <button class="solicitudes_principales-pagina-btn" (click)="nextPage()"
+        [disabled]="currentPage === totalPages">»</button>
+    </div>
 
 
-<!-- FAB “Agregar” + accesos rápidos -->
-<div class="fab-container">
-  <div class="fab-buttons">
-    <a
-      class="fab-button secondary user"
-      title="Usuario"
-      (click)="irAUsuario()">
-      <img
-        src="assets/images/user_ico.png"
-        alt="Usuario"
-        style="width:60%; border-radius:40%;" />
-    </a>
-    <a
-      routerLink="/cargamasiva"
-      class="fab-button secondary group"
-      title="Múltiples usuarios">
-      <img
-        src="assets/images/users_ico.png"
-        alt="Usuarios múltiples"
-        style="width:60%; border-radius:40%;" />
-    </a>
-  </div>
-  <button class="fab-button main" title="Agregar" (click)="irAUsuario()">＋</button>
-</div>
+    <!-- FAB “Agregar” + accesos rápidos -->
+    <div class="fab-container"   [ngStyle]="{
+    position: 'absolute',
+    right: '1.5rem',
+    bottom: lista.length!=0 ? '5rem' : '-5rem'
+  }">
+      <div class="fab-buttons">
+        <a class="fab-button secondary user" title="Usuario" (click)="irAUsuario()">
+          <img src="assets/images/user_ico.png" alt="Usuario" style="width:60%; border-radius:40%;" />
+        </a>
+        <a routerLink="/cargamasiva" class="fab-button secondary group" title="Múltiples usuarios">
+          <img src="assets/images/users_ico.png" alt="Usuarios múltiples" style="width:60%; border-radius:40%;" />
+        </a>
+      </div>
+      <button class="fab-button main" title="Agregar" (click)="irAUsuario()">＋</button>
+    </div>

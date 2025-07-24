@@ -12,6 +12,30 @@ html, body {
   background-size: cover;
   background-position: center;
 }
+/* Asegúrate de que html y body ocupen toda la pantalla */
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+/* 1) Convierte .page en un flex‑column de altura completa */
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* 2) Haz que el contenedor principal crezca para empujar el footer */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 3) Empuja el footer al final del flex */
+app-footer {
+  margin-top: auto;
+}
 
 .header-container {
   position: relative;          /* necesario para que el absolute hijo se calcule aquí */
