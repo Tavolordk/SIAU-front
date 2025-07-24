@@ -7,7 +7,7 @@ import { MainLayoutComponent } from "../../shared/main-layout/main-layout";
 @Component({
   selector: 'app-olvido-contrasena',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MainLayoutComponent],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './olvido-contrasena.html',
   styleUrls: ['./olvido-contrasena.scss']
 })

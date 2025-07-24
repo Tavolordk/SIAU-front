@@ -16,17 +16,16 @@ import { ErrorComponent }            from './shared/error/error';
 export const routes: Routes = [
   // RUTAS PÚBLICAS SIN LAYOUT
   { path: '',       redirectTo: 'login', pathMatch: 'full' },
-  { path: 'login',  component: LoginComponent },
-
   // RUTAS QUE USAN TU LAYOUT (header/fondo) PERO ALGUNAS SON PÚBLICAS
   {
     path: '',
     component: MainLayoutComponent, 
     children: [
       // Olvido-contraseña queda aquí, sin AuthGuard
-      { path: 'olvido-contrasena', component: OlvidoContrasenaComponent, data: { hideNavbar: true } },
-  { path: 'restablecer-contrasena',  component: ResetContrasenaComponent, data: { hideNavbar: true } },
-  { path: 'cambiar-contrasena',      component: CambiarContrasenaComponent, data: { hideNavbar: true } },
+        { path: 'login',  component: LoginComponent },
+      { path: 'olvido-contrasena', component: OlvidoContrasenaComponent },
+  { path: 'restablecer-contrasena',  component: ResetContrasenaComponent },
+  { path: 'cambiar-contrasena',      component: CambiarContrasenaComponent },
       // El resto sí requieren sesión
       { path: 'solicitudes',         component: SolicitudesComponent, canActivate: [AuthGuard] },
       { path: 'primer-inicio',           component: PrimerInicioComponent, canActivate:[AuthGuard] },
