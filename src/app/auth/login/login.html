@@ -1,58 +1,60 @@
-<!-- src/app/auth/login/login.component.html -->
-<!-- Fondo fijo -->
-<div class="login-background"></div>
+<div class="background-pattern"></div>
 
-<!-- Overlay con logo, formulario y versión -->
-<div class="login-overlay">
-  <!-- Logo -->
-  <img
-    src="assets/images/SSPC.png"
-    alt="Logo"
-    class="login-logo"
-  />
+<div class="login-container">
+  <div class="logo-title">
+    <img
+      src="../../../assets/images/SSPC_vertical.png"
+      alt="Escudo nacional"
+      class="escudo"
+    />
+  </div>
 
-  <!-- Formulario -->
-  <div class="login-form-container">
-    <!-- Mensaje de error -->
-    <div
-      style="position:relative;width:100%;text-align:center;color:darkred;font-weight:bold;"
-      *ngIf="mensajeError"
+  <div class="system-title">
+    Sistema Integral de Administración de Usuarios
+  </div>
+
+  <form
+    [formGroup]="loginForm"
+    (ngSubmit)="iniciarSesion()"
+    autocomplete="off"
+    class="form-box"
+  >
+    <label class="form-label" for="usuario">Usuario</label>
+    <input
+      id="usuario"
+      formControlName="usuario"
+      type="text"
+      class="form-control"
+      placeholder="Usuario"
+      required
+    />
+
+    <label class="form-label" for="contrasena">Contraseña</label>
+    <input
+      id="contrasena"
+      formControlName="contrasena"
+      type="password"
+      class="form-control"
+      placeholder="Contraseña"
+      required
+    />
+
+    <button
+      type="submit"
+      class="btn btn-login"
+      [disabled]="loading || loginForm.invalid"
     >
-      <span>{{ mensajeError }}</span>
-    </div>
-
-    <!-- Usuario -->
-    <div class="login-field">
-      <label for="email">Usuario</label>
-      <input
-        type="text"
-        id="email"
-        placeholder="Usuario"
-        [(ngModel)]="cuenta"
-      />
-    </div>
-
-    <!-- Contraseña -->
-    <div class="login-field">
-      <label for="password">Contraseña</label>
-      <input
-        type="password"
-        id="password"
-        placeholder="••••••••"
-        [(ngModel)]="password"
-      />
-    </div>
-
-    <br />
-
-    <!-- Botón de login -->
-    <button class="login-button" (click)="iniciarSesion()">
       Iniciar sesión
     </button>
-  </div>
+  </form>
 
-  <!-- Línea dorada con versión -->
-  <div class="gold-line">
-    <span class="version-label">V 0.1.0</span>
+  <a class="forgot-link" href="/olvido-contrasena">
+    ¿Olvidaste tu contraseña?
+  </a>
+
+  <div *ngIf="mensajeError" class="alert alert-danger mt-3">
+    {{ mensajeError }}
   </div>
 </div>
+
+<div class="version-label">v.1.0.0.0</div>

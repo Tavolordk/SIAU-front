@@ -1,11 +1,178 @@
-.login-overlay {
-  position: relative;    /* para que z-index funcione */
-  z-index: 20;           /* mayor que el fondo (15) */
+/* login.component.scss (o login.css) */
+
+/* 1. Fuentes */
+@font-face {
+  font-family: 'Noto Sans';
+  src: url('../../../assets/fonts/NotoSans-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Patria';
+  src: url('/assets/fonts/Patria_Regular.otf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+/* Background global y body (muévelo a styles.scss si lo prefieres) */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+body {
+  background: #fff;
+  font-family: 'Roboto', Arial, sans-serif;
+}
+
+input[formControlName="contrasena"]::placeholder {
+  color: #fff;
+}
+
+input[formControlName="contrasena"] {
+  background-color: #aaa7a7;
+}
+
+/* Patrón de fondo */
+.background-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  background: none;
+}
+.background-pattern::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+    background: url('../../../assets/images/Fondo.png'), url('../../../assets/images/Fondo-rotado.png');
+    background-repeat: no-repeat, no-repeat;
+    background-position: left bottom, right top;
+    background-size: 40%, 40%;
+}
+
+/* Contenedor del formulario */
+.login-container {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Logo y título */
+.logo-title {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: 100dvh;
-  background-color: rgba(255, 255, 255, 0.3);
-  padding: 20px;
+  margin-bottom: 18px;
+}
+.seguridad-title {
+  font-family: 'EB Garamond', serif;
+  font-size: 2.7rem;
+  color: #6d1437;
+  font-weight: 700;
+  margin-top: -10px;
+}
+.subtitle {
+  font-size: 1rem;
+  color: #222;
+  margin-bottom: 10px;
+  font-weight: 400;
+}
+.system-title {
+  font-family: 'EB Garamond', serif;
+  font-size: 2rem;
+  color: #222;
+  font-weight: 700;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+/* Formulario */
+.form-box {
+  width: 350px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.form-label {
+  font-size: 1rem;
+  color: #444;
+}
+.form-control {
+  font-size: 1rem;
+  border-radius: 4px;
+  border: 1px solid #bbb;
+  padding: 8px 12px;
+}
+.form-control:focus {
+  border-color: #6d1437;
+  box-shadow: 0 0 0 0.1rem rgba(109, 20, 55, .15);
+}
+
+/* Botón */
+.btn-login {
+  background-color: #6d1437;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 500;
+  border-radius: 6px;
+  border: none;
+  padding: 8px 0;
+  margin-top: 10px;
+  transition: background 0.2s;
+}
+.btn-login:hover,
+.btn-login:focus {
+  background-color: #4d0e28;
+}
+
+/* Link “Olvidaste contraseña” */
+.forgot-link {
+  margin-top: 18px;
+  color: #444;
+  font-size: 1rem;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+.forgot-link:hover {
+  color: #6d1437;
+}
+
+/* Versión */
+.version-label {
+  position: absolute;
+  right: 18px;
+  bottom: 10px;
+  color: #d3d3d3;
+  font-size: 0.85rem;
+  user-select: none;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .form-box {
+    width: 95vw;
+  }
+  .system-title {
+    font-size: 1.2rem;
+  }
+  .seguridad-title {
+    font-size: 1.5rem;
+  }
+}
+.escudo {
+    width: 400px;
+    margin: 0.5em auto 1em auto;
+    display: block;
 }

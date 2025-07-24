@@ -1,7 +1,7 @@
 // File: src/app/auth/login/login.component.ts
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { UsuarioService } from '../../services/usuario.service';
 import { LoginResponse } from '../../models/login-response.model';
@@ -9,35 +9,43 @@ import { LoginResponse } from '../../models/login-response.model';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './login.html',
   styleUrls: ['./login.scss']
 })
-export class LoginComponent {
-  cuenta = '';
-  password = '';
+export class LoginComponent implements OnInit {
+  loginForm!: FormGroup;
   mensajeError: string | null = null;
   loading = false;
 
   constructor(
+    private fb: FormBuilder,
     private usuarioService: UsuarioService,
     private router: Router
   ) {}
 
+  ngOnInit(): void {
+    this.loginForm = this.fb.group({
+      usuario: ['', Validators.required],
+      contrasena: ['', Validators.required]
+    });
+  }
+
   iniciarSesion(): void {
-    if (!this.cuenta || !this.password) {
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
       this.mensajeError = 'Usuario y contraseña son requeridos.';
       return;
     }
 
+    const { usuario, contrasena } = this.loginForm.value;
     this.mensajeError = null;
     this.loading = true;
 
-    this.usuarioService.loginAsync(this.cuenta, this.password).subscribe({
+    this.usuarioService.loginAsync(usuario, contrasena).subscribe({
       next: (res: LoginResponse | null) => {
         this.loading = false;
-        if (res && res.token) {
-          // Guarda el token y demás datos en storage o servicio de auth
+        if (res?.token) {
           localStorage.setItem('authToken', res.token);
           this.router.navigate(['/solicitudes']);
         } else {
@@ -49,5 +57,13 @@ export class LoginComponent {
         this.mensajeError = err?.error?.message || 'Usuario o contraseña incorrectos.';
       }
     });
+  }
+
+  // Getters para el template si quieres mostrar errores puntuales
+  get usuarioControl() {
+    return this.loginForm.get('usuario');
+  }
+  get contrasenaControl() {
+    return this.loginForm.get('contrasena');
   }
 }
