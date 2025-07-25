@@ -4,6 +4,7 @@ import { RouterModule, Router } from '@angular/router';
 import { SolicitudesService, Solicitud, PageResult } from '../../services/solicitudes.service';
 import { UsuarioService } from '../../services/usuario.service';
 import { CedulaModel, PdfService } from '../../services/pdf.service';
+import { CatalogosService } from '../../services/catalogos.service';
 
 @Component({
   selector: 'app-solicitudes',
@@ -20,15 +21,53 @@ export class SolicitudesComponent implements OnInit {
   isLoading = true;
   overlayLoading = false;
   isLoadingPdf = false;
-
+  entidadesMap      = new Map<number,string>();
+  municipiosMap     = new Map<number,string>();
+  institucionesMap  = new Map<number,string>();
+  dependenciasMap   = new Map<number,string>();
+  corporacionesMap  = new Map<number,string>();
+  areasMap          = new Map<number,string>();
+  entidades2Map     = new Map<number,string>();
+  municipios2Map    = new Map<number,string>();
+  corporaciones2Map = new Map<number,string>();
   constructor(
     private svc: SolicitudesService,
     private usuarioSvc: UsuarioService,
     private router: Router,
+    private catalogos: CatalogosService,
     private pdfSvc: PdfService
   ) {}
 
   ngOnInit(): void {
+     // 1) carga catálogos
+    this.catalogos.getAll().subscribe(res => {
+      // Entidades y municipios vienen juntos en res.Entidades
+      res.Entidades.forEach(e => {
+        if (e.TIPO === 'ENTIDAD') {
+          this.entidadesMap.set(e.ID, e.NOMBRE);
+        } else if (e.TIPO === 'MUNICIPIO') {
+          this.municipiosMap.set(e.ID, e.NOMBRE);
+        }
+      });
+      // Estructura organizacional: instituciones, dependencias, corporaciones, áreas
+      res.Estructura.forEach(x => {
+        switch (x.TIPO) {
+          case 'INSTITUCION':
+            this.institucionesMap.set(x.ID, x.NOMBRE); break;
+          case 'DEPENDENCIA':
+            this.dependenciasMap.set(x.ID, x.NOMBRE); break;
+          case 'CORPORACION':
+            this.corporacionesMap.set(x.ID, x.NOMBRE); break;
+          case 'AREA':
+            this.areasMap.set(x.ID, x.NOMBRE); break;
+        }
+      });
+      // Para el bloque 2 (si es mismo catálogo de Entidades/Municipios)
+      // reutilizamos los mismos maps:
+      this.entidades2Map = this.entidadesMap;
+      this.municipios2Map = this.municipiosMap;
+      this.corporaciones2Map = this.corporacionesMap;
+    });
     this.loadPage(1);
   }
 
@@ -71,7 +110,16 @@ export class SolicitudesComponent implements OnInit {
         checkBox2: (item as any).checkBox2,
         checkBox3: (item as any).checkBox3,
         checkBox4: (item as any).checkBox4,
-        checkBox5: (item as any).checkBox5
+        checkBox5: (item as any).checkBox5,
+      entidadNombre:      this.entidadesMap.get(item.entidad)       || '',
+      municipioNombre:    this.municipiosMap.get(item.municipio)    || '',
+      institucionNombre:  this.institucionesMap.get(item.institucion) || '',
+      dependenciaNombre:  this.dependenciasMap.get(item.dependencia) || '',
+      corporacionNombre:  this.corporacionesMap.get(item.corporacion) || '',
+      areaNombre:         this.areasMap.get(item.area)              || '',
+      entidad2Nombre:     this.entidades2Map.get(item.entidad2)     || '',
+      municipio2Nombre:   this.municipios2Map.get(item.municipio2)  || '',
+      corporacion2Nombre: this.corporaciones2Map.get(item.corporacion2!) || ''
       };
       await this.pdfSvc.generarYDescargar(datos);
     } catch (err) {
@@ -139,5 +187,32 @@ export class SolicitudesComponent implements OnInit {
 
   irAUsuario(): void {
     this.router.navigate(['/cargausuario']);
+  }
+    getEntidadName(id: number): string {
+    return this.entidadesMap.get(id) ?? '';
+  }
+  getMunicipioName(id: number): string {
+    return this.municipiosMap.get(id) ?? '';
+  }
+  getInstitucionName(id: number): string {
+    return this.institucionesMap.get(id) ?? '';
+  }
+  getDependenciaName(id: number): string {
+    return this.dependenciasMap.get(id) ?? '';
+  }
+  getCorporacionName(id: number): string {
+    return this.corporacionesMap.get(id) ?? '';
+  }
+  getAreaName(id: number): string {
+    return this.areasMap.get(id) ?? '';
+  }
+  getEntidad2Name(id: number): string {
+    return this.entidades2Map.get(id) ?? '';
+  }
+  getMunicipio2Name(id: number): string {
+    return this.municipios2Map.get(id) ?? '';
+  }
+  getCorporacion2Name(id: number): string {
+    return this.corporaciones2Map.get(id) ?? '';
   }
 }

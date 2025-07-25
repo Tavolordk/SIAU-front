@@ -111,7 +111,7 @@
       </div>
       <div>
         <label for="entidad">Entidad:</label>
-        <select id="entidad" formControlName="entidad"  (change)="cargarMunicipios(userForm.get('entidad')!.value)">
+        <select id="entidad" formControlName="entidad" (change)="cargarMunicipios(userForm.get('entidad')!.value)">
           <option [ngValue]="null">--Selecciona Entidad--</option>
           <option *ngFor="let e of entidades" [ngValue]="e.id">{{ e.nombre }}</option>
         </select>
@@ -125,22 +125,26 @@
       </div>
       <div>
         <label class="label-obligatorio">Institución</label>
-        <select id="institucion" formControlName="institucion" (change)="cargarDependencias(userForm.get('institucion')!.value)">
+        <select id="institucion" formControlName="institucion"
+          (change)="cargarDependencias(userForm.get('institucion')!.value)">
           <option [ngValue]="null">--Selecciona Institución--</option>
           <option *ngFor="let i of institucionOptions" [ngValue]="i.id">{{ i.nombre }}</option>
         </select>
       </div>
       <div>
         <label class="label-obligatorio">Dependencia</label>
-        <select id="dependencia" formControlName="dependencia" (change)="cargarCorporaciones(userForm.get('dependencia')!.value)">
+        <select id="dependencia" formControlName="dependencia"
+          (change)="cargarCorporaciones(userForm.get('dependencia')!.value)">
           <option [ngValue]="null">--Selecciona Dependencia--</option>
           <option *ngFor="let d of dependencias" [ngValue]="d.id">{{ d.nombre }}</option>
         </select>
       </div>
       <div>
         <label class="label-obligatorio">Corporación</label>
-        <select id="corporacion" formControlName="corporacion" (change)="cargarAreas(userForm.get('corporacion')!.value)">
+        <select id="corporacion" formControlName="corporacion"
+          (change)="cargarAreas(userForm.get('corporacion')!.value)">
           <option [ngValue]="null">--Selecciona Corporación--</option>
+
           <option *ngFor="let c of corporaciones" [ngValue]="c.id">{{ c.nombre }}</option>
         </select>
       </div>
@@ -148,6 +152,7 @@
         <label>Área</label>
         <select id="area" formControlName="area">
           <option [ngValue]="null">--Selecciona Área--</option>
+
           <option *ngFor="let a of areaOptions" [value]="a.id">{{ a.nombre }}</option>
         </select>
       </div>

@@ -51,4 +51,13 @@ export interface CedulaModel {
   descargar: boolean;
   opciones: boolean;
   perfiles: boolean;
+  entidadNombre?: string;
+  municipioNombre?: string;
+  institucionNombre?: string;
+  dependenciaNombre?: string;
+  corporacionNombre?: string;
+  areaNombre?: string;
+  entidad2Nombre?: string;
+  municipio2Nombre?: string;
+  corporacion2Nombre?: string;
 }

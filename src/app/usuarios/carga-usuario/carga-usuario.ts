@@ -188,43 +188,59 @@ this.userForm.get('corporacion')!.valueChanges
     this.router.navigate(['/solicitudes']);
   }
 
-  public cargarDependencias(parentId: number|null) {
-  console.log(parentId);
-    if (!parentId) {
-    this.dependencias = [];
-    this.userForm.get('dependencia')!.setValue(null);
+ /**
+ * Carga dependencias hijas de la institución seleccionada,
+ * o agrega el fallback { id: 0, nombre: 'NO APLICA' } si no hay datos.
+ */
+public cargarDependencias(parentId: number|null) {
+  if (!parentId) {
+    this.dependencias = [{ id: 0, nombre: 'NO APLICA' }];
+    this.userForm.get('dependencia')!.setValue(0);
     return;
   }
-  this.dependencias = this.estructura
+  const items = this.estructura
     .filter(x => x.TIPO === 'DEPENDENCIA' && x.FK_PADRE === parentId)
     .map(x => ({ id: x.ID, nombre: x.NOMBRE }));
-    console.log('Dependencias:' + this.dependencias);
+  this.dependencias = items.length ? items : [{ id: 0, nombre: 'NO APLICA' }];
+  this.userForm.get('dependencia')!.setValue(this.dependencias[0].id);
+  console.log('Dependencias:', this.dependencias);
 }
 
+/**
+ * Carga corporaciones hijas de la dependencia seleccionada,
+ * o fallback si está vacío.
+ */
 public cargarCorporaciones(parentId: number|null) {
   if (!parentId) {
-    this.corporaciones = [];
-    this.userForm.get('corporacion')!.setValue(null);
+    this.corporaciones = [{ id: 0, nombre: 'NO APLICA' }];
+    this.userForm.get('corporacion')!.setValue(0);
     return;
   }
-  this.corporaciones = this.estructura
+  const items = this.estructura
     .filter(x => x.TIPO === 'CORPORACION' && x.FK_PADRE === parentId)
     .map(x => ({ id: x.ID, nombre: x.NOMBRE }));
-        console.log('Corporaciones:' + this.corporaciones);
-
+  this.corporaciones = items.length ? items : [{ id: 0, nombre: 'NO APLICA' }];
+  this.userForm.get('corporacion')!.setValue(this.corporaciones[0].id);
+  console.log('Corporaciones:', this.corporaciones);
 }
 
+/**
+ * Carga áreas hijas de la corporación seleccionada,
+ * o fallback si está vacío.
+ */
 public cargarAreas(parentId: number|null) {
   if (!parentId) {
-    this.areaOptions = [];
-    this.userForm.get('area')!.setValue(null);
+    this.areaOptions = [{ id: 0, nombre: 'NO APLICA' }];
+    this.userForm.get('area')!.setValue(0);
     return;
   }
-  this.areaOptions = this.estructura
+  const items = this.estructura
     .filter(x => x.TIPO === 'AREA' && x.FK_PADRE === parentId)
     .map(x => ({ id: x.ID, nombre: x.NOMBRE }));
-    console.log('Areas:' + this.areaOptions);
-  }
+  this.areaOptions = items.length ? items : [{ id: 0, nombre: 'NO APLICA' }];
+  this.userForm.get('area')!.setValue(this.areaOptions[0].id);
+  console.log('Áreas:', this.areaOptions);
+}
 
   /**
  * Carga municipios según entidad seleccionada (mismo patrón que dependencias)

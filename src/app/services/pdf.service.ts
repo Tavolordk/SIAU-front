@@ -38,6 +38,15 @@ export interface CedulaModel {
   checkBox3?: boolean | null;
   checkBox4?: boolean | null;
   checkBox5?: boolean | null;
+    entidadNombre?: string;
+  municipioNombre?: string;
+  institucionNombre?: string;
+  dependenciaNombre?: string;
+  corporacionNombre?: string;
+  areaNombre?: string;
+  entidad2Nombre?: string;
+  municipio2Nombre?: string;
+  corporacion2Nombre?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -106,11 +115,11 @@ export class PdfService {
     }
 
     // 9) Ubicación primaria
-    form.getTextField('Entidad').setText(toText(datos.entidad));
-    form.getTextField('Municipio').setText(toText(datos.municipio));
-    form.getTextField('Institución').setText(toText(datos.institucion));
-    form.getTextField('Coorporación').setText(toText(datos.corporacion));
-    form.getTextField('Área').setText(toText(datos.area));
+    form.getTextField('Entidad').setText(toText(datos.entidadNombre));
+    form.getTextField('Municipio').setText(toText(datos.municipioNombre));
+    form.getTextField('Institución').setText(toText(datos.institucionNombre));
+    form.getTextField('Coorporación').setText(toText(datos.corporacionNombre));
+    form.getTextField('Área').setText(toText(datos.areaNombre));
 
     // 10) Cargo y funciones
     form.getTextField('Cargo').setText(toText(datos.cargo));
@@ -121,9 +130,9 @@ export class PdfService {
     form.getTextField('Pais').setText(toText(datos.pais));
 
     // 12) Ubicación secundaria
-    form.getTextField('Entidad_2').setText(toText(datos.entidad2));
-    form.getTextField('Municipio_2').setText(toText(datos.municipio2));
-    form.getTextField('Corporación').setText(toText(datos.corporacion2));
+    form.getTextField('Entidad_2').setText(toText(datos.entidad2Nombre));
+    form.getTextField('Municipio_2').setText(toText(datos.municipio2Nombre));
+    form.getTextField('Corporación').setText(toText(datos.corporacion2Nombre));
 
     // 13) Apartado consulta
     Object.entries(datos.consultaTextos || {}).forEach(([key,val]) => {
