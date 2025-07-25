@@ -139,6 +139,6 @@ export class PdfService {
     form.flatten();
     const pdfBytes = await pdfDoc.save();
     saveAs(new Blob([pdfBytes], { type: 'application/pdf' }),
-           `CED_${toText(datos.nombre).trim()}_${toText(datos.apellidoPaterno).trim()}.pdf`);
+           `CED_${toText(datos.nombre).trim()}_${toText(datos.apellidoPaterno).trim()}_${toText(datos.apellidoMaterno).trim()}.pdf`);
   }
 }

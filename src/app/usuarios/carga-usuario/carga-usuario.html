@@ -37,7 +37,8 @@
       <div>
         <label class="label-obligatorio">Apellido Paterno</label>
         <input formControlName="apellidoPaterno" />
-        <div *ngIf="userForm.get('apellidoPaterno')?.invalid && userForm.get('apellidoPaterno')?.touched" class="validation-message">
+        <div *ngIf="userForm.get('apellidoPaterno')?.invalid && userForm.get('apellidoPaterno')?.touched"
+          class="validation-message">
           Es requerido.
         </div>
       </div>
@@ -48,7 +49,8 @@
       <div>
         <label class="label-obligatorio">Fecha de Solicitud</label>
         <input type="date" formControlName="fechaSolicitud" />
-        <div *ngIf="userForm.get('fechaSolicitud')?.invalid && userForm.get('fechaSolicitud')?.touched" class="validation-message">
+        <div *ngIf="userForm.get('fechaSolicitud')?.invalid && userForm.get('fechaSolicitud')?.touched"
+          class="validation-message">
           Es requerido.
         </div>
       </div>
@@ -80,7 +82,8 @@
       <div>
         <label class="label-obligatorio">Correo Electrónico</label>
         <input type="email" formControlName="correoElectronico" />
-        <div *ngIf="userForm.get('correoElectronico')?.invalid && userForm.get('correoElectronico')?.touched" class="validation-message">
+        <div *ngIf="userForm.get('correoElectronico')?.invalid && userForm.get('correoElectronico')?.touched"
+          class="validation-message">
           Correo válido requerido.
         </div>
       </div>
@@ -100,52 +103,52 @@
     <h2>Adscripción del Usuario</h2>
     <div class="cdindi-grid">
       <div>
-        <label class="label-obligatorio">Tipo de Usuario</label>
-        <select formControlName="tipoUsuario">
-          <option [ngValue]="null">Seleccione...</option>
-          <option *ngFor="let t of tiposUsuario" [ngValue]="t.id">{{ t.nombre }}</option>
+        <label for="tipoUsuario">Tipo de Usuario:</label>
+        <select id="tipoUsuario" formControlName="tipoUsuario">
+          <option [ngValue]="null">--Selecciona Tipo Usuario--</option>
+          <option *ngFor="let t of tiposUsuario" [value]="t.id">{{ t.nombre }}</option>
         </select>
       </div>
       <div>
-        <label class="label-obligatorio">Entidad</label>
-        <select formControlName="entidad">
-          <option [ngValue]="null">Seleccione...</option>
+        <label for="entidad">Entidad:</label>
+        <select id="entidad" formControlName="entidad"  (change)="cargarMunicipios(userForm.get('entidad')!.value)">
+          <option [ngValue]="null">--Selecciona Entidad--</option>
           <option *ngFor="let e of entidades" [ngValue]="e.id">{{ e.nombre }}</option>
         </select>
       </div>
       <div>
         <label class="label-obligatorio">Municipio</label>
-        <select formControlName="municipio">
-          <option [ngValue]="null">Seleccione...</option>
-          <option *ngFor="let m of municipios" [ngValue]="m.id">{{ m.nombre }}</option>
+        <select id="municipio" formControlName="municipio">
+          <option [ngValue]="null">--Selecciona Municipio--</option>
+          <option *ngFor="let m of municipios" [value]="m.id">{{ m.nombre }}</option>
         </select>
       </div>
       <div>
         <label class="label-obligatorio">Institución</label>
-        <select formControlName="institucion">
-          <option [ngValue]="null">Seleccione...</option>
-          <option *ngFor="let ins of institucionOptions" [ngValue]="ins.id">{{ ins.nombre }}</option>
+        <select id="institucion" formControlName="institucion" (change)="cargarDependencias(userForm.get('institucion')!.value)">
+          <option [ngValue]="null">--Selecciona Institución--</option>
+          <option *ngFor="let i of institucionOptions" [ngValue]="i.id">{{ i.nombre }}</option>
         </select>
       </div>
       <div>
         <label class="label-obligatorio">Dependencia</label>
-        <select formControlName="dependencia">
-          <option [ngValue]="null">Seleccione...</option>
+        <select id="dependencia" formControlName="dependencia" (change)="cargarCorporaciones(userForm.get('dependencia')!.value)">
+          <option [ngValue]="null">--Selecciona Dependencia--</option>
           <option *ngFor="let d of dependencias" [ngValue]="d.id">{{ d.nombre }}</option>
         </select>
       </div>
       <div>
         <label class="label-obligatorio">Corporación</label>
-        <select formControlName="corporacion">
-          <option [ngValue]="null">Seleccione...</option>
+        <select id="corporacion" formControlName="corporacion" (change)="cargarAreas(userForm.get('corporacion')!.value)">
+          <option [ngValue]="null">--Selecciona Corporación--</option>
           <option *ngFor="let c of corporaciones" [ngValue]="c.id">{{ c.nombre }}</option>
         </select>
       </div>
       <div>
         <label>Área</label>
-        <select formControlName="area">
-          <option [ngValue]="null">Seleccione...</option>
-          <option *ngFor="let a of areaOptions" [ngValue]="a.id">{{ a.nombre }}</option>
+        <select id="area" formControlName="area">
+          <option [ngValue]="null">--Selecciona Área--</option>
+          <option *ngFor="let a of areaOptions" [value]="a.id">{{ a.nombre }}</option>
         </select>
       </div>
       <div>
@@ -193,14 +196,11 @@
     <h2>Perfiles de Usuario</h2>
     <div class="cdindi-grid-two-columns cdindi-operacion">
       <div class="perfil-input-group">
-        <input list="consultaOptions"
-               class="cdindi-input"
-               placeholder="Escribe o selecciona..."
-               [(ngModel)]="perfilConsultaInput"
-               name="perfilConsultaInput"
-               (keydown.enter)="agregarPerfilConsulta(); $event.preventDefault()" />
+        <input list="consultaOptions" class="cdindi-input" placeholder="Escribe o selecciona..."
+          [(ngModel)]="perfilConsultaInput" name="perfilConsultaInput"
+          (keydown.enter)="agregarPerfilConsulta(); $event.preventDefault()" />
         <datalist id="consultaOptions">
-          <option *ngFor="let perfil of perfiles" [value]="perfil.nombre"></option>
+          <option *ngFor="let perfil of perfiles" [value]="perfil.clave + ' - '+ perfil.nombre"></option>
         </datalist>
         <button type="button" class="cdindi-btn" (click)="agregarPerfilConsulta()">Agregar</button>
       </div>
