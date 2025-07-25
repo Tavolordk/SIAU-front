@@ -79,7 +79,9 @@ export class SolicitudesService {
       .set('page',  page.toString());
     return this.http.get<PageResult<Solicitud>>(url, { params });
   }
-
+  getSolicitud(id: number): Observable<Solicitud> {
+    return this.http.get<Solicitud>(`${this.apiBaseUrl}/${id}`);
+  }
   /** Si tienes un endpoint para descargar PDF */
   downloadPdf(id: number): Observable<Blob> {
     const url = `${this.apiBaseUrl}/data/solicitudes/${id}/pdf`;

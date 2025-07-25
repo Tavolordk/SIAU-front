@@ -1,9 +1,9 @@
 <!-- src/app/solicitudes/solicitudes/solicitudes.component.html -->
 
 <!-- Spinner full‑screen durante carga o descarga -->
-<div class="loaderlogin-overlay" *ngIf="isLoading || overlayLoading">
+<div class="loaderlogin-overlay" *ngIf="isLoading || overlayLoading || isLoadingPdf">
   <div class="loaderlogin-spinner"></div>
-  <p>{{ !isLoading ? 'Descargando PDF…' : 'Cargando solicitudes…' }}</p>
+  <p>{{ isLoading ? 'Cargando solicitudes…' : 'Descargando PDF…' }}</p>
 </div>
 
 <!-- Capa semitransparente tras menú -->
@@ -38,7 +38,8 @@
           <td>{{ item.entidad || '-' }}</td>
           <td>{{ formatDate(item) | date:'yyyy-MM-dd' }}</td>
           <td style="text-align:center">
-            <a style="font-size:16px; cursor:pointer" (click)="download(item)">📄</a>
+            <!-- Llamada al método del componente para manejar estado y descarga -->
+            <a (click)="descargarPdf(item)" [class.disabled]="isLoadingPdf">📄</a>
           </td>
         </tr>
       </tbody>
@@ -65,13 +66,12 @@
         [disabled]="currentPage === totalPages">»</button>
     </div>
 
-
     <!-- FAB “Agregar” + accesos rápidos -->
-    <div class="fab-container"   [ngStyle]="{
-    position: 'absolute',
-    right: '1.5rem',
-    bottom: lista.length!=0 ? '5rem' : '-5rem'
-  }">
+    <div class="fab-container" [ngStyle]="{
+        position: 'absolute',
+        right: '1.5rem',
+        bottom: lista.length!=0 ? '5rem' : '-5rem'
+      }">
       <div class="fab-buttons">
         <a class="fab-button secondary user" title="Usuario" (click)="irAUsuario()">
           <img src="assets/images/user_ico.png" alt="Usuario" style="width:60%; border-radius:40%;" />
@@ -82,3 +82,5 @@
       </div>
       <button class="fab-button main" title="Agregar" (click)="irAUsuario()">＋</button>
     </div>
+  </div>
+</div>
