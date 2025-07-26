@@ -74,6 +74,7 @@ export class PdfService {
     // 2) Cargar PDF y formulario
     const pdfDoc = await PDFDocument.load(tpl);
     const form = pdfDoc.getForm();
+console.log(form.getFields().map(f => f.getName()));
 
     // 3) Rellenar campos básicos
     form.getTextField('fill_1').setText(toText(datos.fill1));

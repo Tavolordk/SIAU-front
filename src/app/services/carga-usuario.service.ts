@@ -52,8 +52,7 @@ export class CargaUsuarioService {
   getAreas(): Observable<Opcion[]> {
     return this.http.get<Opcion[]>('/api/catalogs/areas');
   }
-      saveUsuarioSolicitud(cedula: any): Observable<{ success: boolean }> {
-    const url = `${environment.apiBaseUrl}/data/solicitudes`;
-    return this.http.post<{ success: boolean }>(url, cedula);
+  saveUsuarioSolicitud(cedula: any): Observable<any> {
+    return this.http.post(`${environment.apiBaseUrl}/data/solicitudes`, cedula);
   }
 }

@@ -84,6 +84,12 @@ perfiles: { id: number; clave: string; nombre: string }[] = [];
 
   /** Inicializa el formulario con campos y validaciones */
   private initForm(): void {
+      const userId = this.usuarioSvc.getUserId();
+  if (userId === null) {
+    console.error('No hay userId en localStorage');
+    this.loading = false;
+    return;
+  }
     this.userForm = this.fb.group({
       fill1: ['', Validators.required],
       folio: [''],    
@@ -117,7 +123,9 @@ perfiles: { id: number; clave: string; nombre: string }[] = [];
       pais: [''],
       corporacion2: [''],
       consultaTextos: this.fb.group({}),
-      modulosOperacion: this.fb.group({})
+      modulosOperacion: this.fb.group({}),
+          UserId:            userId
+
     });
 
     // Reactivos para cargar municipios cuando cambia la entidad
@@ -228,9 +236,9 @@ onSubmit(): void {
     CheckBox3:         f.checkBox3,
     CheckBox4:         f.checkBox4,
     CheckBox5:         f.checkBox5,
-    ConsultaTextos:    f.consultaTextos,
-    UserId: userId,
-    ModulosOperacion:  f.modulosOperacion
+    ConsultaTextos:   this.transformarPerfiles(f.consultaTextos),
+    ModulosOperacion: this.transformarModulos(f.modulosOperacion),
+        UserId: userId,
   };
 
   // Para debugear, comprueba en consola:
@@ -319,6 +327,25 @@ public cargarMunicipios(parentId: number|null) {
     this.municipios = data;
   });
 }
+private transformarPerfiles(inputs: Record<string,string>): Record<string,string> {
+  const out: Record<string,string> = {};
+  Object.values(inputs).forEach((text, i) => {
+    // Text8..Text35 (28 slots)
+    const key = `Text${8 + i}`;
+    // "0508 - Consulta Estatal RNIP (FC)" → "0508"
+    out[key] = text.split(' - ')[0].trim();
+  });
+  return out;
+}
 
+private transformarModulos(inputs: Record<string,string>): Record<string,string> {
+  const out: Record<string,string> = {};
+  Object.values(inputs).forEach((text, i) => {
+    // Text36..Text63 (28 slots)
+    const key = `Text${36 + i}`;
+    out[key] = text.split(' - ')[0].trim();
+  });
+  return out;
+}
 }
 
