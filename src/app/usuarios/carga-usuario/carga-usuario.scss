@@ -62,18 +62,63 @@ textarea {
   margin-top: 0.5rem;
 }
 
+/* contenedor flex para que queden en fila */
+.cdindi-checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+/* cada etiqueta como “fila” */
 .checkbox-wrapper-47 {
   position: relative;
-  padding-left: 2em;
+  padding-left: 1.8rem;     /* espacio para el span */
+  cursor: pointer;
+  user-select: none;
+  line-height: 1.2;
+}
+
+/* ocultamos el input real */
+.checkbox-wrapper-47 input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
   cursor: pointer;
 }
 
-.checkbox-wrapper-47 input[type="checkbox"] {
+/* dibujamos el cuadro vacío */
+.checkbox-wrapper-47 .custom-checkbox {
   position: absolute;
+  top: 50%;
   left: 0;
-  top: 0.15em;
-  width: 1em;
-  height: 1em;
+  transform: translateY(-50%);
+  width: 1.2rem;
+  height: 1.2rem;
+  border: 2px solid #66003C;  /* tu morado */
+  border-radius: 3px;
+  background-color: white;
+  box-sizing: border-box;
+}
+
+/* si está chequeado, rellenamos */
+.checkbox-wrapper-47 input[type="checkbox"]:checked + .custom-checkbox {
+  background-color: #66003C;
+  border-color: #66003C;
+}
+
+/* opcional: dibujar palomita con ::after */
+.checkbox-wrapper-47 input[type="checkbox"]:checked + .custom-checkbox::after {
+  content: '';
+  position: absolute;
+  left: 0.33rem;
+  top: 0.11rem;
+  width: 0.25rem;
+  height: 0.6rem;
+  border: solid white;
+  border-width: 0 0.2rem 0.2rem 0;
+  transform: rotate(45deg);
 }
 
 .botones-final {

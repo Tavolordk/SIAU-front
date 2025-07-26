@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { CedulaModel } from '../models/cedula.model';
+import { environment } from '../environments/environment';
 
 /**
  * Opción de catálogo con id y nombre
@@ -20,17 +21,6 @@ export class CargaUsuarioService {
   getUsuario(id: number): Observable<CedulaModel> {
     return this.http.get<CedulaModel>(`${this.baseUrl}/${id}`);
   }
-
-  /**
-   * Crea o actualiza una cédula
-   */
-  saveUsuario(model: CedulaModel): Observable<void> {
-    if (model.id) {
-      return this.http.put<void>(`${this.baseUrl}/${model.id}`, model);
-    }
-    return this.http.post<void>(this.baseUrl, model);
-  }
-
   /**
    * Catálogos para selects
    */
@@ -61,5 +51,9 @@ export class CargaUsuarioService {
 
   getAreas(): Observable<Opcion[]> {
     return this.http.get<Opcion[]>('/api/catalogs/areas');
+  }
+      saveUsuarioSolicitud(cedula: any): Observable<{ success: boolean }> {
+    const url = `${environment.apiBaseUrl}/data/solicitudes`;
+    return this.http.post<{ success: boolean }>(url, cedula);
   }
 }

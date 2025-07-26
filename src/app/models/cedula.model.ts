@@ -60,4 +60,5 @@ export interface CedulaModel {
   entidad2Nombre?: string;
   municipio2Nombre?: string;
   corporacion2Nombre?: string;
+    UserId?: number;
 }

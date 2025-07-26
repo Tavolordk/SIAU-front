@@ -6,6 +6,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { CargaUsuarioService } from '../../services/carga-usuario.service';
 import { CedulaModel } from '../../models/cedula.model';
 import { CatalogosService, CatalogoItem, CatEstructuraDto } from '../../services/catalogos.service';
+import { UsuarioService } from '../../services/usuario.service';
 
 /**
  * Componente para crear/editar la cédula de usuario
@@ -38,13 +39,18 @@ perfiles: { id: number; clave: string; nombre: string }[] = [];
 
 
   // Opciones tipo checkbox
-  opciones = ['Nueva Cuenta', 'Modificación de Perfiles', 'Baja de Cuenta'];
+  opciones = [  'Nueva Cuenta',
+  'Modificación de Perfiles',
+  'Ampliación de Perfiles',
+  'Reactivación de Cuenta',
+  'Cambio de Adscripción'];
 
   constructor(
     private fb: FormBuilder,
     private svc: CargaUsuarioService,
     private catalogos: CatalogosService,
     private router: Router,
+    private usuarioSvc: UsuarioService,
     private route: ActivatedRoute
   ) {}
 
@@ -80,12 +86,14 @@ perfiles: { id: number; clave: string; nombre: string }[] = [];
   private initForm(): void {
     this.userForm = this.fb.group({
       fill1: ['', Validators.required],
+      folio: [''],    
       checkBox1: [false],
       checkBox2: [false],
       checkBox3: [false],
       checkBox4: [false],
       checkBox5: [false],
       nombre: ['', Validators.required],
+      nombre2: [''],
       apellidoPaterno: ['', Validators.required],
       apellidoMaterno: [''],
       fechaSolicitud: [new Date().toISOString().substring(0, 10), Validators.required],
@@ -103,6 +111,7 @@ perfiles: { id: number; clave: string; nombre: string }[] = [];
       area: [null, Validators.required],
       cargo: ['', Validators.required],
       funciones: ['', Validators.required],
+      funciones2: [''],
       entidad2: [null],
       municipio2: [null],
       pais: [''],
@@ -173,15 +182,69 @@ this.userForm.get('corporacion')!.valueChanges
   }
 
   /** Envía el formulario al servicio */
-  onSubmit(): void {
-    if (this.userForm.invalid) return;
-    this.loading = true;
-    const payload: CedulaModel = this.userForm.value;
-    this.svc.saveUsuario(payload).subscribe({
-      next: () => this.router.navigate(['/solicitudes']),
-      error: () => this.loading = false
-    });
+onSubmit(): void {
+  if (this.userForm.invalid) {
+    this.userForm.markAllAsTouched();
+    return;
   }
+
+  this.loading = true;
+  const f = this.userForm.value;
+  const userId = this.usuarioSvc.getUserId();
+  if (userId === null) {
+    console.error('No hay userId en localStorage');
+    this.loading = false;
+    return;
+  }
+
+  const cedula = {
+    Fill1:             f.fill1,
+    Folio:             null,           // el SP genera el folio
+    Nombre:            f.nombre,
+    nombre2:           f.nombre2 || null,
+    ApellidoPaterno:   f.apellidoPaterno,
+    ApellidoMaterno:   f.apellidoMaterno || null,
+    RFC:               f.rfc,
+    CURP:              f.curp || null,
+    CUIP:              f.cuip || null,
+    Telefono:          f.telefono || null,
+    CorreoElectronico: f.correoElectronico,
+    Cargo:             f.cargo,
+    Funciones:         f.funciones,
+    Funciones2:        f.funciones2 || null,
+    TipoUsuario:       f.tipoUsuario,
+    Area:              f.area,
+    Entidad:           f.entidad,
+    Municipio:         f.municipio,
+    Institucion:       f.institucion,
+    Dependencia:       f.dependencia,
+    Corporacion:       f.corporacion,
+    Pais:              f.pais || null,
+    entidad2:          f.entidad2 || null,
+    municipio2:        f.municipio2 || null,
+    corporacion2:      f.corporacion2 || null,
+    CheckBox1:         f.checkBox1,
+    CheckBox2:         f.checkBox2,
+    CheckBox3:         f.checkBox3,
+    CheckBox4:         f.checkBox4,
+    CheckBox5:         f.checkBox5,
+    ConsultaTextos:    f.consultaTextos,
+    UserId: userId,
+    ModulosOperacion:  f.modulosOperacion
+  };
+
+  // Para debugear, comprueba en consola:
+  console.log('Payload a enviar:', cedula);
+
+  this.svc.saveUsuarioSolicitud(cedula).subscribe({
+    next: () => this.router.navigate(['/solicitudes']),
+    error: err => {
+      console.error('Error guardando solicitud:', err);
+      this.loading = false;
+    }
+  });
+}
+
 
   /** Cancela y regresa a Solicitudes */
   onCancel(): void {

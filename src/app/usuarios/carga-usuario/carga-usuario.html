@@ -18,9 +18,17 @@
     <label class="label-obligatorio">Seleccione las opciones que aplican</label>
     <div class="cdindi-checkbox-group">
       <label *ngFor="let opt of opciones; let i = index" class="checkbox-wrapper-47">
-        <input type="checkbox" [formControlName]="'checkBox'+(i+1)" /> {{ opt }}
+        <!-- 1) input oculto -->
+        <input type="checkbox" [formControlName]="'checkBox' + (i + 1)" id="chk{{i}}" />
+
+        <!-- 2) span “cuadro” -->
+        <span class="custom-checkbox"></span>
+
+        <!-- 3) texto -->
+        {{ opt }}
       </label>
     </div>
+
   </div>
 
   <!-- Sección Datos Generales -->
@@ -202,8 +210,8 @@
     <div class="cdindi-grid-two-columns cdindi-operacion">
       <div class="perfil-input-group">
         <input list="consultaOptions" class="cdindi-input" placeholder="Escribe o selecciona..."
-          [(ngModel)]="perfilConsultaInput" name="perfilConsultaInput"
-          (keydown.enter)="agregarPerfilConsulta(); $event.preventDefault()" />
+          [(ngModel)]="perfilConsultaInput" [ngModelOptions]="{ standalone: true }" name="perfilConsultaInput"
+          (keydown.enter)="agregarPerfilConsulta(); $event.preventDefault()">
         <datalist id="consultaOptions">
           <option *ngFor="let perfil of perfiles" [value]="perfil.clave + ' - '+ perfil.nombre"></option>
         </datalist>
@@ -211,7 +219,7 @@
       </div>
       <div *ngFor="let key of getConsultaTextosKeys()">
         <div class="perfil-chip">
-          <span>Consulta - Perfil {{ key }}: {{ userForm.value.consultaTextos[key] }}</span>
+          <span>Perfil {{ key.substr(0,4) }}</span>
           <button type="button" (click)="quitarConsulta(key)">❌</button>
         </div>
       </div>
