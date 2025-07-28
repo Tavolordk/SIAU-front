@@ -1,81 +1,90 @@
-<ng-container *ngIf="loading || shouldRedirect">
+<ng-container *ngIf="loading">
   <div class="loaderlogin-overlay">
     <div class="loaderlogin-spinner"></div>
-    <p>{{ !loading ? 'Cargando...' : 'Redirigiendo al login...' }}</p>
+    <p>Cargando…</p>
   </div>
 </ng-container>
 
 <ng-container *ngIf="!loading">
-  <!-- Main Overlay -->
+  <!-- main-overlay si lo usas detrás de header -->
   <div class="main-overlay" style="top:80px !important"></div>
 
-  <!-- Solicitudes Masiva Table -->
+  <!-- Vista previa de los datos importados -->
   <div class="solicitudes_masiva-container">
     <div class="solicitudes_masiva-tabla-contenedor">
       <table class="solicitudes_masiva-tabla">
         <thead>
           <tr>
-            <th style="width:5%">NO.</th>
-            <th style="width:25%">NOMBRE</th>
-            <th style="width:10%; text-align:center;">STATUS</th>
-            <th style="width:50%">DESCRIPCION</th>
-            <th style="width:10%; text-align:center;">ACCION</th>
+            <th style="width:5%;" class="fw-bold">No.</th>
+            <th style="width:40%;" class="fw-bold">Nombre</th>
+            <th style="width:10%; text-align:center;" class="fw-bold">Status</th>
+            <th style="width:35%; text-align:center;" class="fw-bold">Descripcion</th>
+            <th style="width:10%; text-align:center;" class="fw-bold">Acción</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngIf="!listaSolicitud?.length">
-            <td colspan="5">No hay solicitudes.</td>
+          <tr *ngIf="!previewData.length">
+            <td colspan="6">No hay datos cargados.</td>
           </tr>
-          <tr *ngFor="let cedula of listaSolicitudPaginated">
-            <td>{{ cedula.fill1 }}</td>
-            <td class="cdindi-checkbox-group">
-              <label class="checkbox-wrapper-47-alt">
-                <input type="checkbox" [(ngModel)]="cedula.descargar" />
-                {{ cedula.nombre }} {{ cedula.apellidoPaterno }} {{ cedula.apellidoMaterno }}
-              </label>
+          <tr *ngFor="let cedula of previewDataPaginated; let i = index">
+            <td>{{ (currentPage-1)*itemsPerPage + i + 1 }}</td>
+
+            <td> <input type="checkbox" [(ngModel)]="cedula.descargar" />
+              {{ cedula.nombre }} {{ cedula.apellidoPaterno }} {{ cedula.apellidoMaterno }}</td>
+            <!-- Status -->
+            <td style="text-align:center">
+              <img *ngIf="cedula.ok" src="assets/images/file_approva_ico.png" class="ok img-fluid" />
+              <img *ngIf="!cedula.ok" src="assets/images/file_rejected_ico.png" class="nook img-fluid" />
             </td>
-            <td class="solicitudes_masiva-tdicons" style="text-align:center">
-              <img *ngIf="cedula.ok" class="ok" src="assets/Imagenes/file_approva_ico.png" />
-              <img *ngIf="!cedula.ok" class="nook" src="assets/Imagenes/file_rejected_ico.png" />
-            </td>
+            <!-- Descripción de error -->
             <td>{{ cedula.descripcionerror }}</td>
-            <td class="solicitudes_masiva-tdicons" style="text-align:center">
-              <img *ngIf="cedula.ok" src="assets/images/file_download_pdf_ico.png" class="upload" (click)="downloadPDF(cedula)" />
-              <img *ngIf="!cedula.ok" src="assets/images/file_edit_ico.png" class="warning" (click)="irIndividual(cedula)" />
+            <td style="text-align:center">
+              <img *ngIf="cedula.ok" src="assets/images/file_download_pdf_ico.png" class="upload"
+                (click)="downloadPDF(cedula)" />
+              <img *ngIf="!cedula.ok" src="assets/images/file_edit_ico.png" class="warning"
+                (click)="irIndividual(cedula)" />
             </td>
           </tr>
         </tbody>
       </table>
 
-      <!-- Pagination -->
+      <!-- Paginación -->
       <div class="solicitudes_masiva-paginacion">
-        <button class="solicitudes_masiva-pagina-btn" (click)="cambiarPagina(currentPage - 1)" [disabled]="currentPage === 1">«</button>
-        <button *ngFor="let p of pages" class="solicitudes_masiva-pagina-btn" [class.active]="p === currentPage" (click)="cambiarPagina(p)">{{ p }}</button>
-        <button class="solicitudes_masiva-pagina-btn" (click)="cambiarPagina(currentPage + 1)" [disabled]="currentPage === totalPages">»</button>
+        <button class="solicitudes_masiva-pagina-btn" (click)="cambiarPagina(currentPage - 1)"
+          [disabled]="currentPage === 1">«</button>
+        <button *ngFor="let p of pages" class="solicitudes_masiva-pagina-btn" [class.active]="p === currentPage"
+          (click)="cambiarPagina(p)">{{ p }}</button>
+        <button class="solicitudes_masiva-pagina-btn" (click)="cambiarPagina(currentPage + 1)"
+          [disabled]="currentPage === totalPages">»</button>
       </div>
     </div>
   </div>
 
-  <!-- Action Buttons -->
+  <!-- Botones de acción -->
   <div class="botones-final">
     <div class="fila fila-1">
       <input type="file" id="fileInput" (change)="handleFileSelection($event)" hidden />
-      <button class="btn-grande" (click)="openFilePicker()" [disabled]="selectedFile">
-        {{ selectedFile ? selectedFile.name : 'SELECCIONAR ARCHIVO' }}
+      <button class="btn-grande" type="button" (click)="openFilePicker()">
+        {{ selectedFile?.name || 'SELECCIONAR ARCHIVO' }}
       </button>
     </div>
     <div class="fila fila-2">
-      <button class="btn-chico" (click)="descargarPDFsMasivos()">DESCARGAR</button>
-      <button class="btn-chico" (click)="sendSolicitudMasiva()">CARGAR</button>
+      <button class="btn-chico" type="button" (click)="descargarPDFsMasivos()" [disabled]="!previewData.length">
+        DESCARGAR
+      </button>
+      <button class="btn-chico" type="button" (click)="sendSolicitudMasiva()" [disabled]="!selectedFile">
+        CARGAR
+      </button>
     </div>
   </div>
 
-  <!-- Overlay Loader -->
-  <div id="overlay-loader" *ngIf="overlayLoaderVisible">
-    <span class="loader"></span>
+  <!-- Overlay de loader general durante envío -->
+  <div class="loaderlogin-overlay" *ngIf="overlayLoaderVisible">
+    <div class="loaderlogin-spinner"></div>
+    <p>Enviando…</p>
   </div>
 
-  <!-- Car Masiva Loader -->
+  <!-- Barra de progreso masivo -->
   <div class="carmasiv-overlay" *ngIf="carmasivMostrandoLoader">
     <div class="carmasiv-loader-box">
       <div class="carmasiv-barra-contenedor">
@@ -85,8 +94,9 @@
     </div>
   </div>
 
-  <!-- Toast -->
-  <div *ngIf="showToast" class="toast-container" [class.toast-hide]="isHiding" [class.toast-show]="!isHiding" [style.background-color]="toastColor">
+  <!-- Toast Notifications -->
+  <div *ngIf="showToast" class="toast-container" [class.toast-show]="!isHiding" [class.toast-hide]="isHiding"
+    [style.backgroundColor]="toastColor">
     {{ toastMessage }}
   </div>
 </ng-container>
