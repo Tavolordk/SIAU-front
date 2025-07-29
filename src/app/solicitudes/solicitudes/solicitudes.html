@@ -37,9 +37,9 @@
           <td>{{ item.cuentaUsuario }}</td>
           <td>{{ item.entidad || '-' }}</td>
           <td>{{ formatDate(item) | date:'yyyy-MM-dd' }}</td>
-          <td style="text-align:center">
+          <td style="text-align:center" class="cursor-pointer">
             <!-- Llamada al método del componente para manejar estado y descarga -->
-            <a (click)="descargarPdf(item)" [class.disabled]="isLoadingPdf">📄</a>
+            <a (click)="descargarPdf(item)" [class.disabled]="isLoadingPdf" style="cursor:pointer">📄</a>
           </td>
         </tr>
       </tbody>

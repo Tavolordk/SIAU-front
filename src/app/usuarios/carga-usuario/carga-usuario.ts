@@ -347,5 +347,14 @@ private transformarModulos(inputs: Record<string,string>): Record<string,string>
   });
   return out;
 }
+
+onCheckboxChange(selectedIndex: number): void {
+  const totalCheckboxes = this.opciones.length;
+  for (let i = 1; i <= totalCheckboxes; i++) {
+    if (i === selectedIndex) continue;
+    this.userForm.get('checkBox' + i)?.setValue(false, { emitEvent: false });
+  }
+}
+
 }
 

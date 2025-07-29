@@ -38,7 +38,7 @@ export interface CedulaModel {
   checkBox3?: boolean | null;
   checkBox4?: boolean | null;
   checkBox5?: boolean | null;
-    entidadNombre?: string;
+  entidadNombre?: string;
   municipioNombre?: string;
   institucionNombre?: string;
   dependenciaNombre?: string;
@@ -47,6 +47,9 @@ export interface CedulaModel {
   entidad2Nombre?: string;
   municipio2Nombre?: string;
   corporacion2Nombre?: string;
+  nombreFirmaUsuario?: string | null;
+  nombreFirmaResponsable?: string | null;
+  nombreFirmaEnlace?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -144,7 +147,9 @@ console.log(form.getFields().map(f => f.getName()));
     Object.entries(datos.modulosOperacion || {}).forEach(([key,val]) => {
       form.getTextField(key).setText(toText(val));
     });
-
+    form.getTextField('Text2').setText(toText(datos.nombreFirmaUsuario));
+    form.getTextField('Text3').setText(toText(datos.nombreFirmaResponsable));
+    form.getTextField('Text4').setText(toText(datos.nombreFirmaEnlace));
     // 15) Aplana y descarga
     form.flatten();
     const pdfBytes = await pdfDoc.save();

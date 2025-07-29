@@ -6,6 +6,8 @@ import { Workbook } from 'exceljs';
 import { forkJoin } from 'rxjs';
 import { CargaUsuarioService } from '../../services/carga-usuario.service';
 import { ExcelUsuarioRow } from '../../models/excel.model';
+import { CedulaModel, PdfService } from '../../services/pdf.service';
+import { CatalogosService } from '../../services/catalogos.service';
 
 @Component({
     selector: 'app-carga-masiva-usuarios',
@@ -50,12 +52,42 @@ export class CargaMasivaUsuariosComponent implements OnInit {
 
     constructor(
         private router: Router,
-        private svc: CargaUsuarioService
+        private svc: CargaUsuarioService,
+        private catalogoService: CatalogosService,
+        private pdfService: PdfService
     ) { }
 
     ngOnInit(): void {
         // Spinner inicial
         setTimeout(() => this.loading = false, 500);
+           // 2) Trae y cachea TODOS los catálogos
+    this.catalogoService.getAll().subscribe(res => {
+      // Tipos de usuario (radio)
+      this.catalogoService.tiposUsuario = res.TipoUsuario
+        .map(u => ({ id: u.ID, nombre: u.TP_USUARIO }));
+      
+      // Estados / Municipios
+      this.catalogoService.entidades = res.Entidades
+        .filter(e => e.TIPO === 'ENTIDAD')
+        .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
+      this.catalogoService.municipios = res.Entidades
+        .filter(e => e.TIPO === 'MUNICIPIO')
+        .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
+      
+      // Instituciones / Dependencias / Corporaciones / Áreas
+      this.catalogoService.instituciones = res.Estructura
+        .filter(e => e.TIPO === 'INSTITUCION')
+        .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
+      this.catalogoService.dependencias = res.Estructura
+        .filter(e => e.TIPO === 'DEPENDENCIA')
+        .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
+      this.catalogoService.corporaciones = res.Estructura
+        .filter(e => e.TIPO === 'CORPORACION')
+        .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
+      this.catalogoService.areas = res.Estructura
+        .filter(e => e.TIPO === 'AREA')
+        .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
+    });
     }
 
     // Cambia página
@@ -110,32 +142,42 @@ export class CargaMasivaUsuariosComponent implements OnInit {
             // Salta si no hay oficio *ni* nombre
             const oficioCol = findCol('nc', 'oficio', 'fill1');
             const nombreCol = findCol('nombre (s)', 'nombre');
-            const oficioVal = oficioCol ? row.getCell(oficioCol).text?.toString().trim() ?? '' : '';
+            const fullName = nombreCol
+                ? row.getCell(nombreCol).text?.toString().trim() ?? ''
+                : '';
+
+            let nombre1 = '';
+            let nombre2 = '';
+            if (fullName) {
+                const parts = fullName.split(/\s+/);
+                nombre1 = parts.shift()!;
+                nombre2 = parts.length ? parts.join(' ') : '';
+            } const oficioVal = oficioCol ? row.getCell(oficioCol).text?.toString().trim() ?? '' : '';
             const nombreVal = nombreCol ? row.getCell(nombreCol).text?.toString().trim() ?? '' : '';
             if (!oficioVal && !nombreVal) continue;
 
             // Genera objeto base con errores vacíos
             const rec: ExcelUsuarioRow = {
                 fill1: oficioVal || null,
-                nombre: nombreVal || null,
+                nombre: nombre1 || null,
                 apellidoPaterno: (findCol('apellido paterno') ? row.getCell(findCol('apellido paterno')!).text?.toString() : null) ?? null,
                 apellidoMaterno: (findCol('apellido materno') ? row.getCell(findCol('apellido materno')!).text?.toString() : null) ?? null,
                 rfc: (findCol('rfc') ? row.getCell(findCol('rfc')!).text?.toString() : null) ?? null,
                 correoElectronico: (findCol('correo electrónico', 'correo') ? row.getCell(findCol('correo electrónico', 'correo')!).text?.toString() : null) ?? null,
                 telefono: (findCol('teléfono', 'telefono') ? row.getCell(findCol('teléfono', 'telefono')!).text?.toString() : null) ?? null,
-                tipoUsuario:(findCol('USUARIO          (En caso de aplicar)') ? row.getCell(findCol('USUARIO          (En caso de aplicar)')!).text?.toString() : null) ?? null,
-                entidad: Number(findCol('entidad') ? row.getCell(findCol('entidad')!).value : 0) || 0,
+                tipoUsuario: Number(findCol('TIPO DE DEPENDENCIA') ? row.getCell(findCol('TIPO DE DEPENDENCIA')!).value : 0) || 0,
+                entidad: Number(findCol('ENTIDAD') ? row.getCell(findCol('ENTIDAD')!).value : 0) || 0,
                 municipio: (findCol('MUNICIPIO') ? row.getCell(findCol('MUNICIPIO')!).text?.toString() : null) ?? null,
                 institucion: Number(findCol('INSTITUCION') ? row.getCell(findCol('INSTITUCION')!).value : 0) || 0,
-                dependencia: Number(findCol('dependencia', 'tipo de dependencia') ? row.getCell(findCol('dependencia', 'tipo de dependencia')!).value : 0) || 0,
-                corporacion: Number(findCol('corporación', 'corporacion') ? row.getCell(findCol('corporación', 'corporacion')!).value : 0) || 0,
+                dependencia: Number(findCol('TIPO DE DEPENDENCIA') ? row.getCell(findCol('TIPO DE DEPENDENCIA')!).value : 0) || 0,
+                corporacion: Number(findCol('CORPORACION') ? row.getCell(findCol('CORPORACION')!).value : 0) || 0,
                 area: Number(findCol('AREA') ? row.getCell(findCol('AREA')!).value : 0) || 0,
-                cargo: (findCol('cargo', 'nombre cargo') ? row.getCell(findCol('cargo', 'nombre cargo')!).text?.toString() : null) ?? null,
-                funciones: (findCol('funciones') ? row.getCell(findCol('funciones')!).text?.toString() : null) ?? null,
+                cargo: (findCol('CARGO') ? row.getCell(findCol('CARGO')!).text?.toString() : null) ?? null,
+                funciones: (findCol('FUNCIONES') ? row.getCell(findCol('FUNCIONES')!).text?.toString() : null) ?? null,
                 pais: (findCol('país', 'pais') ? row.getCell(findCol('país', 'pais')!).text?.toString() : null) ?? null,
-                entidad2: (findCol('entidad1') ? row.getCell(findCol('entidad1')!).text?.toString() : null) ?? null,
-                municipio2: (findCol('municipio1') ? row.getCell(findCol('municipio1')!).text?.toString() : null) ?? null,
-                corporacion2: (findCol('corporacion1') ? row.getCell(findCol('corporacion1')!).text?.toString() : null) ?? null,
+                entidad2: (findCol('ENTIDAD1') ? row.getCell(findCol('ENTIDAD1')!).text?.toString() : null) ?? null,
+                municipio2: (findCol('MUNICIPIO1') ? row.getCell(findCol('MUNICIPIO1')!).text?.toString() : null) ?? null,
+                corporacion2: (findCol('CORPORACION1') ? row.getCell(findCol('CORPORACION1')!).text?.toString() : null) ?? null,
                 consultaTextos: {},
                 modulosOperacion: {},
                 checkBox1: false,
@@ -150,6 +192,16 @@ export class CargaMasivaUsuariosComponent implements OnInit {
                 nombreFirmaEnlace: (findCol('NOMBRE Y FIRMA DEL USUARIO') ? row.getCell(findCol('NOMBRE Y FIRMA DEL USUARIO')!).text?.toString() : null) ?? null,
                 nombreFirmaResponsable: (findCol('NOMBRE CARGO Y FIRMA DEL RESPONSABLE DE LA INSTITUCIÓN') ? row.getCell(findCol('NOMBRE CARGO Y FIRMA DEL RESPONSABLE DE LA INSTITUCIÓN')!).text?.toString() : null) ?? null,
                 nombreFirmaUsuario: (findCol('NOMBRE Y FIRMA DEL ENLACE ESTATAL/ INSTITUCIONAL') ? row.getCell(findCol('NOMBRE Y FIRMA DEL ENLACE ESTATAL/ INSTITUCIONAL')!).text?.toString() : null) ?? null,
+                cuentaUsuario: (findCol('USUARIO          (En caso de aplicar)') ? row.getCell(findCol('USUARIO          (En caso de aplicar)')!).text?.toString() : null) ?? null,
+                cuip: (findCol('CUIP               (EN CASO DE APLICAR)') ? row.getCell(findCol('CUIP               (EN CASO DE APLICAR)')!).text?.toString() : null) ?? null,
+                curp: '',
+                nombre2: nombre2,
+                areaNombre: '',
+                corporacionNombre: '',
+                dependenciaNombre: '',
+                institucionNombre: '',
+                municipioNombre: '',
+                entidadNombre: ''
             };
 
             // --- 3) Validaciones ---
@@ -248,6 +300,12 @@ export class CargaMasivaUsuariosComponent implements OnInit {
             rec.descripcionerror = rec.ok
                 ? ''
                 : `CAMPOS INCORRECTOS: ${rec.errores.join(', ')}`;
+            rec.entidadNombre        = this.catalogoService.getEntidadNameById(rec.entidad)         || '';
+rec.municipioNombre      = rec.municipio     || '';
+rec.institucionNombre    = this.catalogoService.getInstitucionNameById(rec.institucion) || '';
+rec.dependenciaNombre    = this.catalogoService.getDependenciaNameById(rec.dependencia) || '';
+rec.corporacionNombre    = this.catalogoService.getCorporacionNameById(rec.corporacion) || '';
+rec.areaNombre           = this.catalogoService.getAreaNameById(rec.area)               || '';
             this.previewData.push(rec);
         }
     }
@@ -304,17 +362,76 @@ export class CargaMasivaUsuariosComponent implements OnInit {
         }, 3000);
     }
 
-    /** Botón de descarga individual */
-    downloadPDF(cedula: ExcelUsuarioRow): void {
-        console.log('Download PDF for', cedula);
-        // aquí invocarías tu servicio de PDF…
-    }
-
     /** Navegar al detalle/edición */
     irIndividual(cedula: ExcelUsuarioRow): void {
         console.log('Navigate to individual', cedula);
         // por ejemplo:
         // this.router.navigate(['/usuarios', cedula.fill1]);
+    }
+    /** Botón de descarga individual */
+    async downloadPDF(cedula: ExcelUsuarioRow): Promise<void> {
+        if (!cedula.ok) {
+            this.showToastMessage('La solicitud tiene errores y no puede generar PDF', 'warn');
+            return;
+        }
+
+        // Mapea sólo los campos que tu PdfService necesita.
+        // Completa con '' o 0 donde falte.
+        const datos: CedulaModel = {
+            fill1: cedula.fill1,
+            folio: cedula.fill1,
+            cuentaUsuario: cedula.cuentaUsuario,
+            correoElectronico: cedula.correoElectronico,
+            telefono: cedula.telefono,
+            apellidoPaterno: cedula.apellidoPaterno,
+            apellidoMaterno: cedula.apellidoMaterno,
+            nombre: cedula.nombre,
+            nombre2: cedula.nombre2,
+            rfc: cedula.rfc,
+            cuip: cedula.cuip,
+            curp: cedula.curp,
+            tipoUsuario: cedula.tipoUsuario,
+            entidad: cedula.entidad,
+            municipio: this.catalogoService.getMunicipioIdByName(cedula.municipio!),
+            institucion: cedula.institucion,
+            corporacion: cedula.corporacion,
+            area: cedula.area,
+            cargo: cedula.cargo,
+            funciones: cedula.funciones,
+            funciones2: '',
+            pais: cedula.pais,
+            entidad2: this.catalogoService.getEntidadIdByName(cedula.entidad2!),
+            municipio2: this.catalogoService.getMunicipioIdByName(cedula.municipio2!),
+            corporacion2: this.catalogoService.getCorporacionIdByName(cedula.corporacion2!),
+            consultaTextos: cedula.consultaTextos,
+            modulosOperacion: cedula.modulosOperacion,
+            checkBox1: cedula.checkBox1,
+            checkBox2: cedula.checkBox2,
+            checkBox3: cedula.checkBox3,
+            checkBox4: cedula.checkBox4,
+            checkBox5: cedula.checkBox5,
+
+            // estos campos de nombre para el PDF
+    entidadNombre:      this.catalogoService.getEntidadNameById(cedula.entidad!) || '',
+    municipioNombre:    cedula.municipio || '',
+    institucionNombre:  this.catalogoService.getInstitucionNameById(cedula.institucion!) || '',
+    dependenciaNombre:  this.catalogoService.getDependenciaNameById(cedula.dependencia!) || '',
+    corporacionNombre:  this.catalogoService.getCorporacionNameById(cedula.corporacion!) || '',
+    areaNombre:         this.catalogoService.getAreaNameById(cedula.area!) || '',
+    entidad2Nombre:     cedula.entidad2 || '',
+    municipio2Nombre:   cedula.municipio2 || '',
+    corporacion2Nombre: cedula.corporacion2 || '',
+    nombreFirmaEnlace: cedula.nombreFirmaEnlace,
+    nombreFirmaResponsable: cedula.nombreFirmaResponsable,
+    nombreFirmaUsuario: cedula.nombreFirmaUsuario
+        };
+
+        try {
+            await this.pdfService.generarYDescargar(datos);
+        } catch (e) {
+            console.error('Error generando PDF', e);
+            this.showToastMessage('No se pudo generar el PDF', 'error');
+        }
     }
 
 }

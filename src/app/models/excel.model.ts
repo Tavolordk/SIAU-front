@@ -1,5 +1,15 @@
 // src/app/models/excel-usuario-row.model.ts
 export interface ExcelUsuarioRow {
+    areaNombre: string;
+    corporacionNombre: string;
+    dependenciaNombre: string;
+    institucionNombre: string;
+    municipioNombre: string;
+    entidadNombre: string;
+    cuentaUsuario: string | null | undefined;
+    curp: string | null | undefined;
+    cuip: string | null | undefined;
+    nombre2: string | null | undefined;
     fill1: string | null;
     nombre: string | null;
     apellidoPaterno: string | null;
@@ -7,7 +17,7 @@ export interface ExcelUsuarioRow {
     rfc: string | null;
     correoElectronico: string | null;
     telefono: string | null;
-    tipoUsuario: string | null;
+    tipoUsuario: number | null;
     entidad: number;
     municipio: string | null;
     institucion: number;

@@ -19,7 +19,7 @@
     <div class="cdindi-checkbox-group">
       <label *ngFor="let opt of opciones; let i = index" class="checkbox-wrapper-47">
         <!-- 1) input oculto -->
-        <input type="checkbox" [formControlName]="'checkBox' + (i + 1)" id="chk{{i}}" />
+        <input type="checkbox" [formControlName]="'checkBox' + (i + 1)" id="chk{{i}}" (change)="onCheckboxChange(i + 1)"/>
 
         <!-- 2) span “cuadro” -->
         <span class="custom-checkbox"></span>
