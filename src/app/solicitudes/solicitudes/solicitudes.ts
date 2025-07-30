@@ -43,6 +43,7 @@ export class SolicitudesComponent implements OnInit {
      // 1) carga catálogos
     this.catalogos.getAll().subscribe(res => {
       // Entidades y municipios vienen juntos en res.Entidades
+        console.log('Respuesta de catalogos:', res);
       res.Entidades.forEach(e => {
         if (e.FK_PADRE === null) {
           this.entidadesMap.set(e.ID, e.NOMBRE);
