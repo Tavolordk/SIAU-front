@@ -30,7 +30,7 @@
           <td colspan="8">No se encontraron solicitudes.</td>
         </tr>
         <tr *ngFor="let item of lista; let i = index">
-          <td>{{ (currentPage - 1) * pages.length + i + 1 }}</td>
+          <td>{{ (currentPage - 1) * itemsPerPage + i + 1 }}</td>
           <td>{{ item.folio }}</td>
           <td>{{ item.fill1 }}</td>
           <td>{{ item.nombre }} {{item.apellidoPaterno}} {{item.apellidoMaterno}}</td>

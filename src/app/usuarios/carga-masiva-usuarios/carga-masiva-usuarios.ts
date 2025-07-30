@@ -68,10 +68,10 @@ export class CargaMasivaUsuariosComponent implements OnInit {
       
       // Estados / Municipios
       this.catalogoService.entidades = res.Entidades
-        .filter(e => e.TIPO === 'ENTIDAD')
+        .filter(e => e.FK_PADRE === null)
         .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
       this.catalogoService.municipios = res.Entidades
-        .filter(e => e.TIPO === 'MUNICIPIO')
+        .filter(e => e.FK_PADRE !== null)
         .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
       
       // Instituciones / Dependencias / Corporaciones / Áreas
@@ -363,11 +363,12 @@ rec.areaNombre           = this.catalogoService.getAreaNameById(rec.area)       
     }
 
     /** Navegar al detalle/edición */
-    irIndividual(cedula: ExcelUsuarioRow): void {
-        console.log('Navigate to individual', cedula);
-        // por ejemplo:
-        // this.router.navigate(['/usuarios', cedula.fill1]);
-    }
+irIndividual(cedula: ExcelUsuarioRow): void {
+  this.router.navigate(['cargausuario'], {
+    state: { cedula }
+  });
+}
+
     /** Botón de descarga individual */
     async downloadPDF(cedula: ExcelUsuarioRow): Promise<void> {
         if (!cedula.ok) {

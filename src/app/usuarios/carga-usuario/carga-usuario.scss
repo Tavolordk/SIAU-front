@@ -192,3 +192,31 @@ textarea {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+/* ------------------------------------------------------------
+   Inputs, selects y textareas uniformes
+-------------------------------------------------------------*/
+.cdindi-input,
+.cdindi-section select,
+.cdindi-section textarea {
+  /* El ancho que prefieras; aquí 100% del contenedor padre */
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem;        /* igual padding para todos */
+  font-size: 1rem;        /* tamaño de letra unificado */
+  border: 1px solid #ccc; /* mismo borde */
+  border-radius: 4px;      /* mismo radio */
+}
+/* — Centrar sección “Perfiles de Usuario” — */
+.cdindi-perfiles {
+  /* Centrar el título */
+  text-align: center;
+
+  /* Convertimos el grid en flex para centrar sus items */
+  .cdindi-grid-two-columns.cdindi-operacion {
+    display: flex;
+    justify-content: center;  /* centra horizontalmente */
+    flex-wrap: wrap;          /* que las “chips” pasen a siguiente línea si no caben */
+    gap: 1rem;                /* espacio uniforme */
+    margin: 0 auto;           /* centra el contenedor si le das ancho fijo */
+  }
+}

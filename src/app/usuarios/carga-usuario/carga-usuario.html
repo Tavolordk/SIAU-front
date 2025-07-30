@@ -11,24 +11,22 @@
   <div class="cdindi-section">
     <label class="label-obligatorio">Número de oficio de solicitud</label>
     <input formControlName="fill1" class="cdindi-input" maxlength="20" />
-    <div *ngIf="userForm.get('fill1')?.invalid && userForm.get('fill1')?.touched" class="validation-message">
+    <div *ngIf="userForm.get('fill1')?.invalid && userForm.get('fill1')?.touched"
+         class="validation-message">
       Este campo es requerido.
     </div>
 
     <label class="label-obligatorio">Seleccione las opciones que aplican</label>
     <div class="cdindi-checkbox-group">
       <label *ngFor="let opt of opciones; let i = index" class="checkbox-wrapper-47">
-        <!-- 1) input oculto -->
-        <input type="checkbox" [formControlName]="'checkBox' + (i + 1)" id="chk{{i}}" (change)="onCheckboxChange(i + 1)"/>
-
-        <!-- 2) span “cuadro” -->
+        <input type="checkbox"
+               [formControlName]="'checkBox' + (i + 1)"
+               id="chk{{i}}"
+               (change)="onCheckboxChange(i + 1)" />
         <span class="custom-checkbox"></span>
-
-        <!-- 3) texto -->
         {{ opt }}
       </label>
     </div>
-
   </div>
 
   <!-- Sección Datos Generales -->
@@ -38,7 +36,8 @@
       <div>
         <label class="label-obligatorio">Nombre(s)</label>
         <input formControlName="nombre" />
-        <div *ngIf="userForm.get('nombre')?.invalid && userForm.get('nombre')?.touched" class="validation-message">
+        <div *ngIf="userForm.get('nombre')?.invalid && userForm.get('nombre')?.touched"
+             class="validation-message">
           Es requerido.
         </div>
       </div>
@@ -46,7 +45,7 @@
         <label class="label-obligatorio">Apellido Paterno</label>
         <input formControlName="apellidoPaterno" />
         <div *ngIf="userForm.get('apellidoPaterno')?.invalid && userForm.get('apellidoPaterno')?.touched"
-          class="validation-message">
+             class="validation-message">
           Es requerido.
         </div>
       </div>
@@ -58,7 +57,7 @@
         <label class="label-obligatorio">Fecha de Solicitud</label>
         <input type="date" formControlName="fechaSolicitud" />
         <div *ngIf="userForm.get('fechaSolicitud')?.invalid && userForm.get('fechaSolicitud')?.touched"
-          class="validation-message">
+             class="validation-message">
           Es requerido.
         </div>
       </div>
@@ -72,7 +71,8 @@
       <div>
         <label class="label-obligatorio">RFC</label>
         <input formControlName="rfc" maxlength="13" />
-        <div *ngIf="userForm.get('rfc')?.invalid && userForm.get('rfc')?.touched" class="validation-message">
+        <div *ngIf="userForm.get('rfc')?.invalid && userForm.get('rfc')?.touched"
+             class="validation-message">
           RFC válido requerido.
         </div>
       </div>
@@ -91,7 +91,7 @@
         <label class="label-obligatorio">Correo Electrónico</label>
         <input type="email" formControlName="correoElectronico" />
         <div *ngIf="userForm.get('correoElectronico')?.invalid && userForm.get('correoElectronico')?.touched"
-          class="validation-message">
+             class="validation-message">
           Correo válido requerido.
         </div>
       </div>
@@ -119,7 +119,9 @@
       </div>
       <div>
         <label for="entidad">Entidad:</label>
-        <select id="entidad" formControlName="entidad" (change)="cargarMunicipios(userForm.get('entidad')!.value)">
+        <select id="entidad"
+                formControlName="entidad"
+                (change)="cargarMunicipios(userForm.get('entidad')!.value)">
           <option [ngValue]="null">--Selecciona Entidad--</option>
           <option *ngFor="let e of entidades" [ngValue]="e.id">{{ e.nombre }}</option>
         </select>
@@ -133,26 +135,28 @@
       </div>
       <div>
         <label class="label-obligatorio">Institución</label>
-        <select id="institucion" formControlName="institucion"
-          (change)="cargarDependencias(userForm.get('institucion')!.value)">
+        <select id="institucion"
+                formControlName="institucion"
+                (change)="cargarDependencias(userForm.get('institucion')!.value)">
           <option [ngValue]="null">--Selecciona Institución--</option>
           <option *ngFor="let i of institucionOptions" [ngValue]="i.id">{{ i.nombre }}</option>
         </select>
       </div>
       <div>
         <label class="label-obligatorio">Dependencia</label>
-        <select id="dependencia" formControlName="dependencia"
-          (change)="cargarCorporaciones(userForm.get('dependencia')!.value)">
+        <select id="dependencia"
+                formControlName="dependencia"
+                (change)="cargarCorporaciones(userForm.get('dependencia')!.value)">
           <option [ngValue]="null">--Selecciona Dependencia--</option>
           <option *ngFor="let d of dependencias" [ngValue]="d.id">{{ d.nombre }}</option>
         </select>
       </div>
       <div>
         <label class="label-obligatorio">Corporación</label>
-        <select id="corporacion" formControlName="corporacion"
-          (change)="cargarAreas(userForm.get('corporacion')!.value)">
+        <select id="corporacion"
+                formControlName="corporacion"
+                (change)="cargarAreas(userForm.get('corporacion')!.value)">
           <option [ngValue]="null">--Selecciona Corporación--</option>
-
           <option *ngFor="let c of corporaciones" [ngValue]="c.id">{{ c.nombre }}</option>
         </select>
       </div>
@@ -160,7 +164,6 @@
         <label>Área</label>
         <select id="area" formControlName="area">
           <option [ngValue]="null">--Selecciona Área--</option>
-
           <option *ngFor="let a of areaOptions" [value]="a.id">{{ a.nombre }}</option>
         </select>
       </div>
@@ -182,14 +185,14 @@
       <div>
         <label>Entidad</label>
         <select formControlName="entidad2">
-          <option [ngValue]="null">Seleccione...</option>
+          <option [ngValue]="null">Seleccione.</option>
           <option *ngFor="let e2 of entidades" [ngValue]="e2.id">{{ e2.nombre }}</option>
         </select>
       </div>
       <div>
         <label class="label-obligatorio">Municipio</label>
         <select formControlName="municipio2">
-          <option [ngValue]="null">Seleccione...</option>
+          <option [ngValue]="null">Seleccione.</option>
           <option *ngFor="let m2 of municipios2" [ngValue]="m2.id">{{ m2.nombre }}</option>
         </select>
       </div>
@@ -205,15 +208,21 @@
   </div>
 
   <!-- Sección Perfiles de Usuario -->
-  <div class="cdindi-section">
+  <div class="cdindi-section cdindi-perfiles">
     <h2>Perfiles de Usuario</h2>
     <div class="cdindi-grid-two-columns cdindi-operacion">
       <div class="perfil-input-group">
-        <input list="consultaOptions" class="cdindi-input" placeholder="Escribe o selecciona..."
-          [(ngModel)]="perfilConsultaInput" [ngModelOptions]="{ standalone: true }" name="perfilConsultaInput"
-          (keydown.enter)="agregarPerfilConsulta(); $event.preventDefault()">
+        <input list="consultaOptions"
+               class="cdindi-input"
+               placeholder="Escribe o selecciona."
+               [(ngModel)]="perfilConsultaInput"
+               [ngModelOptions]="{ standalone: true }"
+               name="perfilConsultaInput"
+               (keydown.enter)="agregarPerfilConsulta(); $event.preventDefault()">
         <datalist id="consultaOptions">
-          <option *ngFor="let perfil of perfiles" [value]="perfil.clave + ' - '+ perfil.nombre"></option>
+          <option *ngFor="let perfil of perfiles"
+                  [value]="perfil.clave + ' - ' + perfil.nombre">
+          </option>
         </datalist>
         <button type="button" class="cdindi-btn" (click)="agregarPerfilConsulta()">Agregar</button>
       </div>

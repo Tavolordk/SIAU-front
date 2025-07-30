@@ -7,6 +7,7 @@ import { CargaUsuarioService } from '../../services/carga-usuario.service';
 import { CedulaModel } from '../../models/cedula.model';
 import { CatalogosService, CatalogoItem, CatEstructuraDto } from '../../services/catalogos.service';
 import { UsuarioService } from '../../services/usuario.service';
+import { ExcelUsuarioRow } from '../../models/excel.model';
 
 /**
  * Componente para crear/editar la cédula de usuario
@@ -80,7 +81,88 @@ perfiles: { id: number; clave: string; nombre: string }[] = [];
         this.onEntidadComisionadoChange(data.entidad2 || null);
       });
     }
+
+const cedulaParaEditar = (history.state as any).cedula as ExcelUsuarioRow|undefined;
+if (cedulaParaEditar) {
+  this.patchFormFromCedula(cedulaParaEditar);
+}
+
   }
+
+  /** Rellena el formulario con los valores de la fila de Excel */
+private patchFormFromCedula(c: ExcelUsuarioRow) {
+  // 1) parchea valores básicos
+  this.userForm.patchValue({
+    fill1:              c.fill1,
+    nombre:             c.nombre,
+    nombre2:            c.nombre2,
+    apellidoPaterno:    c.apellidoPaterno,
+    apellidoMaterno:    c.apellidoMaterno,
+    rfc:                c.rfc,
+    curp:               c.curp,
+    cuip:               c.cuip,
+    correoElectronico:  c.correoElectronico,
+    telefono:           c.telefono,
+    tipoUsuario:        c.tipoUsuario,
+    entidad:            c.entidad,
+    municipio:          c.municipio,
+    institucion:        c.institucion,
+    dependencia:        c.dependencia,
+    corporacion:        c.corporacion,
+    area:               c.area,
+    cargo:              c.cargo,
+    funciones:          c.funciones,
+    pais:               c.pais,
+    entidad2:           c.entidad2,
+    municipio2:         c.municipio2,
+    corporacion2:       c.corporacion2,
+    // checkbox
+    checkBox1:          c.checkBox1,
+    checkBox2:          c.checkBox2,
+    checkBox3:          c.checkBox3,
+    checkBox4:          c.checkBox4,
+    checkBox5:          c.checkBox5,
+    // los grupos dinámicos:
+    consultaTextos:     this.fb.group(c.consultaTextos),
+    modulosOperacion:   this.fb.group(c.modulosOperacion)
+  });
+// patchFormFromCedula(...)
+const consultas = this.userForm.get('consultaTextos') as FormGroup;
+Object.entries(c.consultaTextos).forEach(([key, val]) => {
+  if (!consultas.contains(key)) {
+    consultas.addControl(key, this.fb.control(val));
+  }
+});
+const modulos = this.userForm.get('modulosOperacion') as FormGroup;
+Object.entries(c.modulosOperacion).forEach(([key, val]) => {
+  if (!modulos.contains(key)) {
+    modulos.addControl(key, this.fb.control(val));
+  }
+});
+
+  // 2) dispara las cargas en cascada para selects dependientes
+// 1) cargar municipios principales
+this.onEntidadChange(c.entidad);
+this.userForm.patchValue({ entidad: c.entidad });
+
+// 2) cargar municipios secundario usando el ID correcto
+this.onEntidadComisionadoChange(this.catalogos.getAreaIdByName(c.entidad2!));
+this.userForm.patchValue({ entidad2: this.catalogos.getAreaIdByName(c.entidad2!) });
+
+// 3) institución → dependencias
+this.cargarDependencias(c.institucion);
+this.userForm.patchValue({ institucion: c.institucion, dependencia: c.dependencia });
+
+// 4) dependencia → corporaciones
+this.cargarCorporaciones(c.dependencia);
+this.userForm.patchValue({ corporacion: c.corporacion });
+
+// 5) corporación → áreas
+this.cargarAreas(c.corporacion);
+this.userForm.patchValue({ area: c.area });
+
+}
+
 
   /** Inicializa el formulario con campos y validaciones */
   private initForm(): void {
@@ -160,6 +242,14 @@ this.userForm.get('corporacion')!.valueChanges
     const consultas = this.userForm.get('consultaTextos') as FormGroup;
     return Object.keys(consultas.controls);
   }
+
+  // Después de tu método getConsultaTextosKeys()
+/** Obtiene las llaves de modulosOperacion para el ngFor */
+getModulosOperacionKeys(): string[] {
+  const modulos = this.userForm.get('modulosOperacion') as FormGroup;
+  return Object.keys(modulos.controls);
+}
+
 
   /** Quita un perfil de consulta del formulario */
   quitarConsulta(key: string): void {

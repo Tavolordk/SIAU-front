@@ -21,6 +21,7 @@ export class SolicitudesComponent implements OnInit {
   isLoading = true;
   overlayLoading = false;
   isLoadingPdf = false;
+  itemsPerPage = 10;
   entidadesMap      = new Map<number,string>();
   municipiosMap     = new Map<number,string>();
   institucionesMap  = new Map<number,string>();
@@ -43,9 +44,9 @@ export class SolicitudesComponent implements OnInit {
     this.catalogos.getAll().subscribe(res => {
       // Entidades y municipios vienen juntos en res.Entidades
       res.Entidades.forEach(e => {
-        if (e.TIPO === 'ENTIDAD') {
+        if (e.FK_PADRE === null) {
           this.entidadesMap.set(e.ID, e.NOMBRE);
-        } else if (e.TIPO === 'MUNICIPIO') {
+        } else if (e.FK_PADRE !== null) {
           this.municipiosMap.set(e.ID, e.NOMBRE);
         }
       });
@@ -133,19 +134,39 @@ export class SolicitudesComponent implements OnInit {
     return new Date(item.año, item.mes - 1, item.dia);
   }
 
-  private buildPages(): void {
-    const pages: (number | '...')[] = [];
-    if (this.currentPage > 1) {
-      pages.push(1);
-      if (this.currentPage > 3) pages.push('...');
-    }
-    const start = Math.max(2, this.currentPage - 1);
-    const end = Math.min(this.totalPages - 1, this.currentPage + 1);
-    for (let i = start; i <= end; i++) pages.push(i);
-    if (this.currentPage < this.totalPages - 2) pages.push('...');
-    if (this.currentPage < this.totalPages) pages.push(this.totalPages);
-    this.pages = pages;
+private buildPages(): void {
+  const pages: (number | '...')[] = [];
+  const total = this.totalPages;
+  const current = this.currentPage;
+
+  // 1) Siempre la primera
+  pages.push(1);
+
+  // 2) Si hay un hueco grande antes de la “ventana”…
+  if (current - 1 > 2) {
+    pages.push('...');
   }
+
+  // 3) Ventana de 3 páginas centrada en la actual (sin pasarse de los límites)
+  const start = Math.max(2, current - 1);
+  const end   = Math.min(total - 1, current + 1);
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+
+  // 4) Si hay hueco grande tras la “ventana”…
+  if (current + 1 < total - 1) {
+    pages.push('...');
+  }
+
+  // 5) Siempre la última (si no es la misma que la primera)
+  if (total > 1) {
+    pages.push(total);
+  }
+
+  this.pages = pages;
+}
+
 
   loadPage(page: number): void {
     this.isLoading = true;
