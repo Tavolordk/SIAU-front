@@ -60,100 +60,93 @@ export class PdfService {
    * Genera y descarga el PDF en el cliente usando la plantilla y los datos.
    * Todos los campos nulos o undefined se convierten en cadenas vacías.
    */
-  async generarYDescargar(datos: CedulaModel): Promise<void> {
-    // Función auxiliar para texto
-    const toText = (v: string | number | null | undefined): string => {
-      if (v == null) return '';
-      if (typeof v === 'number') return v === 0 ? '' : String(v);
-      return String(v);
-    };
+async generarYDescargar(datos: CedulaModel): Promise<void> {
+  const pdfBytes = await this.generar(datos);
+  const toText = (v: string | number | null | undefined): string => {
+    if (v == null) return '';
+    if (typeof v === 'number') return v === 0 ? '' : String(v);
+    return String(v);
+  };
+  saveAs(
+    new Blob([pdfBytes], { type: 'application/pdf' }),
+    `CED_${toText(datos.nombre).trim()}_${toText(datos.apellidoPaterno).trim()}_${toText(datos.apellidoMaterno).trim()}.pdf`
+  );
+}
 
-    // 1) Descargar plantilla forzando recarga
-    const url = `/assets/pdf/cue.pdf?t=${Date.now()}`;
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`Error al cargar plantilla PDF: ${res.status}`);
-    const tpl = await res.arrayBuffer();
+  /** devuelve el PDF como bytes sin descargarlo */
+async generar(datos: CedulaModel): Promise<Uint8Array> {
+  const toText = (v: string | number | null | undefined): string => {
+    if (v == null) return '';
+    if (typeof v === 'number') return v === 0 ? '' : String(v);
+    return String(v);
+  };
 
-    // 2) Cargar PDF y formulario
-    const pdfDoc = await PDFDocument.load(tpl);
-    const form = pdfDoc.getForm();
-console.log(form.getFields().map(f => f.getName()));
+  const url = `/assets/pdf/cue.pdf?t=${Date.now()}`;
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Error al cargar plantilla PDF: ${res.status}`);
+  const tpl = await res.arrayBuffer();
 
-    // 3) Rellenar campos básicos
-    form.getTextField('fill_1').setText(toText(datos.fill1));
-    form.getTextField('Cuenta de Usuario').setText(toText(datos.cuentaUsuario));
-    form.getTextField('Correo Electrónico').setText(toText(datos.correoElectronico).toUpperCase());
-    form.getTextField('Teléfono').setText(toText(datos.telefono));
+  const pdfDoc = await PDFDocument.load(tpl);
+  const form = pdfDoc.getForm();
 
-    // 4) Campos "undefined" a cadenas seguras
-    form.getTextField('undefined').setText(toText(datos.apellidoPaterno));
-    form.getTextField('undefined_2').setText(toText(datos.apellidoMaterno));
-    form.getTextField('undefined_3').setText(toText(datos.nombre));
-    form.getTextField('undefined_4').setText(toText(datos.nombre2));
-    form.getTextField('undefined_5').setText(toText(datos.rfc));
+  form.getTextField('fill_1').setText(toText(datos.fill1));
+  form.getTextField('Cuenta de Usuario').setText(toText(datos.cuentaUsuario));
+  form.getTextField('Correo Electrónico').setText(toText(datos.correoElectronico).toUpperCase());
+  form.getTextField('Teléfono').setText(toText(datos.telefono));
+  form.getTextField('undefined').setText(toText(datos.apellidoPaterno));
+  form.getTextField('undefined_2').setText(toText(datos.apellidoMaterno));
+  form.getTextField('undefined_3').setText(toText(datos.nombre));
+  form.getTextField('undefined_4').setText(toText(datos.nombre2));
+  form.getTextField('undefined_5').setText(toText(datos.rfc));
 
-    // 5) Fecha actual
-    const hoy = new Date();
-    form.getTextField('DÍA').setText(hoy.getDate().toString().padStart(2,'0'));
-    form.getTextField('MES').setText((hoy.getMonth()+1).toString().padStart(2,'0'));
-    form.getTextField('AÑO').setText(hoy.getFullYear().toString());
+  const hoy = new Date();
+  form.getTextField('DÍA').setText(hoy.getDate().toString().padStart(2,'0'));
+  form.getTextField('MES').setText((hoy.getMonth()+1).toString().padStart(2,'0'));
+  form.getTextField('AÑO').setText(hoy.getFullYear().toString());
 
-    // 6) Más campos "undefined"
-    form.getTextField('undefined_6').setText(toText(datos.cuip));
-    form.getTextField('undefined_7').setText(toText(datos.curp));
+  form.getTextField('undefined_6').setText(toText(datos.cuip));
+  form.getTextField('undefined_7').setText(toText(datos.curp));
 
-    // 7) Checkboxes
-    ['Check Box1','Check Box2','Check Box3','Check Box4','Check Box5']
-      .forEach((field, i) => {
-        const cb = form.getCheckBox(field);
-        (datos[`checkBox${i+1}` as keyof CedulaModel]) ? cb.check() : cb.uncheck();
-      });
-
-    // 8) Radio Group "Group6"
-    const grupo = form.getRadioGroup('Group6');
-    if (grupo && typeof datos.tipoUsuario === 'number') {
-      const options = grupo.getOptions();
-      const opt = `Opción${datos.tipoUsuario}`;
-      if (options.includes(opt)) grupo.select(opt);
-      else console.warn('Opción de radio inválida:', opt, options);
-    }
-
-    // 9) Ubicación primaria
-    form.getTextField('Entidad').setText(toText(datos.entidadNombre));
-    form.getTextField('Municipio').setText(toText(datos.municipioNombre));
-    form.getTextField('Institución').setText(toText(datos.institucionNombre));
-    form.getTextField('Coorporación').setText(toText(datos.corporacionNombre));
-    form.getTextField('Área').setText(toText(datos.areaNombre));
-
-    // 10) Cargo y funciones
-    form.getTextField('Cargo').setText(toText(datos.cargo));
-    form.getTextField('Funciones').setText(toText(datos.funciones));
-    form.getTextField('Funciones 2').setText(toText(datos.funciones2));
-
-    // 11) País
-    form.getTextField('Pais').setText(toText(datos.pais));
-
-    // 12) Ubicación secundaria
-    form.getTextField('Entidad_2').setText(toText(datos.entidad2Nombre));
-    form.getTextField('Municipio_2').setText(toText(datos.municipio2Nombre));
-    form.getTextField('Corporación').setText(toText(datos.corporacion2Nombre));
-
-    // 13) Apartado consulta
-    Object.entries(datos.consultaTextos || {}).forEach(([key,val]) => {
-      form.getTextField(key).setText(toText(val));
+  ['Check Box1','Check Box2','Check Box3','Check Box4','Check Box5']
+    .forEach((field, i) => {
+      const cb = form.getCheckBox(field);
+      (datos[`checkBox${i+1}` as keyof CedulaModel]) ? cb.check() : cb.uncheck();
     });
 
-    // 14) Módulos de operación
-    Object.entries(datos.modulosOperacion || {}).forEach(([key,val]) => {
-      form.getTextField(key).setText(toText(val));
-    });
-    form.getTextField('Text2').setText(toText(datos.nombreFirmaUsuario));
-    form.getTextField('Text3').setText(toText(datos.nombreFirmaResponsable));
-    form.getTextField('Text4').setText(toText(datos.nombreFirmaEnlace));
-    // 15) Aplana y descarga
-    form.flatten();
-    const pdfBytes = await pdfDoc.save();
-    saveAs(new Blob([pdfBytes], { type: 'application/pdf' }),
-           `CED_${toText(datos.nombre).trim()}_${toText(datos.apellidoPaterno).trim()}_${toText(datos.apellidoMaterno).trim()}.pdf`);
+  const grupo = form.getRadioGroup('Group6');
+  if (grupo && typeof datos.tipoUsuario === 'number') {
+    const options = grupo.getOptions();
+    const opt = `Opción${datos.tipoUsuario}`;
+    if (options.includes(opt)) grupo.select(opt);
   }
+
+  form.getTextField('Entidad').setText(toText(datos.entidadNombre));
+  form.getTextField('Municipio').setText(toText(datos.municipioNombre));
+  form.getTextField('Institución').setText(toText(datos.institucionNombre));
+  form.getTextField('Coorporación').setText(toText(datos.corporacionNombre));
+  form.getTextField('Área').setText(toText(datos.areaNombre));
+  form.getTextField('Cargo').setText(toText(datos.cargo));
+  form.getTextField('Funciones').setText(toText(datos.funciones));
+  form.getTextField('Funciones 2').setText(toText(datos.funciones2));
+  form.getTextField('Pais').setText(toText(datos.pais));
+  form.getTextField('Entidad_2').setText(toText(datos.entidad2Nombre));
+  form.getTextField('Municipio_2').setText(toText(datos.municipio2Nombre));
+  form.getTextField('Corporación').setText(toText(datos.corporacion2Nombre));
+
+  Object.entries(datos.consultaTextos || {}).forEach(([key,val]) => {
+    form.getTextField(key).setText(toText(val));
+  });
+  Object.entries(datos.modulosOperacion || {}).forEach(([key,val]) => {
+    form.getTextField(key).setText(toText(val));
+  });
+
+  form.getTextField('Text2').setText(toText(datos.nombreFirmaUsuario));
+  form.getTextField('Text3').setText(toText(datos.nombreFirmaResponsable));
+  form.getTextField('Text4').setText(toText(datos.nombreFirmaEnlace));
+
+  form.flatten();
+  const pdfBytes = await pdfDoc.save();
+  return pdfBytes;
+}
+
 }

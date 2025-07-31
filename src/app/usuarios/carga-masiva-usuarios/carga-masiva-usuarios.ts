@@ -9,6 +9,8 @@ import { ExcelUsuarioRow } from '../../models/excel.model';
 import { CedulaModel, PdfService } from '../../services/pdf.service';
 import { CatalogosService } from '../../services/catalogos.service';
 import { CargaUsuarioStoreService } from '../../services/carga-usuario-store.service';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 @Component({
     selector: 'app-carga-masiva-usuarios',
@@ -359,53 +361,183 @@ export class CargaMasivaUsuariosComponent implements OnInit {
     }
 
     // --- Envía toda la carga masiva al API ---
-    async sendSolicitudMasiva() {
-        if (!this.allPreviewData.length) {
-            this.showToastMessage('No hay datos para enviar', 'warn');
-            return;
-        }
+async sendSolicitudMasiva() {
+  if (!this.allPreviewData.length) {
+    this.showToastMessage('No hay datos para enviar', 'warn');
+    return;
+  }
 
-        this.overlayLoaderVisible = true;
-        this.carmasivMostrandoLoader = true;
-        this.carmasivProgreso = 0;
+  const ready = this.allPreviewData.filter(row => row.ok || row.editado);
+  const selectedReady = ready.filter(r => r.descargar);
+  let toSend: ExcelUsuarioRow[] = [];
 
-        // Solo envía los que no han sido editados manualmente
-        const registrosAEnviar = this.allPreviewData.filter(row => !row.editado);
+  if (selectedReady.length) {
+    toSend = selectedReady;
+  } else if (ready.length) {
+    toSend = ready;
+  } else {
+    this.showToastMessage('No hay ningún archivo correcto para cargar', 'warn');
+    return;
+  }
 
-        if (!registrosAEnviar.length) {
-            this.showToastMessage('Todos los registros ya fueron corregidos', 'info');
-            this.overlayLoaderVisible = false;
-            this.carmasivMostrandoLoader = false;
-            return;
-        }
+  this.overlayLoaderVisible = true;
+  this.carmasivMostrandoLoader = true;
+  this.carmasivProgreso = 0;
 
-        const calls = registrosAEnviar.map((item, i) =>
-            this.svc.saveUsuarioSolicitud(item).pipe(res => {
-                this.carmasivProgreso = Math.round(((i + 1) / registrosAEnviar.length) * 100);
-                return res;
-            })
-        );
+  const calls = toSend.map((item, i) =>
+    this.svc.saveUsuarioSolicitud(item).pipe(res => {
+      this.carmasivProgreso = Math.round(((i + 1) / toSend.length) * 100);
+      return res;
+    })
+  );
 
-        forkJoin(calls).subscribe({
-            next: () => {
-                this.showToastMessage('Carga masiva completada', 'success');
-            },
-            error: err => {
-                console.error('Error en carga masiva:', err);
-                this.showToastMessage('Error al guardar algunos registros', 'error');
-            },
-            complete: () => {
-                this.overlayLoaderVisible = false;
-                this.carmasivMostrandoLoader = false;
-                this.carmasivProgreso = 0;
-            }
-        });
+  forkJoin(calls).subscribe({
+    next: () => {
+      this.showToastMessage('Carga masiva completada', 'success');
+    },
+    error: err => {
+      console.error('Error en carga masiva:', err);
+      this.showToastMessage('Error al guardar algunos registros', 'error');
+    },
+    complete: () => {
+      this.overlayLoaderVisible = false;
+      this.carmasivMostrandoLoader = false;
+      this.carmasivProgreso = 0;
     }
+  });
+}
 
+async descargarPDFsMasivos() {
+  if (!this.allPreviewData.length) {
+    this.showToastMessage('No hay datos para descargar', 'warn');
+    return;
+  }
 
-    descargarPDFsMasivos() {
-        this.showToastMessage('Función DESCARGAR aún no implementada', '#666');
+  const ready = this.allPreviewData.filter(row => row.ok || row.editado);
+  const selectedReady = ready.filter(r => r.descargar);
+  let toDownload: ExcelUsuarioRow[] = [];
+
+  if (selectedReady.length) {
+    toDownload = selectedReady;
+  } else if (ready.length) {
+    toDownload = ready;
+  } else {
+    this.showToastMessage('No hay ningún archivo correcto para descargar', 'warn');
+    return;
+  }
+
+  this.showToastMessage('Generando PDFs y creando ZIP...', 'info');
+  const zip = new JSZip();
+
+  for (const cedula of toDownload) {
+    // Construye el modelo para PDF igual que en downloadPDF individual
+    const datos: CedulaModel = {
+      fill1: cedula.fill1,
+      folio: cedula.fill1,
+      cuentaUsuario: cedula.cuentaUsuario,
+      correoElectronico: cedula.correoElectronico,
+      telefono: cedula.telefono,
+      apellidoPaterno: cedula.apellidoPaterno,
+      apellidoMaterno: cedula.apellidoMaterno,
+      nombre: cedula.nombre,
+      nombre2: cedula.nombre2,
+      rfc: cedula.rfc,
+      cuip: cedula.cuip,
+      curp: cedula.curp,
+      tipoUsuario: cedula.tipoUsuario,
+      entidad: cedula.entidad,
+      municipio: this.catalogoService.getMunicipioIdByName(cedula.municipio!),
+      institucion: cedula.institucion,
+      corporacion: cedula.corporacion,
+      area: cedula.area,
+      cargo: cedula.cargo,
+      funciones: cedula.funciones,
+      funciones2: '',
+      pais: cedula.pais,
+      entidad2: this.catalogoService.getEntidadIdByName(cedula.entidad2!),
+      municipio2: this.catalogoService.getMunicipioIdByName(cedula.municipio2!),
+      corporacion2: this.catalogoService.getCorporacionIdByName(cedula.corporacion2!),
+      consultaTextos: cedula.consultaTextos,
+      modulosOperacion: cedula.modulosOperacion,
+      checkBox1: cedula.checkBox1,
+      checkBox2: cedula.checkBox2,
+      checkBox3: cedula.checkBox3,
+      checkBox4: cedula.checkBox4,
+      checkBox5: cedula.checkBox5,
+
+      entidadNombre: (() => {
+        const id = Number(cedula.entidad);
+        if (!isNaN(id) && id > 0) return this.catalogoService.getEntidadNameById(id) || '';
+        return typeof cedula.entidad === 'string' ? cedula.entidad : '';
+      })(),
+      municipioNombre: (() => {
+        const id = Number(cedula.municipio);
+        if (!isNaN(id) && id > 0) return this.catalogoService.getMunicipioNameById(id) || '';
+        return typeof cedula.municipio === 'string' ? cedula.municipio : '';
+      })(),
+      institucionNombre: (() => {
+        const id = Number(cedula.institucion);
+        if (!isNaN(id) && id > 0) return this.catalogoService.getInstitucionNameById(id) || '';
+        return typeof cedula.institucion === 'string' ? cedula.institucion : '';
+      })(),
+      dependenciaNombre: (() => {
+        const id = Number(cedula.dependencia);
+        if (!isNaN(id) && id > 0) return this.catalogoService.getDependenciaNameById(id) || '';
+        return typeof cedula.dependencia === 'string' ? cedula.dependencia : '';
+      })(),
+      corporacionNombre: (() => {
+        const id = Number(cedula.corporacion);
+        if (!isNaN(id) && id > 0) return this.catalogoService.getCorporacionNameById(id) || '';
+        return typeof cedula.corporacion === 'string' ? cedula.corporacion : '';
+      })(),
+      areaNombre: (() => {
+        const id = Number(cedula.area);
+        if (!isNaN(id) && id > 0) return this.catalogoService.getAreaNameById(id) || '';
+        return typeof cedula.area === 'string' ? cedula.area : '';
+      })(),
+      entidad2Nombre: (() => {
+        const id = Number(cedula.entidad2);
+        if (!isNaN(id) && id > 0) return this.catalogoService.getEntidadNameById(id) || '';
+        return typeof cedula.entidad2 === 'string' ? cedula.entidad2 : '';
+      })(),
+      municipio2Nombre: (() => {
+        const id = Number(cedula.municipio2);
+        if (!isNaN(id) && id > 0) return this.catalogoService.getMunicipioNameById(id) || '';
+        return typeof cedula.municipio2 === 'string' ? cedula.municipio2 : '';
+      })(),
+      corporacion2Nombre: (() => {
+        const id = Number(cedula.corporacion2);
+        if (!isNaN(id) && id > 0) return this.catalogoService.getCorporacionNameById(id) || '';
+        return typeof cedula.corporacion2 === 'string' ? cedula.corporacion2 : '';
+      })(),
+
+      nombreFirmaEnlace: cedula.nombreFirmaEnlace,
+      nombreFirmaResponsable: cedula.nombreFirmaResponsable,
+      nombreFirmaUsuario: cedula.nombreFirmaUsuario
+    };
+
+    try {
+      const pdfBytes = await this.pdfService.generar(datos);
+      const safe = (s: string | undefined | null) => (s || 'SIN_NOMBRE').replace(/\s+/g, '_');
+      const filename = `CED_${safe(cedula.nombre)}_${safe(cedula.apellidoPaterno)}_${safe(cedula.apellidoMaterno)}.pdf`;
+      zip.file(filename, pdfBytes);
+    } catch (e) {
+      console.error('Error generando PDF para', cedula, e);
     }
+  }
+
+  // Genera ZIP
+  try {
+    const content = await zip.generateAsync({ type: 'blob' });
+    const ts = new Date().toISOString().replace(/[:.]/g, '-');
+    saveAs(content, `PDFs_Masivos_${ts}.zip`);
+    this.showToastMessage('ZIP con PDFs generado.', 'success');
+  } catch (e) {
+    console.error('Error creando ZIP', e);
+    this.showToastMessage('No se pudo crear el ZIP', 'error');
+  }
+}
+
 
     private showToastMessage(msg: string, color: string) {
         this.toastMessage = msg;
