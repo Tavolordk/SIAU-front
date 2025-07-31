@@ -282,4 +282,8 @@ img.warning {
   padding: 0;            /* quitamos el padding para no alterar el tamaño */
   border-radius: 50%;    /* círculo perfecto */
 }
+input[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 

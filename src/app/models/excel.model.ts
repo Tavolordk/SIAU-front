@@ -49,4 +49,5 @@ export interface ExcelUsuarioRow {
     nombreFirmaUsuario?: string | null;
     nombreFirmaResponsable?: string | null;
     nombreFirmaEnlace?: string | null;
+    editado?: boolean;
 }

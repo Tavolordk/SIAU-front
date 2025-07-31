@@ -8,6 +8,7 @@ import { CargaUsuarioService } from '../../services/carga-usuario.service';
 import { ExcelUsuarioRow } from '../../models/excel.model';
 import { CedulaModel, PdfService } from '../../services/pdf.service';
 import { CatalogosService } from '../../services/catalogos.service';
+import { CargaUsuarioStoreService } from '../../services/carga-usuario-store.service';
 
 @Component({
     selector: 'app-carga-masiva-usuarios',
@@ -18,7 +19,16 @@ import { CatalogosService } from '../../services/catalogos.service';
 })
 export class CargaMasivaUsuariosComponent implements OnInit {
     // — Datos de vista previa
-    previewData: ExcelUsuarioRow[] = [];
+    public get allPreviewData(): ExcelUsuarioRow[] {
+        return this.store.getDatosCargados();
+    }
+    public isCorregido(originalIndex: number): boolean {
+        return this.store.estaCorregido(originalIndex) || !!this.allPreviewData[originalIndex].editado;
+    }
+
+    private get uncorregidos(): ExcelUsuarioRow[] {
+        return this.allPreviewData.filter((_, i) => !this.store.estaCorregido(i));
+    }
 
     // — Control de loaders
     loading = true;
@@ -40,54 +50,61 @@ export class CargaMasivaUsuariosComponent implements OnInit {
     itemsPerPage = 10;
 
     get totalPages(): number {
-        return Math.max(1, Math.ceil(this.previewData.length / this.itemsPerPage));
+        return Math.max(1, Math.ceil(this.uncorregidos.length / this.itemsPerPage));
     }
+
     get pages(): number[] {
         return Array.from({ length: this.totalPages }, (_, i) => i + 1);
     }
-    get previewDataPaginated(): ExcelUsuarioRow[] {
+
+    public get previewDataPaginated(): ExcelUsuarioRow[] {
         const start = (this.currentPage - 1) * this.itemsPerPage;
-        return this.previewData.slice(start, start + this.itemsPerPage);
+        return this.allPreviewData.slice(start, start + this.itemsPerPage);
     }
+
+
 
     constructor(
         private router: Router,
         private svc: CargaUsuarioService,
         private catalogoService: CatalogosService,
+        private store: CargaUsuarioStoreService,
         private pdfService: PdfService
     ) { }
 
     ngOnInit(): void {
         // Spinner inicial
         setTimeout(() => this.loading = false, 500);
-           // 2) Trae y cachea TODOS los catálogos
-    this.catalogoService.getAll().subscribe(res => {
-      // Tipos de usuario (radio)
-      this.catalogoService.tiposUsuario = res.TipoUsuario
-        .map(u => ({ id: u.ID, nombre: u.TP_USUARIO }));
-      
-      // Estados / Municipios
-      this.catalogoService.entidades = res.Entidades
-        .filter(e => e.FK_PADRE === null)
-        .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
-      this.catalogoService.municipios = res.Entidades
-        .filter(e => e.FK_PADRE !== null)
-        .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
-      
-      // Instituciones / Dependencias / Corporaciones / Áreas
-      this.catalogoService.instituciones = res.Estructura
-        .filter(e => e.TIPO === 'INSTITUCION')
-        .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
-      this.catalogoService.dependencias = res.Estructura
-        .filter(e => e.TIPO === 'DEPENDENCIA')
-        .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
-      this.catalogoService.corporaciones = res.Estructura
-        .filter(e => e.TIPO === 'CORPORACION')
-        .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
-      this.catalogoService.areas = res.Estructura
-        .filter(e => e.TIPO === 'AREA')
-        .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
-    });
+        // 2) Trae y cachea TODOS los catálogos
+
+        this.catalogoService.getAll().subscribe(res => {
+            // Tipos de usuario (radio)
+            this.catalogoService.tiposUsuario = res.TipoUsuario
+                .map(u => ({ id: u.ID, nombre: u.TP_USUARIO }));
+
+            // Estados / Municipios
+            this.catalogoService.entidades = res.Entidades
+                .filter(e => e.FK_PADRE === null)
+                .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
+            this.catalogoService.municipios = res.Entidades
+                .filter(e => e.FK_PADRE !== null)
+                .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
+
+            // Instituciones / Dependencias / Corporaciones / Áreas
+            this.catalogoService.instituciones = res.Estructura
+                .filter(e => e.TIPO === 'INSTITUCION')
+                .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
+            this.catalogoService.dependencias = res.Estructura
+                .filter(e => e.TIPO === 'DEPENDENCIA')
+                .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
+            this.catalogoService.corporaciones = res.Estructura
+                .filter(e => e.TIPO === 'CORPORACION')
+                .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
+            this.catalogoService.areas = res.Estructura
+                .filter(e => e.TIPO === 'AREA')
+                .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
+        });
+        this.store.setDatosCargados(this.allPreviewData); // después de poblar previewData local
     }
 
     // Cambia página
@@ -111,7 +128,6 @@ export class CargaMasivaUsuariosComponent implements OnInit {
 
     /** Parsea TODO el Excel según la lógica de tu Razor */
     private async parseExcel(file: File) {
-        this.previewData = [];
         this.currentPage = 1;
 
         const buffer = await file.arrayBuffer();
@@ -206,52 +222,83 @@ export class CargaMasivaUsuariosComponent implements OnInit {
 
             // --- 3) Validaciones ---
             // Oficio
-            if (!rec.fill1) rec.errores.push('Oficio es obligatorio');
-            else if (rec.fill1.length > 20) rec.errores.push('Oficio: máximo 20 caracteres');
+            if (!rec.fill1) {
+                rec.errores.push('Oficio es obligatorio');
+            } else if (rec.fill1.length > 20) {
+                rec.errores.push('Oficio: máximo 20 caracteres');
+            }
+
             // Nombre
-            if (!rec.nombre) rec.errores.push('Nombre(s) es obligatorio');
-            else if (rec.nombre.length > 100) rec.errores.push('Nombre(s): máximo 100 caracteres');
+            if (!rec.nombre) {
+                rec.errores.push('Nombre(s) es obligatorio');
+            } else if (rec.nombre.length > 100) {
+                rec.errores.push('Nombre(s): máximo 100 caracteres');
+            }
 
             // Apellido Paterno
-            if (!rec.apellidoPaterno) rec.errores.push('Apellido Paterno es obligatorio');
-            else if (rec.apellidoPaterno.length > 100) rec.errores.push('Apellido Paterno: máximo 100 caracteres');
+            if (!rec.apellidoPaterno) {
+                rec.errores.push('Apellido Paterno es obligatorio');
+            } else if (rec.apellidoPaterno.length > 100) {
+                rec.errores.push('Apellido Paterno: máximo 100 caracteres');
+            }
 
             // Apellido Materno (opcional)
-            if (rec.apellidoMaterno && rec.apellidoMaterno.length > 100)
+            if (rec.apellidoMaterno && rec.apellidoMaterno.length > 100) {
                 rec.errores.push('Apellido Materno: máximo 100 caracteres');
+            }
 
             // RFC
-            if (!rec.rfc) rec.errores.push('RFC es obligatorio');
-            else if (!/^[A-ZÑ&]{4}\d{6}[A-Z0-9]{3}$/i.test(rec.rfc))
-                rec.errores.push('RFC formato inválido');
+            if (!rec.rfc) {
+                rec.errores.push('RFC es obligatorio');
+            } else if (rec.rfc.length > 13) {
+                rec.errores.push('RFC: máximo 13 caracteres');
+            } else if (!/^[A-ZÑ&]{4}\d{6}[A-Z0-9]{3}$/i.test(rec.rfc)) {
+                rec.errores.push('Formato inválido (SAT)');
+            }
 
             // Correo
-            if (!rec.correoElectronico) rec.errores.push('Correo electrónico es obligatorio');
-            else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(rec.correoElectronico))
-                rec.errores.push('Correo formato inválido');
+            if (!rec.correoElectronico) {
+                rec.errores.push('Correo requerido');
+            } else {
+                // valida formato básico
+                const emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+                if (!emailPattern.test(rec.correoElectronico)) {
+                    rec.errores.push('No es un correo válido');
+                }
+            }
 
             // Teléfono (opcional)
-            if (rec.telefono && !/^\d{7,10}$/.test(rec.telefono))
+            if (rec.telefono && !/^\d{7,10}$/.test(rec.telefono)) {
                 rec.errores.push('Teléfono debe tener 7–10 dígitos');
+            }
 
-            // Campos numéricos obligatorios >0
-            ['entidad', 'institucion', 'dependencia', 'area']
-                .forEach(k => {
-                    const v = rec[k as keyof ExcelUsuarioRow] as number;
-                    if (v <= 0) rec.errores.push(`${k} debe ser mayor que 0`);
-                });
+            // Campos numéricos obligatorios >0 (entidad, institucion, dependencia, area)
+            ['entidad', 'institucion', 'dependencia', 'area'].forEach(k => {
+                const v = rec[k as keyof ExcelUsuarioRow] as number;
+                if (v <= 0) {
+                    // homologa el mensaje con algo entendible
+                    rec.errores.push(`${k} debe ser mayor que 0`);
+                }
+            });
 
             // Cargo
-            if (!rec.cargo) rec.errores.push('Cargo es obligatorio');
-            else if (rec.cargo.length > 100) rec.errores.push('Cargo: máximo 100 caracteres');
+            if (!rec.cargo) {
+                rec.errores.push('Cargo es obligatorio');
+            } else if (rec.cargo.length > 100) {
+                rec.errores.push('Cargo: máximo 100 caracteres');
+            }
 
             // Funciones
-            if (!rec.funciones) rec.errores.push('Funciones es obligatorio');
-            else if (rec.funciones.length > 300) rec.errores.push('Funciones: máximo 300 caracteres');
+            if (!rec.funciones) {
+                rec.errores.push('Funciones es obligatorio');
+            } else if (rec.funciones.length > 300) {
+                rec.errores.push('Funciones: máximo 300 caracteres');
+            }
 
             // País (opcional)
-            if (rec.pais && rec.pais.length > 100)
+            if (rec.pais && rec.pais.length > 100) {
                 rec.errores.push('País: máximo 100 caracteres');
+            }
             const checkboxMappings: { prop: keyof ExcelUsuarioRow, keys: string[] }[] = [
                 { prop: 'checkBox1', keys: ['nueva cta'] },
                 { prop: 'checkBox2', keys: ['mod perfil'] },
@@ -299,20 +346,21 @@ export class CargaMasivaUsuariosComponent implements OnInit {
             rec.ok = rec.errores.length === 0;
             rec.descripcionerror = rec.ok
                 ? ''
-                : `CAMPOS INCORRECTOS: ${rec.errores.join(', ')}`;
-            rec.entidadNombre        = this.catalogoService.getEntidadNameById(rec.entidad)         || '';
-rec.municipioNombre      = rec.municipio     || '';
-rec.institucionNombre    = this.catalogoService.getInstitucionNameById(rec.institucion) || '';
-rec.dependenciaNombre    = this.catalogoService.getDependenciaNameById(rec.dependencia) || '';
-rec.corporacionNombre    = this.catalogoService.getCorporacionNameById(rec.corporacion) || '';
-rec.areaNombre           = this.catalogoService.getAreaNameById(rec.area)               || '';
-            this.previewData.push(rec);
+                : `CAMPOS INCORRECTOS: ${rec.errores.join(', ')} ENTRE OTROS`;
+            rec.entidadNombre = this.catalogoService.getEntidadNameById(rec.entidad) || '';
+            rec.municipioNombre = rec.municipio || '';
+            rec.institucionNombre = this.catalogoService.getInstitucionNameById(rec.institucion) || '';
+            rec.dependenciaNombre = this.catalogoService.getDependenciaNameById(rec.dependencia) || '';
+            rec.corporacionNombre = this.catalogoService.getCorporacionNameById(rec.corporacion) || '';
+            rec.areaNombre = this.catalogoService.getAreaNameById(rec.area) || '';
+            this.allPreviewData.push(rec);
+            this.store.setDatosCargados(this.allPreviewData);
         }
     }
 
     // --- Envía toda la carga masiva al API ---
     async sendSolicitudMasiva() {
-        if (!this.previewData.length) {
+        if (!this.allPreviewData.length) {
             this.showToastMessage('No hay datos para enviar', 'warn');
             return;
         }
@@ -321,9 +369,19 @@ rec.areaNombre           = this.catalogoService.getAreaNameById(rec.area)       
         this.carmasivMostrandoLoader = true;
         this.carmasivProgreso = 0;
 
-        const calls = this.previewData.map((item, i) =>
+        // Solo envía los que no han sido editados manualmente
+        const registrosAEnviar = this.allPreviewData.filter(row => !row.editado);
+
+        if (!registrosAEnviar.length) {
+            this.showToastMessage('Todos los registros ya fueron corregidos', 'info');
+            this.overlayLoaderVisible = false;
+            this.carmasivMostrandoLoader = false;
+            return;
+        }
+
+        const calls = registrosAEnviar.map((item, i) =>
             this.svc.saveUsuarioSolicitud(item).pipe(res => {
-                this.carmasivProgreso = Math.round(((i + 1) / this.previewData.length) * 100);
+                this.carmasivProgreso = Math.round(((i + 1) / registrosAEnviar.length) * 100);
                 return res;
             })
         );
@@ -331,9 +389,6 @@ rec.areaNombre           = this.catalogoService.getAreaNameById(rec.area)       
         forkJoin(calls).subscribe({
             next: () => {
                 this.showToastMessage('Carga masiva completada', 'success');
-                // limpia preview si quieres:
-                // this.previewData = [];
-                // this.selectedFile = undefined;
             },
             error: err => {
                 console.error('Error en carga masiva:', err);
@@ -346,6 +401,7 @@ rec.areaNombre           = this.catalogoService.getAreaNameById(rec.area)       
             }
         });
     }
+
 
     descargarPDFsMasivos() {
         this.showToastMessage('Función DESCARGAR aún no implementada', '#666');
@@ -363,15 +419,16 @@ rec.areaNombre           = this.catalogoService.getAreaNameById(rec.area)       
     }
 
     /** Navegar al detalle/edición */
-irIndividual(cedula: ExcelUsuarioRow): void {
-  this.router.navigate(['cargausuario'], {
-    state: { cedula }
-  });
-}
+    irIndividual(cedula: ExcelUsuarioRow, indice: number): void {
+        this.router.navigate(['cargausuario', indice], {
+            state: { cedula }
+        });
+    }
+
 
     /** Botón de descarga individual */
     async downloadPDF(cedula: ExcelUsuarioRow): Promise<void> {
-        if (!cedula.ok) {
+        if (!cedula.ok && !cedula.editado) {
             this.showToastMessage('La solicitud tiene errores y no puede generar PDF', 'warn');
             return;
         }
@@ -413,18 +470,55 @@ irIndividual(cedula: ExcelUsuarioRow): void {
             checkBox5: cedula.checkBox5,
 
             // estos campos de nombre para el PDF
-    entidadNombre:      this.catalogoService.getEntidadNameById(cedula.entidad!) || '',
-    municipioNombre:    cedula.municipio || '',
-    institucionNombre:  this.catalogoService.getInstitucionNameById(cedula.institucion!) || '',
-    dependenciaNombre:  this.catalogoService.getDependenciaNameById(cedula.dependencia!) || '',
-    corporacionNombre:  this.catalogoService.getCorporacionNameById(cedula.corporacion!) || '',
-    areaNombre:         this.catalogoService.getAreaNameById(cedula.area!) || '',
-    entidad2Nombre:     cedula.entidad2 || '',
-    municipio2Nombre:   cedula.municipio2 || '',
-    corporacion2Nombre: cedula.corporacion2 || '',
-    nombreFirmaEnlace: cedula.nombreFirmaEnlace,
-    nombreFirmaResponsable: cedula.nombreFirmaResponsable,
-    nombreFirmaUsuario: cedula.nombreFirmaUsuario
+            entidadNombre: (() => {
+                const id = Number(cedula.entidad);
+                if (!isNaN(id) && id > 0) return this.catalogoService.getEntidadNameById(id) || '';
+                return typeof cedula.entidad === 'string' ? cedula.entidad : '';
+            })(),
+            municipioNombre: (() => {
+                const id = Number(cedula.municipio);
+                if (!isNaN(id) && id > 0) return this.catalogoService.getMunicipioNameById(id) || '';
+                return typeof cedula.municipio === 'string' ? cedula.municipio : '';
+            })(),
+            institucionNombre: (() => {
+                const id = Number(cedula.institucion);
+                if (!isNaN(id) && id > 0) return this.catalogoService.getInstitucionNameById(id) || '';
+                return typeof cedula.institucion === 'string' ? cedula.institucion : '';
+            })(),
+            dependenciaNombre: (() => {
+                const id = Number(cedula.dependencia);
+                if (!isNaN(id) && id > 0) return this.catalogoService.getDependenciaNameById(id) || '';
+                return typeof cedula.dependencia === 'string' ? cedula.dependencia : '';
+            })(),
+            corporacionNombre: (() => {
+                const id = Number(cedula.corporacion);
+                if (!isNaN(id) && id > 0) return this.catalogoService.getCorporacionNameById(id) || '';
+                return typeof cedula.corporacion === 'string' ? cedula.corporacion : '';
+            })(),
+            areaNombre: (() => {
+                const id = Number(cedula.area);
+                if (!isNaN(id) && id > 0) return this.catalogoService.getAreaNameById(id) || '';
+                return typeof cedula.area === 'string' ? cedula.area : '';
+            })(),
+            entidad2Nombre: (() => {
+                const id = Number(cedula.entidad2);
+                if (!isNaN(id) && id > 0) return this.catalogoService.getEntidadNameById(id) || '';
+                return typeof cedula.entidad2 === 'string' ? cedula.entidad2 : '';
+            })(),
+            municipio2Nombre: (() => {
+                const id = Number(cedula.municipio2);
+                if (!isNaN(id) && id > 0) return this.catalogoService.getMunicipioNameById(id) || '';
+                return typeof cedula.municipio2 === 'string' ? cedula.municipio2 : '';
+            })(),
+            corporacion2Nombre: (() => {
+                const id = Number(cedula.corporacion2);
+                if (!isNaN(id) && id > 0) return this.catalogoService.getCorporacionNameById(id) || '';
+                return typeof cedula.corporacion2 === 'string' ? cedula.corporacion2 : '';
+            })(),
+
+            nombreFirmaEnlace: cedula.nombreFirmaEnlace,
+            nombreFirmaResponsable: cedula.nombreFirmaResponsable,
+            nombreFirmaUsuario: cedula.nombreFirmaUsuario
         };
 
         try {
@@ -434,5 +528,12 @@ irIndividual(cedula: ExcelUsuarioRow): void {
             this.showToastMessage('No se pudo generar el PDF', 'error');
         }
     }
+/** índice original absoluto calculado desde la página */
+getOriginalIndex(pageIndex: number): number {
+  return (this.currentPage - 1) * this.itemsPerPage + pageIndex;
+}
 
+isListoParaDescargar(cedula: ExcelUsuarioRow, originalIndex: number): boolean {
+  return !!(cedula.ok || this.isCorregido(originalIndex));
+}
 }

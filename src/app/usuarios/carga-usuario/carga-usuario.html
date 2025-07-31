@@ -11,18 +11,15 @@
   <div class="cdindi-section">
     <label class="label-obligatorio">Número de oficio de solicitud</label>
     <input formControlName="fill1" class="cdindi-input" maxlength="20" />
-    <div *ngIf="userForm.get('fill1')?.invalid && userForm.get('fill1')?.touched"
-         class="validation-message">
+    <div *ngIf="userForm.get('fill1')?.invalid && userForm.get('fill1')?.touched" class="validation-message">
       Este campo es requerido.
     </div>
 
     <label class="label-obligatorio">Seleccione las opciones que aplican</label>
     <div class="cdindi-checkbox-group">
       <label *ngFor="let opt of opciones; let i = index" class="checkbox-wrapper-47">
-        <input type="checkbox"
-               [formControlName]="'checkBox' + (i + 1)"
-               id="chk{{i}}"
-               (change)="onCheckboxChange(i + 1)" />
+        <input type="checkbox" [formControlName]="'checkBox' + (i + 1)" id="chk{{i}}"
+          (change)="onCheckboxChange(i + 1)" />
         <span class="custom-checkbox"></span>
         {{ opt }}
       </label>
@@ -36,8 +33,7 @@
       <div>
         <label class="label-obligatorio">Nombre(s)</label>
         <input formControlName="nombre" />
-        <div *ngIf="userForm.get('nombre')?.invalid && userForm.get('nombre')?.touched"
-             class="validation-message">
+        <div *ngIf="userForm.get('nombre')?.invalid && userForm.get('nombre')?.touched" class="validation-message">
           Es requerido.
         </div>
       </div>
@@ -45,7 +41,7 @@
         <label class="label-obligatorio">Apellido Paterno</label>
         <input formControlName="apellidoPaterno" />
         <div *ngIf="userForm.get('apellidoPaterno')?.invalid && userForm.get('apellidoPaterno')?.touched"
-             class="validation-message">
+          class="validation-message">
           Es requerido.
         </div>
       </div>
@@ -57,7 +53,7 @@
         <label class="label-obligatorio">Fecha de Solicitud</label>
         <input type="date" formControlName="fechaSolicitud" />
         <div *ngIf="userForm.get('fechaSolicitud')?.invalid && userForm.get('fechaSolicitud')?.touched"
-             class="validation-message">
+          class="validation-message">
           Es requerido.
         </div>
       </div>
@@ -70,10 +66,11 @@
     <div class="cdindi-grid-two-columns">
       <div>
         <label class="label-obligatorio">RFC</label>
-        <input formControlName="rfc" maxlength="13" />
-        <div *ngIf="userForm.get('rfc')?.invalid && userForm.get('rfc')?.touched"
-             class="validation-message">
-          RFC válido requerido.
+        <input formControlName="rfc" maxlength="13" class="cdindi-input" />
+        <div *ngIf="userForm.get('rfc')?.touched && userForm.get('rfc')?.errors as rfcErrors">
+          <div *ngIf="rfcErrors['required']" class="validation-message">RFC es obligatorio</div>
+          <div *ngIf="rfcErrors['maxlength']" class="validation-message">Máximo 13 caracteres</div>
+          <div *ngIf="rfcErrors['pattern']" class="validation-message">Formato inválido (SAT)</div>
         </div>
       </div>
       <div>
@@ -89,15 +86,20 @@
     <div class="cdindi-grid-two-columns">
       <div>
         <label class="label-obligatorio">Correo Electrónico</label>
-        <input type="email" formControlName="correoElectronico" />
-        <div *ngIf="userForm.get('correoElectronico')?.invalid && userForm.get('correoElectronico')?.touched"
-             class="validation-message">
-          Correo válido requerido.
+        <input type="email" formControlName="correoElectronico" class="cdindi-input" />
+        <div
+          *ngIf="userForm.get('correoElectronico')?.touched && userForm.get('correoElectronico')?.errors as mailErrors">
+          <div *ngIf="mailErrors['required']" class="validation-message">Correo requerido</div>
+          <div *ngIf="mailErrors['email']" class="validation-message">No es un correo válido</div>
+          <div *ngIf="mailErrors['pattern']" class="validation-message">Formato inválido</div>
         </div>
       </div>
       <div>
         <label>Teléfono</label>
-        <input formControlName="telefono" maxlength="10" />
+        <input formControlName="telefono" maxlength="10" class="cdindi-input" />
+        <div *ngIf="userForm.get('telefono')?.touched && userForm.get('telefono')?.errors as telErrors">
+          <div *ngIf="telErrors['pattern']" class="validation-message">Solo números (7 a 10 dígitos)</div>
+        </div>
       </div>
       <div>
         <label>CUIP</label>
@@ -119,9 +121,7 @@
       </div>
       <div>
         <label for="entidad">Entidad:</label>
-        <select id="entidad"
-                formControlName="entidad"
-                (change)="cargarMunicipios(userForm.get('entidad')!.value)">
+        <select id="entidad" formControlName="entidad" (change)="cargarMunicipios(userForm.get('entidad')!.value)">
           <option [ngValue]="null">--Selecciona Entidad--</option>
           <option *ngFor="let e of entidades" [ngValue]="e.id">{{ e.nombre }}</option>
         </select>
@@ -130,50 +130,75 @@
         <label class="label-obligatorio">Municipio</label>
         <select id="municipio" formControlName="municipio">
           <option [ngValue]="null">--Selecciona Municipio--</option>
-          <option *ngFor="let m of municipios" [value]="m.id">{{ m.nombre }}</option>
+          <option *ngFor="let m of municipios" [ngValue]="m.id">{{ m.nombre }}</option>
         </select>
+        <div *ngIf="userForm.get('municipio')?.touched && userForm.get('municipio')?.errors as muniErrors">
+          <div *ngIf="muniErrors['required']" class="validation-message">Campo requerido</div>
+          <div *ngIf="muniErrors['invalidOption']" class="validation-message">Opción inválida</div>
+        </div>
       </div>
       <div>
         <label class="label-obligatorio">Institución</label>
-        <select id="institucion"
-                formControlName="institucion"
-                (change)="cargarDependencias(userForm.get('institucion')!.value)">
+        <select id="institucion" formControlName="institucion"
+          (change)="cargarDependencias(userForm.get('institucion')!.value)">
           <option [ngValue]="null">--Selecciona Institución--</option>
           <option *ngFor="let i of institucionOptions" [ngValue]="i.id">{{ i.nombre }}</option>
         </select>
+        <div *ngIf="userForm.get('institucion')?.touched && userForm.get('institucion')?.errors as instErrors">
+          <div *ngIf="instErrors['required']" class="validation-message">Campo requerido</div>
+          <div *ngIf="instErrors['invalidOption']" class="validation-message">Opción inválida</div>
+        </div>
       </div>
       <div>
         <label class="label-obligatorio">Dependencia</label>
-        <select id="dependencia"
-                formControlName="dependencia"
-                (change)="cargarCorporaciones(userForm.get('dependencia')!.value)">
+        <select id="dependencia" formControlName="dependencia"
+          (change)="cargarCorporaciones(userForm.get('dependencia')!.value)">
           <option [ngValue]="null">--Selecciona Dependencia--</option>
           <option *ngFor="let d of dependencias" [ngValue]="d.id">{{ d.nombre }}</option>
         </select>
+        <div *ngIf="userForm.get('dependencia')?.touched && userForm.get('dependencia')?.errors as depErrors">
+          <div *ngIf="depErrors['required']" class="validation-message">Campo requerido</div>
+          <div *ngIf="depErrors['invalidOption']" class="validation-message">Opción inválida</div>
+        </div>
       </div>
       <div>
         <label class="label-obligatorio">Corporación</label>
-        <select id="corporacion"
-                formControlName="corporacion"
-                (change)="cargarAreas(userForm.get('corporacion')!.value)">
+        <select id="corporacion" formControlName="corporacion"
+          (change)="cargarAreas(userForm.get('corporacion')!.value)">
           <option [ngValue]="null">--Selecciona Corporación--</option>
           <option *ngFor="let c of corporaciones" [ngValue]="c.id">{{ c.nombre }}</option>
         </select>
+        <div *ngIf="userForm.get('corporacion')?.touched && userForm.get('corporacion')?.errors as corpErrors">
+          <div *ngIf="corpErrors['required']" class="validation-message">Campo requerido</div>
+          <div *ngIf="corpErrors['invalidOption']" class="validation-message">Opción inválida</div>
+        </div>
       </div>
       <div>
-        <label>Área</label>
+        <label class="label-obligatorio">Área</label>
         <select id="area" formControlName="area">
           <option [ngValue]="null">--Selecciona Área--</option>
-          <option *ngFor="let a of areaOptions" [value]="a.id">{{ a.nombre }}</option>
+          <option *ngFor="let a of areaOptions" [ngValue]="a.id">{{ a.nombre }}</option>
         </select>
+        <div *ngIf="userForm.get('area')?.touched && userForm.get('area')?.errors as areaErrors">
+          <div *ngIf="areaErrors['required']" class="validation-message">Campo requerido</div>
+          <div *ngIf="areaErrors['invalidOption']" class="validation-message">Opción inválida</div>
+        </div>
       </div>
       <div>
         <label class="label-obligatorio">Cargo</label>
-        <input formControlName="cargo" maxlength="100" />
+        <input formControlName="cargo" maxlength="100" class="cdindi-input" />
+        <div *ngIf="userForm.get('cargo')?.touched && userForm.get('cargo')?.errors as cargoErrors">
+          <div *ngIf="cargoErrors['required']" class="validation-message">Cargo requerido</div>
+          <div *ngIf="cargoErrors['maxlength']" class="validation-message">Máximo 100 caracteres</div>
+        </div>
       </div>
       <div>
         <label class="label-obligatorio">Funciones</label>
-        <textarea formControlName="funciones"></textarea>
+        <textarea formControlName="funciones" maxlength="300" class="cdindi-input"></textarea>
+        <div *ngIf="userForm.get('funciones')?.touched && userForm.get('funciones')?.errors as funcErrors">
+          <div *ngIf="funcErrors['required']" class="validation-message">Funciones requeridas</div>
+          <div *ngIf="funcErrors['maxlength']" class="validation-message">Máximo 300 caracteres</div>
+        </div>
       </div>
     </div>
   </div>
@@ -191,10 +216,16 @@
       </div>
       <div>
         <label class="label-obligatorio">Municipio</label>
-        <select formControlName="municipio2">
+        <select formControlName="municipio2"
+          [ngClass]="{ 'ng-invalid ng-touched': userForm.get('municipio2')?.invalid && userForm.get('municipio2')?.touched }">
           <option [ngValue]="null">Seleccione.</option>
           <option *ngFor="let m2 of municipios2" [ngValue]="m2.id">{{ m2.nombre }}</option>
         </select>
+        <!-- Mensajes de error -->
+        <div *ngIf="userForm.get('municipio2')?.touched && userForm.get('municipio2')?.errors as errors">
+          <div *ngIf="errors['required']" class="validation-message">Este campo es requerido.</div>
+          <div *ngIf="errors['invalidOption']" class="validation-message">Opción inválida.</div>
+        </div>
       </div>
       <div>
         <label>País</label>
@@ -212,23 +243,18 @@
     <h2>Perfiles de Usuario</h2>
     <div class="cdindi-grid-two-columns cdindi-operacion">
       <div class="perfil-input-group">
-        <input list="consultaOptions"
-               class="cdindi-input"
-               placeholder="Escribe o selecciona."
-               [(ngModel)]="perfilConsultaInput"
-               [ngModelOptions]="{ standalone: true }"
-               name="perfilConsultaInput"
-               (keydown.enter)="agregarPerfilConsulta(); $event.preventDefault()">
+        <input list="consultaOptions" class="cdindi-input" placeholder="Escribe o selecciona."
+          [(ngModel)]="perfilConsultaInput" [ngModelOptions]="{ standalone: true }" name="perfilConsultaInput"
+          (keydown.enter)="agregarPerfilConsulta(); $event.preventDefault()">
         <datalist id="consultaOptions">
-          <option *ngFor="let perfil of perfiles"
-                  [value]="perfil.clave + ' - ' + perfil.nombre">
+          <option *ngFor="let perfil of perfilesFiltrados()" [value]="perfil.clave + ' - ' + perfil.nombre">
           </option>
         </datalist>
         <button type="button" class="cdindi-btn" (click)="agregarPerfilConsulta()">Agregar</button>
       </div>
       <div *ngFor="let key of getConsultaTextosKeys()">
         <div class="perfil-chip">
-          <span>Perfil {{ key.substr(0,4) }}</span>
+          <span>Perfil {{ userForm.get('consultaTextos')?.get(key)?.value.split(' - ')[0] }}</span>
           <button type="button" (click)="quitarConsulta(key)">❌</button>
         </div>
       </div>
