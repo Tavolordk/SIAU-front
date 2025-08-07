@@ -31,6 +31,10 @@ html, body {
   display: flex;
   flex-direction: column;
 }
+/* Asegúrate del selector real del componente StepForm */
+.main-content.is-stepform {
+  background: #fff;      /* solo en /stepform */
+}
 
 /* 3) Empuja el footer al final del flex */
 app-footer {

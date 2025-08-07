@@ -27,7 +27,7 @@
       </thead>
       <tbody>
         <tr *ngIf="!lista?.length">
-          <td colspan="8">No se encontraron solicitudes.</td>
+          <td colspan="8" class="text-center">No se encontraron solicitudes.</td>
         </tr>
         <tr *ngFor="let item of lista; let i = index">
           <td>{{ (currentPage - 1) * itemsPerPage + i + 1 }}</td>

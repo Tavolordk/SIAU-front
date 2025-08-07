@@ -18,6 +18,8 @@ export class MainLayoutComponent implements OnInit {
   showNav = true;
   /** Si ocultar todo el header */
   hideNavbarClass = false;
+    isStepformRoute = false;
+
 
   /** Rutas que deben ocultar el navbar */
   private hideRoutes = [
@@ -30,6 +32,11 @@ export class MainLayoutComponent implements OnInit {
 
   constructor(private router: Router) {
     console.log('MainLayoutComponent constructor');
+        this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd))
+      .subscribe(() => {
+        this.isStepformRoute = this.router.url.startsWith('/stepform');
+      });
   }
 
   ngOnInit(): void {

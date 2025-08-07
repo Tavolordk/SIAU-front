@@ -1,7 +1,8 @@
 <!-- src/app/step-form/step1/step1.component.html -->
-<form [formGroup]="form" class="container mt-2" (ngSubmit)="next.emit()">
+<div class="container-fluid bg-white h-100 p-0 mt-0">
+  <form [formGroup]="form" class="container mt-2" (ngSubmit)="next.emit()">
   <!-- Título y Progress -->
-  <h2 class="text-center registro-title mb-0">Registro</h2>
+  <h2 class="text-center registro-title m-0">Registro</h2>
   <div class="progress-container">
     <div class="progress-bar-custom-wrap">
       <div class="progress-bar-custom">
@@ -449,3 +450,4 @@
     </button>
   </div>
 </form>
+</div>
