@@ -603,8 +603,10 @@ h1:focus {
     position: relative;
     max-width: 98%;
     margin: 0 auto;
-    padding: 20px;
+    padding: 50px;
     z-index: 3;
+        height: 50vh;
+
 }
 
 .solicitudes_masiva-tabla-contenedor {
@@ -615,6 +617,8 @@ h1:focus {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     font-size: 0.875rem;
     font-family: 'Segoe UI', sans-serif;
+        height: 30vh;
+
 }
 
 /* ==== TABLA ==== */
