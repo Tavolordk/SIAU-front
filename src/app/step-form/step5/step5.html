@@ -1,49 +1,66 @@
 <!-- src/app/step-form/step5/step5.component.html -->
-<div class="container-fluid p-0">
-  <div class="header-bar py-3 text-center" style="background: #e3c89a;">
-    <img src="assets/images/escudo2.png" height="80">
-    <div class="logo-title">Seguridad</div>
-    <div class="logo-subtitle">
-      Secretaría de Seguridad<br>y Protección Ciudadana
-    </div>
+<div class="container-fluid px-0">
+  <div class="registro-title mt-2 mb-1">Registro</div>
+
+  <div class="progress-bar-custom">
+    <div
+      class="progress-bar-inner"
+      [style.width.%]="(currentStep / maxSteps) * 100"
+    ></div>
   </div>
 
-  <div class="text-center mt-2 mb-1">
-    <h2 class="registro-title">Registro</h2>
-  </div>
-  <div class="registro-bar-container mb-2">
-    <div class="registro-bar"
-         [style.width.%]="(currentStep/maxSteps)*100">
-    </div>
-  </div>
-  <p class="paso-text text-center">
-    Paso {{currentStep}} de {{maxSteps}}
-  </p>
+  <div class="step-text mb-4">Paso {{ currentStep }} de {{ maxSteps }}</div>
 
-  <div class="main-card p-4">
-    <h3 class="mb-3">Validación de medios de contacto</h3>
-    <p class="info-box">
-      Ingresa el código enviado a tu correo o Telegram.
-    </p>
-    <form [formGroup]="form" (ngSubmit)="validate.emit()">
-      <div class="mb-3">
-        <label for="codigo" class="form-label">Código recibido</label>
-        <input id="codigo"
-               type="text"
-               formControlName="codigo"
-               class="form-control">
-        <div class="form-text">
-          El código solo será válido por 15 minutos.
-        </div>
-      </div>
-      <div class="d-flex gap-2 mb-2">
-        <button type="submit" class="btn btn-verificar">Verificar</button>
-        <button type="button" class="btn btn-regresar"
-                (click)="prev.emit()">Regresar</button>
-      </div>
-    </form>
-    <a href="#" class="reenviar-link d-block text-center">
-      ¿No recibiste el código? Reenviar
-    </a>
+  <div class="card-custom mt-2">
+    <div class="card-title-custom mb-3">
+      Validación de medios de contacto
+    </div>
+
+    <div class="info-box mb-4">
+      La Validación de medios de contacto añade una capa de protección a tus
+      cuentas. Primero ingresas un código enviado a tu correo, teléfono o
+      Telegram.
+    </div>
+
+    <div class="select-method-label mb-3">
+      Selecciona el método de contacto de tu preferencia
+    </div>
+
+<button
+  class="btn-outline-custom mb-2"
+  type="button"
+  (click)="validate.emit('email')"
+>
+  <fa-icon [icon]="faEnvelope"></fa-icon>
+  Código por Correo Electrónico
+</button>
+
+<button
+  class="btn-telegram"
+  type="button"
+  (click)="validate.emit('telegram')"
+>
+  <fa-icon [icon]="faTelegramPlane"></fa-icon>
+  Código por Telegram
+</button>
+
+    <div class="d-flex justify-content-between mt-4">
+      <button
+        type="button"
+        class="btn-back"
+        (click)="prev.emit(currentStep - 1)"
+      >
+        Regresar
+      </button>
+    </div>
+        <div class="d-flex justify-content-between mt-4">
+      <button
+        type="button"
+        class="btn-back"
+        (click)="next.emit(currentStep + 1)"
+      >
+        Siguiente
+      </button>
+    </div>
   </div>
 </div>

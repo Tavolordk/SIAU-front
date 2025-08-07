@@ -1,15 +1,12 @@
 // src/app/step-form/step2/step2.component.ts
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule }                        from '@angular/common';
-import { ReactiveFormsModule, FormGroup }      from '@angular/forms';
+import { ReactiveFormsModule, FormGroup }         from '@angular/forms';
+import { StepFormComponent } from '../step-form';
 
 @Component({
   selector: 'app-step2',
   standalone: true,
-  imports: [
-    CommonModule,        // para *ngFor, *ngIf, etc.
-    ReactiveFormsModule  // para [formGroup], formControlName…
-  ],
+  imports: [ ReactiveFormsModule ],  // Solo reactivos; @for es nativo en Angular 20+
   templateUrl: './step2.html',
   styleUrls:   ['./step2.scss']
 })

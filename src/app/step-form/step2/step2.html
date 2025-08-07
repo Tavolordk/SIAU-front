@@ -3,16 +3,16 @@
   <!-- Título y progreso -->
   <div class="header-title">Registro</div>
   <div class="progress-bar-bg">
-    <div class="progress-bar-fill" [style.width.%]="(currentStep/maxSteps)*100"></div>
+    <div class="progress-bar-fill"
+         [style.width.%]="(currentStep/maxSteps)*100">
+    </div>
   </div>
-  <div class="progress-step">Paso {{ currentStep }} de {{ maxSteps }}</div>
+  <p class="progress-step">Paso {{ currentStep }} de {{ maxSteps }}</p>
 
   <div class="main-container mt-4">
-    <!-- Encabezado de sección -->
     <div class="section-header">SELECCIÓN DE PERFIL</div>
     <div class="divider"></div>
 
-    <!-- Contenido de sección -->
     <div class="section-content">
       <form [formGroup]="form" (ngSubmit)="addPerfil.emit()">
         <div class="form-inline mb-0">
@@ -31,14 +31,19 @@
       </form>
 
       <div class="perfil-list">
-        <!-- Volvemos a usar *ngFor -->
-        <div *ngFor="let p of perfiles; let i = index" class="perfil-item">
-          <span class="perfil-id">{{ p }}</span>
-          <span class="perfil-remove" (click)="removePerfil.emit(i)">
-            <i class="fas fa-times"></i>
-          </span>
-          <span class="perfil-desc">{{ p }}</span>
-        </div>
+        @for (p of perfiles;track p) {
+          <div class="perfil-item">
+            <span class="perfil-id">{{ p }}</span>
+            <span class="perfil-remove"
+                  (click)="removePerfil.emit(perfiles.indexOf(p))">
+              <i class="fas fa-times"></i>
+            </span>
+            <span class="perfil-desc">{{ p }}</span>
+          </div>
+        }
+        @empty {
+          <div class="text-muted">No hay perfiles agregados.</div>
+        }
       </div>
     </div>
 

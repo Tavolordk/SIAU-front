@@ -1,53 +1,179 @@
 <!-- src/app/step-form/step3/step3.component.html -->
-<div class="container custom-card py-4">
-  <h2 class="card-header-custom text-center">Sube tu documentación</h2>
-  <form [formGroup]="form">
-    <div *ngFor="let doc of documentos; let i = index"
-         class="file-upload-section mb-3">
-      <label class="form-label">
-        {{ doc.label }}<span class="required">*</span>
-      </label>
-      <input type="file"
-             class="form-control"
-             (change)="fileChange.emit({ event: $event, idx: i })">
+<div class="main-container">
+  <div class="mb-2">
+    <div class="step-title">Registro</div>
+    <div class="progress-bar-custom">
+      <div
+        class="progress-bar-inner"
+        [style.width.%]="(currentStep/maxSteps)*100">
+      </div>
     </div>
-  </form>
-
-  <div class="table-responsive mb-4">
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Tipo</th>
-          <th>Fecha</th>
-          <th>Acción</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let row of uploadedDocs">
-          <td>{{ row.id }}</td>
-          <td>{{ row.tipo }}</td>
-          <td>{{ row.fecha }}</td>
-          <td>
-            <button class="btn btn-sm btn-danger me-2"
-                    (click)="removeUpload.emit(row)">
-              <i class="fas fa-trash-alt"></i>
-            </button>
-            <button class="btn btn-sm btn-primary">
-              <i class="fas fa-eye"></i>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="step-desc">Paso {{ currentStep }} de {{ maxSteps }}</div>
   </div>
 
-  <div class="d-flex justify-content-between">
-    <button class="btn btn-outline-secondary" (click)="prev.emit()">
-      Regresar
-    </button>
-    <button class="btn btn-success" (click)="next.emit()">
-      Siguiente
-    </button>
+  <div class="card card-custom">
+    <div class="card-header card-header-custom">
+      DOCUMENTACION
+    </div>
+    <div class="card-body px-4 pt-4 pb-3">
+      <div class="obligatorio-label">
+        <span class="required">*</span> Campos Obligatorios
+      </div>
+
+      <form [formGroup]="form">
+        <!-- Tipo de documento -->
+        <div class="form-section row align-items-center mb-3">
+          <div class="col-md-4 col-12 mb-2 mb-md-0">
+            <label class="form-label mb-0">
+              TIPO DOCUMENTO:<span class="required">*</span>
+            </label>
+          </div>
+          <div class="col-md-8 col-12">
+            <select
+              formControlName="tipoDocumento"
+              class="form-select"
+              required>
+              <option value="" disabled selected>
+                --- SELECCIONE ---
+              </option>
+              <option value="identificacion">
+                COMPROBANTE DE IDENTIFICACIÓN
+              </option>
+              <option value="domicilio">
+                COMPROBANTE DE DOMICILIO
+              </option>
+              <option value="laboral">
+                COMPROBANTE LABORAL
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Fecha del documento -->
+        <div class="form-section row align-items-center mb-3">
+          <div class="col-md-4 col-12 mb-2 mb-md-0">
+            <label class="form-label mb-0">
+              FECHA DEL DOCUMENTO:<span class="required">*</span>
+            </label>
+          </div>
+          <div class="col-md-8 col-12">
+            <div class="input-group">
+              <input
+                formControlName="fechaDocumento"
+                type="text"
+                class="form-control"
+                placeholder="dd/mm/aaaa"
+                required>
+              <span class="input-group-text">
+                <i class="far fa-calendar-alt"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selección y carga de archivo -->
+        <div class="form-section row align-items-center mb-2">
+          <div class="col-md-4 col-12 mb-2 mb-md-0">
+            <label class="form-label mb-0">
+              SELECCIONE EL DOCUMENTO:<span class="required">*</span>
+            </label>
+          </div>
+          <div class="col-md-8 col-12">
+            <div class="file-upload-section">
+              <input
+                type="file"
+                formControlName="archivo"
+                class="form-control d-none"
+                id="fileInput">
+              <label
+                for="fileInput"
+                class="btn btn-outline-secondary mb-0">
+                Seleccionar archivo
+              </label>
+              <span class="form-text">
+                {{ form.get('archivo')?.value?.name
+                   || 'Sin archivos seleccionados' }}
+              </span>
+              <button
+                type="button"
+                class="btn btn-secondary"
+                [disabled]="!form.get('archivo')?.value"
+                (click)="upload.emit()">
+                Subir Archivo
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <!-- Tabla estática de ejemplo -->
+      <div class="table-responsive">
+        <table class="table table-bordered mt-3 mb-2">
+          <thead>
+            <tr>
+              <th style="width:18%">ID DOCUMENTO</th>
+              <th style="width:32%">TIPO DE DOCUMENTO</th>
+              <th style="width:25%">FECHA DEL DOCUMENTO</th>
+              <th style="width:25%">ACCIÓN</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a href="#">26274407</a></td>
+              <td>COMPROBANTE DE IDENTIFICACIÓN</td>
+              <td>2025-12-05</td>
+              <td>
+                <button class="btn btn-danger me-2">
+                  <i class="fas fa-trash-alt"></i>Eliminar
+                </button>
+                <button class="btn btn-primary">
+                  <i class="fas fa-eye"></i>Ver
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td><a href="#">26274390</a></td>
+              <td>COMPROBANTE DE DOMICILIO</td>
+              <td>2025-12-05</td>
+              <td>
+                <button class="btn btn-danger me-2">
+                  <i class="fas fa-trash-alt"></i>Eliminar
+                </button>
+                <button class="btn btn-primary">
+                  <i class="fas fa-eye"></i>Ver
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td><a href="#">26274390</a></td>
+              <td>COMPROBANTE LABORAL</td>
+              <td>2025-12-05</td>
+              <td>
+                <button class="btn btn-danger me-2">
+                  <i class="fas fa-trash-alt"></i>Eliminar
+                </button>
+                <button class="btn btn-primary">
+                  <i class="fas fa-eye"></i>Ver
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Navegación -->
+      <div class="d-flex justify-content-between mt-4">
+        <button
+          class="btn btn-outline-secondary"
+          (click)="prev.emit(currentStep - 1)">
+          Regresar
+        </button>
+        <button
+          class="btn btn-success"
+          (click)="next.emit(currentStep + 1)">
+          Siguiente
+        </button>
+      </div>
+    </div>
   </div>
 </div>

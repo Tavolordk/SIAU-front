@@ -1,64 +1,123 @@
 <!-- src/app/step-form/step4/step4.component.html -->
-<div class="container-fluid bg-light p-4">
-  <h2 class="registro-title text-center mb-4">Medios de Contacto</h2>
+<div class="custom-card">
+  <!-- Título y progreso -->
+  <div class="registro-title">Registro</div>
+  <div class="progress-bar-bg">
+    <div class="progress-bar-fill"
+         [style.width.%]="(currentStep/maxSteps)*100">
+    </div>
+  </div>
+  <div class="step-label">
+    Paso {{ currentStep }} de {{ maxSteps }}
+  </div>
+
+  <!-- Sección: Medios de Contacto -->
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="section-title mb-0">Medios de Contacto</div>
+    <div class="required-label">
+      <span class="text-danger">*</span> Campos Obligatorios
+    </div>
+  </div>
+  <div class="subtitle">
+    Ingresa los medios de contacto en los que quieras recibir
+    notificaciones cuando realices trámites con tu cuenta.
+  </div>
+
   <form [formGroup]="form">
-    <div class="row g-3 mb-3">
-      <div class="col-md-6">
-        <label for="correo" class="form-label">Correo<span class="required">*</span></label>
+    <div class="row mb-3">
+      <div class="col-md-6 mb-3 mb-md-0">
+        <label for="correo" class="form-label">
+          Correo electrónico<span class="text-danger">*</span>
+        </label>
         <input id="correo"
                type="email"
                formControlName="correo"
-               class="form-control">
+               class="form-control"
+               placeholder="Ingresa tu correo electrónico">
       </div>
       <div class="col-md-6">
-        <label for="celular" class="form-label">Celular<span class="required">*</span></label>
+        <label for="confirmaCorreo" class="form-label">
+          Confirma tu correo electrónico<span class="text-danger">*</span>
+        </label>
+        <input id="confirmaCorreo"
+               type="email"
+               formControlName="confirmaCorreo"
+               class="form-control"
+               placeholder="Confirma tu correo electrónico">
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-6 mb-3 mb-md-0">
+        <label for="celular" class="form-label">
+          Número de celular<span class="text-danger">*</span>
+        </label>
         <input id="celular"
                type="text"
                formControlName="celular"
-               class="form-control">
+               class="form-control"
+               placeholder="Ingresa tu teléfono móvil">
+      </div>
+      <div class="col-md-6">
+        <label for="confirmaCelular" class="form-label">
+          Confirma tu número de celular<span class="text-danger">*</span>
+        </label>
+        <input id="confirmaCelular"
+               type="text"
+               formControlName="confirmaCelular"
+               class="form-control"
+               placeholder="Confirma tu teléfono móvil">
       </div>
     </div>
 
-    <div class="row g-3 mb-3">
-      <div class="col-md-6">
-        <label for="celularConfirm" class="form-label">
-          Confirma tu número de celular<span class="required">*</span>
+    <div class="row mb-3">
+      <div class="col-md-6 mb-3 mb-md-0">
+        <label for="oficina" class="form-label">
+          Número telefónico de oficina
         </label>
-        <input id="celularConfirm"
+        <input id="oficina"
                type="text"
-               formControlName="celularConfirm"
-               class="form-control">
+               formControlName="oficina"
+               class="form-control"
+               placeholder="Ingresa tu teléfono de oficina">
       </div>
       <div class="col-md-6">
-        <label for="telefonoOficina" class="form-label">Teléfono de oficina</label>
-        <input id="telefonoOficina"
-               type="text"
-               formControlName="telefonoOficina"
-               class="form-control">
-      </div>
-      <div class="col-md-6">
-        <label for="extension" class="form-label">Extensión</label>
+        <label for="extension" class="form-label">
+          Extensión
+        </label>
         <input id="extension"
                type="text"
                formControlName="extension"
-               class="form-control">
+               class="form-control"
+               placeholder="Ingresa tu extensión">
       </div>
     </div>
 
-    <div class="mb-3">
-      <strong>Cuenta con Aplicativo de:</strong>
+    <div class="mb-2" style="font-weight:700; color:#222;">
+      Cuenta con Aplicativo de:
     </div>
     <div class="form-check mb-3">
-      <input id="telegram"
+      <input formControlName="usaTelegram"
+             class="form-check-input"
              type="checkbox"
-             formControlName="appTelegram"
-             class="form-check-input">
-      <label class="form-check-label" for="telegram">Telegram</label>
-    </div>
-
-    <div class="d-flex justify-content-between">
-      <button class="btn btn-link" (click)="prev.emit()">Regresar</button>
-      <button class="btn btn-success" (click)="next.emit()">Siguiente</button>
+             id="telegram">
+      <label class="form-check-label" for="telegram">
+        Telegram
+      </label>
     </div>
   </form>
+
+  <!-- Navegación -->
+  <div class="d-flex justify-content-between align-items-center">
+    <a
+            class="regresar-link cursor-pointer"
+            (click)="prev.emit(currentStep - 1)">
+      Regresar
+    </a>
+    <button type="button"
+            class="btn btn-success"
+            (click)="next.emit(currentStep + 1)">
+      Siguiente
+    </button>
+  </div>
 </div>
