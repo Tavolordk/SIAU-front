@@ -1,0 +1,451 @@
+<!-- src/app/step-form/step1/step1.component.html -->
+<form [formGroup]="form" class="container mt-2" (ngSubmit)="next.emit()">
+  <!-- Título y Progress -->
+  <h2 class="text-center registro-title mb-0">Registro</h2>
+  <div class="progress-container">
+    <div class="progress-bar-custom-wrap">
+      <div class="progress-bar-custom">
+        <div class="progress-bar-inner"
+             [style.width.%]="(currentStep/maxSteps)*100"></div>
+      </div>
+    </div>
+    <p class="progress-text">Paso {{currentStep}} de {{maxSteps}}</p>
+  </div>
+  <div class="text-end"><span class="required">* Campos Obligatorios</span></div>
+
+  <!-- Registro de datos de usuario -->
+  <div class="section-title">Registro de datos de usuario</div>
+  <div class="row mb-3">
+    <div class="col-md-8"></div>
+    <div class="col-md-4">
+      <label for="tipoUsuario" class="form-label">
+        Tipo de Usuario<span class="required">*</span>
+      </label>
+      <select id="tipoUsuario"
+              formControlName="tipoUsuario"
+              class="form-select"
+              required>
+        <option value="" disabled>Seleccione un tipo</option>
+        <option *ngFor="let t of tipos" [value]="t">{{ t }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Información personal -->
+  <div class="section-title">Información personal</div>
+  <div class="mb-3">
+    <label class="form-label">
+      ¿Eres Personal de Seguridad Pública?<span class="required">*</span>
+    </label>
+    <div>
+      <div class="form-check form-check-inline">
+        <input formControlName="esSeguridad"
+               id="seguridadSi"
+               type="radio"
+               value="Si"
+               class="form-check-input">
+        <label for="seguridadSi" class="form-check-label">Sí</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input formControlName="esSeguridad"
+               id="seguridadNo"
+               type="radio"
+               value="No"
+               class="form-check-input">
+        <label for="seguridadNo" class="form-check-label">No</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- CURP y CAPTCHA -->
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <label for="curp" class="form-label">
+        CURP<span class="required">*</span>
+      </label>
+      <input id="curp"
+             type="text"
+             formControlName="curp"
+             class="form-control"
+             required>
+      <a href="#" class="link-red">¿No sabes tu CURP?</a>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Código de verificación</label>
+      <div class="row">
+        <div class="col-md-6 text-center">
+          <div class="captcha-img">
+            <span>VXBGZL</span>
+          </div>
+          <a href="#" class="link-blue mt-1 d-block">¿Otro código?</a>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-1" style="font-size:14px;">*Ingresar código</div>
+          <input id="captchaInput"
+                 type="text"
+                 formControlName="captcha"
+                 class="form-control"
+                 placeholder="ESCRIBE EL CÓDIGO"
+                 required>
+          <div class="mt-2 d-flex justify-content-center">
+            <div class="g-recaptcha" data-sitekey="TU_SITE_KEY"></div>
+          </div>
+          <button type="button" class="btn btn-verify mt-2">
+            Verificar CURP
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Datos personales extendidos -->
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <label for="nombre" class="form-label">Nombre(s)*</label>
+      <input id="nombre"
+             type="text"
+             formControlName="nombre"
+             class="form-control"
+             required>
+    </div>
+    <div class="col-md-4">
+      <label for="primerApellido" class="form-label">
+        Primer Apellido*
+      </label>
+      <input id="primerApellido"
+             type="text"
+             formControlName="primerApellido"
+             class="form-control"
+             required>
+    </div>
+    <div class="col-md-4">
+      <label for="segundoApellido" class="form-label">
+        Segundo Apellido
+      </label>
+      <input id="segundoApellido"
+             type="text"
+             formControlName="segundoApellido"
+             class="form-control">
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <label for="sexo" class="form-label">Sexo*</label>
+      <select id="sexo"
+              formControlName="sexo"
+              class="form-select"
+              required>
+        <option value="" disabled>Selecciona</option>
+        <!-- <option *ngFor="let s of sexos" [value]="s">{{ s }}</option> -->
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label for="fechaNacimiento" class="form-label">
+        Fecha de nacimiento*
+      </label>
+      <input id="fechaNacimiento"
+             type="text"
+             formControlName="fechaNacimiento"
+             class="form-control"
+             placeholder="dd/mm/aaaa"
+             required>
+    </div>
+    <div class="col-md-4">
+      <label for="nacionalidad" class="form-label">
+        Nacionalidad*
+      </label>
+      <input id="nacionalidad"
+             type="text"
+             formControlName="nacionalidad"
+             class="form-control"
+             required>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <label for="paisNacimiento" class="form-label">
+        País de nacimiento*
+      </label>
+      <input id="paisNacimiento"
+             type="text"
+             formControlName="paisNacimiento"
+             class="form-control"
+             required>
+    </div>
+    <div class="col-md-4">
+      <label for="entidadNacimiento" class="form-label">
+        Entidad de Nacimiento*
+      </label>
+      <input id="entidadNacimiento"
+             type="text"
+             formControlName="entidadNacimiento"
+             class="form-control"
+             required>
+    </div>
+    <div class="col-md-4">
+      <label for="municipioAlcaldia" class="form-label">
+        Municipio/Alcaldía*
+      </label>
+      <select id="municipioAlcaldia"
+              formControlName="municipioAlcaldia"
+              class="form-select"
+              required>
+        <option value="" disabled>Selecciona tu Municipio/Alcaldía</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <label for="estadoCivil" class="form-label">Estado Civil</label>
+      <select id="estadoCivil"
+              formControlName="estadoCivil"
+              class="form-select">
+        <option value="" disabled>Selecciona tu Estado Civil</option>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label for="rfc" class="form-label">RFC*</label>
+      <input id="rfc"
+             type="text"
+             formControlName="rfc"
+             class="form-control"
+             required>
+    </div>
+    <div class="col-md-4">
+      <label for="cuip" class="form-label">CUIP</label>
+      <input id="cuip"
+             type="text"
+             formControlName="cuip"
+             class="form-control">
+    </div>
+  </div>
+
+  <!-- Adscripción actual -->
+  <div class="section-title">Información de adscripción actual</div>
+  <div class="row mb-3">
+    <div class="col-md-3">
+      <label for="tipoInstitucion" class="form-label">
+        Tipo de Institución*
+      </label>
+      <select id="tipoInstitucion"
+              formControlName="tipoInstitucion"
+              class="form-select"
+              required>
+        <option value="" disabled>Seleccionar</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label for="entidad" class="form-label">Entidad*</label>
+      <select id="entidad"
+              formControlName="entidad"
+              class="form-select"
+              required>
+        <option value="" disabled>Seleccionar</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label for="municipioAlcaldia2" class="form-label">
+        Municipio/Alcaldía*
+      </label>
+      <select id="municipioAlcaldia2"
+              formControlName="municipioAlcaldia2"
+              class="form-select"
+              required>
+        <option value="" disabled>Selecciona tu Municipio/Alcaldía</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label for="institucion" class="form-label">Institución*</label>
+      <select id="institucion"
+              formControlName="institucion"
+              class="form-select"
+              required>
+        <option value="" disabled>Seleccionar</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-3">
+      <label for="dependencia" class="form-label">Dependencia</label>
+      <select id="dependencia"
+              formControlName="dependencia"
+              class="form-select">
+        <option value="" disabled>Seleccionar</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label for="corporacion" class="form-label">Corporación</label>
+      <select id="corporacion"
+              formControlName="corporacion"
+              class="form-select">
+        <option value="" disabled>Seleccionar</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label for="area" class="form-label">Área</label>
+      <input id="area"
+             type="text"
+             formControlName="area"
+             class="form-control">
+    </div>
+    <div class="col-md-3">
+      <label for="fechaIngreso" class="form-label">
+        Fecha de Ingreso*
+      </label>
+      <input id="fechaIngreso"
+             type="text"
+             formControlName="fechaIngreso"
+             class="form-control"
+             placeholder="dd/mm/aaaa"
+             required>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <label for="cargo" class="form-label">Cargo</label>
+      <input id="cargo"
+             type="text"
+             formControlName="cargo"
+             class="form-control">
+    </div>
+    <div class="col-md-4">
+      <label for="funciones" class="form-label">Funciones</label>
+      <input id="funciones"
+             type="text"
+             formControlName="funciones"
+             class="form-control">
+    </div>
+    <div class="col-md-4">
+      <label for="numeroEmpleado" class="form-label">
+        Número de Empleado*
+      </label>
+      <input id="numeroEmpleado"
+             type="text"
+             formControlName="numeroEmpleado"
+             class="form-control"
+             required>
+    </div>
+  </div>
+
+  <!-- Información de comisión -->
+  <div class="section-title">Información de comisión</div>
+  <div class="mb-3">
+    <label class="form-label">
+      ¿Está comisionado?<span class="required">*</span>
+    </label>
+    <div>
+      <div class="form-check form-check-inline">
+        <input formControlName="comisionado"
+               id="comisionadoSi"
+               type="radio"
+               value="Si"
+               class="form-check-input">
+        <label for="comisionadoSi" class="form-check-label">Sí</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input formControlName="comisionado"
+               id="comisionadoNo"
+               type="radio"
+               value="No"
+               class="form-check-input">
+        <label for="comisionadoNo" class="form-check-label">No</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-3">
+      <label for="tipoInstitucion2" class="form-label">
+        Tipo de Institución*
+      </label>
+      <select id="tipoInstitucion2"
+              formControlName="tipoInstitucion2"
+              class="form-select"
+              required>
+        <option value="" disabled>Seleccionar</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label for="entidad2" class="form-label">Entidad*</label>
+      <select id="entidad2"
+              formControlName="entidad2"
+              class="form-select"
+              required>
+        <option value="" disabled>Seleccionar</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label for="municipioAlcaldia3" class="form-label">
+        Municipio/Alcaldía*
+      </label>
+      <select id="municipioAlcaldia3"
+              formControlName="municipioAlcaldia3"
+              class="form-select"
+              required>
+        <option value="" disabled>Selecciona tu Municipio/Alcaldía</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label for="institucion2" class="form-label">Institución*</label>
+      <select id="institucion2"
+              formControlName="institucion2"
+              class="form-select"
+              required>
+        <option value="" disabled>Seleccionar</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <label for="dependencia2" class="form-label">Dependencia</label>
+      <select id="dependencia2"
+              formControlName="dependencia2"
+              class="form-select">
+        <option value="" disabled>Seleccionar</option>
+      </select>
+    </div>
+    <div class="col-md-6">
+      <label for="corporacion2" class="form-label">Corporación</label>
+      <select id="corporacion2"
+              formControlName="corporacion2"
+              class="form-select">
+        <option value="" disabled>Seleccionar</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Términos y navegación final -->
+  <div class="mb-4 mt-4 custom-checkbox">
+    <div class="form-check">
+      <input formControlName="aceptaTerminos"
+             id="terminos"
+             type="checkbox"
+             class="form-check-input">
+      <label for="terminos" class="form-check-label">
+        Acepto los
+        <a href="#" class="link-red">
+          términos y condiciones
+        </a>
+        de uso del SIAU.
+      </label>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between mt-5 mb-5">
+    <button type="button"
+            class="btn btn-back"
+            (click)="prev.emit()">
+      Regresar
+    </button>
+    <button type="submit"
+            class="btn btn-next">
+      Siguiente
+    </button>
+  </div>
+</form>

@@ -12,6 +12,8 @@ import { SolicitudesComponent }      from './solicitudes/solicitudes/solicitudes
 import { CargaUsuarioComponent }     from './usuarios/carga-usuario/carga-usuario';
 import { CargaMasivaUsuariosComponent } from './usuarios/carga-masiva-usuarios/carga-masiva-usuarios';
 import { ErrorComponent }            from './shared/error/error';
+import { GestionSolicitudes } from './solicitudes/solicitudes-enlace/gestion-solicitudes';
+import { StepFormComponent } from './step-form/step-form';
 
 export const routes: Routes = [
   // RUTAS PÚBLICAS SIN LAYOUT
@@ -28,7 +30,12 @@ export const routes: Routes = [
   { path: 'cambiar-contrasena',      component: CambiarContrasenaComponent },
       // El resto sí requieren sesión
       { path: 'solicitudes',         component: SolicitudesComponent, canActivate: [AuthGuard] },
-      { path: 'primer-inicio',           component: PrimerInicioComponent, canActivate:[AuthGuard] },
+{
+  path: 'usuario-enlace/gestion-de-solicitudes',
+  component: GestionSolicitudes,
+  canActivate: [AuthGuard]
+},      { path: 'primer-inicio',           component: PrimerInicioComponent, canActivate:[AuthGuard] },
+  { path: 'stepform',           component: StepFormComponent, canActivate:[AuthGuard] },
       { path: 'cargausuario',        component: CargaUsuarioComponent, canActivate: [AuthGuard] },
       { path: 'cargausuario/:indice',component: CargaUsuarioComponent, canActivate: [AuthGuard] },
       { path: 'cargamasiva',         component: CargaMasivaUsuariosComponent, canActivate: [AuthGuard] },

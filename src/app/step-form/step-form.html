@@ -1,0 +1,46 @@
+<ng-container>
+  <app-step1 *ngIf="currentStep===1"
+             [form]="form"
+             [tipos]="tipos"
+             [currentStep]="currentStep"
+             [maxSteps]="maxSteps"
+             (next)="nextStep()"
+             (prev)="prevStep()">
+  </app-step1>
+
+  <app-step2 *If="currentStep===2"
+             [form]="form"
+             [perfiles]="perfiles"
+             (addProfile)="addPerfil()"
+             (removeProfile)="removePerfil($event)"
+             (next)="nextStep()"
+             (prev)="prevStep()">
+  </app-step2>
+
+  <app-step3 *ngIf="currentStep===3"
+             [documentos]="documentos"
+             [uploadedDocs]="uploadedDocs"
+             (fileChange)="onFileChange($event, $event.idx)"
+             (removeUpload)="removeUpload($event)"
+             (next)="nextStep()"
+             (prev)="prevStep()">
+  </app-step3>
+
+  <app-step4 *ngIf="currentStep===4"
+             [form]="form"
+             (next)="nextStep()"
+             (prev)="prevStep()">
+  </app-step4>
+
+  <app-step5 *ngIf="currentStep===5"
+             [form]="form"
+             [currentStep]="currentStep"
+             [maxSteps]="maxSteps"
+             (validate)="onValidateCode()"
+             (prev)="prevStep()">
+  </app-step5>
+
+  <app-step6 *ngIf="currentStep===6"
+             [folio]="folio">
+  </app-step6>
+</ng-container>

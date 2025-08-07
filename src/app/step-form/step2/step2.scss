@@ -1,0 +1,181 @@
+/* src/app/step-form/step2/step2.component.scss */
+
+body {
+  background: #f6f6f6;
+  font-family: 'Montserrat', Arial, sans-serif;
+}
+
+.main-container {
+  background: #fff;
+  border-radius: 6px;
+  margin: 40px auto 0;
+  padding: 0;
+  max-width: 98%;
+  box-shadow: none;
+  border: none;
+}
+
+.header-title {
+  color: #009688;
+  font-weight: 700;
+  font-size: 24px;
+  text-align: center;
+  margin-top: 24px;
+  font-family: 'Montserrat', Arial, sans-serif;
+}
+
+.progress-bar-bg {
+  background: #e5e5e5;
+  border-radius: 8px;
+  height: 10px;
+  width: 350px;
+  margin: 8px auto 0;
+  position: relative;
+}
+
+.progress-bar-fill {
+  background: #009688;
+  border-radius: 8px;
+  height: 100%;
+  width: 0%; /* será actualizado vía binding */
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.progress-step {
+  text-align: center;
+  color: #888;
+  font-size: 11px;
+  margin: 2px 0 0;
+}
+
+.section-header {
+  background: #dcc7a0;
+  color: #a94442;
+  font-size: 18px;
+  font-weight: 400;
+  padding: 10px 20px;
+  border-bottom: 1px solid #e5e5e5;
+  font-family: 'Montserrat', Arial, sans-serif;
+}
+
+.divider {
+  border-top: 1px solid #e5e5e5;
+  margin: 0;
+}
+
+.section-content {
+  padding: 30px;
+}
+
+.form-label {
+  color: #a94442;
+  font-weight: 700;
+  font-size: 18px;
+  margin-right: 8px;
+  font-family: 'Montserrat', Arial, sans-serif;
+}
+
+.form-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.form-control {
+  border-radius: 8px;
+  font-size: 18px;
+  padding: 10px 18px;
+  border: 1px solid #ddd;
+  width: 100%;
+  max-width: 700px;
+  font-family: 'Montserrat', Arial, sans-serif;
+}
+
+.btn-agregar {
+  background: #00382a;
+  color: #fff;
+  font-weight: 700;
+  font-size: 20px;
+  border-radius: 8px;
+  padding: 8px 28px;
+  border: none;
+  transition: background 0.2s;
+}
+
+.btn-agregar:hover {
+  background: #005c47;
+}
+
+.perfil-list {
+  margin-top: 10px;
+  margin-left: 30px;
+}
+
+.perfil-item {
+  display: flex;
+  align-items: center;
+  font-size: 20px;
+  margin-bottom: 8px;
+  font-family: 'Montserrat', Arial, sans-serif;
+}
+
+.perfil-id {
+  width: 60px;
+  color: #333;
+}
+
+.perfil-remove {
+  color: #e94b6b;
+  font-size: 28px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.perfil-desc {
+  color: #333;
+  font-size: 20px;
+  margin-left: 10px;
+}
+
+.footer-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 30px 20px;
+}
+
+.btn-regresar {
+  background: none;
+  color: #006666;
+  font-size: 14px;
+  font-weight: 400;
+  border: none;
+  text-decoration: underline;
+  padding: 0;
+  margin-top: 10px;
+}
+
+.btn-siguiente {
+  background: #4caf50;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 7px 25px;
+  border: none;
+  margin-top: 10px;
+}
+
+@media (max-width: 900px) {
+  .section-content,
+  .footer-actions {
+    padding: 0 10px;
+  }
+  .progress-bar-bg {
+    width: 90vw;
+    min-width: 120px;
+  }
+}

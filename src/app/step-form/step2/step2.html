@@ -1,0 +1,53 @@
+<!-- src/app/step-form/step2/step2.component.html -->
+<div class="container-fluid px-0">
+  <!-- Título y progreso -->
+  <div class="header-title">Registro</div>
+  <div class="progress-bar-bg">
+    <div class="progress-bar-fill" [style.width.%]="(currentStep/maxSteps)*100"></div>
+  </div>
+  <div class="progress-step">Paso {{ currentStep }} de {{ maxSteps }}</div>
+
+  <div class="main-container mt-4">
+    <!-- Encabezado de sección -->
+    <div class="section-header">SELECCIÓN DE PERFIL</div>
+    <div class="divider"></div>
+
+    <!-- Contenido de sección -->
+    <div class="section-content">
+      <form [formGroup]="form" (ngSubmit)="addPerfil.emit()">
+        <div class="form-inline mb-0">
+          <label for="perfilInput" class="form-label">*Perfil:</label>
+          <input id="perfilInput"
+                 type="text"
+                 formControlName="perfil"
+                 class="form-control"
+                 placeholder="Ej: 3101 SUPERVISOR IPH">
+          <button type="button"
+                  class="btn btn-agregar"
+                  (click)="addPerfil.emit()">
+            Agregar
+          </button>
+        </div>
+      </form>
+
+      <div class="perfil-list">
+        <!-- Volvemos a usar *ngFor -->
+        <div *ngFor="let p of perfiles; let i = index" class="perfil-item">
+          <span class="perfil-id">{{ p }}</span>
+          <span class="perfil-remove" (click)="removePerfil.emit(i)">
+            <i class="fas fa-times"></i>
+          </span>
+          <span class="perfil-desc">{{ p }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider mt-4"></div>
+
+    <!-- Botones de pie de página -->
+    <div class="footer-actions">
+      <button class="btn btn-regresar" (click)="prev.emit()">Regresar</button>
+      <button class="btn btn-siguiente" (click)="next.emit()">Siguiente</button>
+    </div>
+  </div>
+</div>

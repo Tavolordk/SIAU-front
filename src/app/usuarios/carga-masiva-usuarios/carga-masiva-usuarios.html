@@ -86,7 +86,8 @@
       <button class="btn-chico" type="button" (click)="descargarPDFsMasivos()" [disabled]="!allPreviewData.length">
         DESCARGAR
       </button>
-      <button class="btn-chico" type="button" (click)="sendSolicitudMasiva()" [disabled]="!selectedFile">
+      <button class="btn-chico" type="button" (click)="sendSolicitudMasiva()"
+        [disabled]="!selectedFile || !hayRegistrosListos">
         CARGAR
       </button>
     </div>

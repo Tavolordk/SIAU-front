@@ -1,0 +1,229 @@
+/* src/app/step-form/step1/step1.component.scss */
+
+/* Global Styles */
+body {
+  font-family: 'Open Sans', Arial, sans-serif;
+  background: #fff;
+}
+
+/* Header */
+.header-bg {
+  background-color: #e9e2c7;
+  padding: 0;
+  border-bottom: 1px solid #d1c7a1;
+}
+.navbar-custom {
+  background-color: #e9e2c7;
+  min-height: 80px;
+  padding: 0;
+  border-bottom: 1px solid #d1c7a1;
+}
+.logo-escudo {
+  height: 60px;
+  width: 60px;
+  object-fit: contain;
+  margin: 0 10px;
+}
+.seguridad-title {
+  color: #8B4513;
+  font-weight: bold;
+  font-size: 22px;
+  line-height: 1.1;
+}
+.seguridad-sub {
+  color: #8B4513;
+  font-size: 12px;
+  margin-top: -2px;
+  line-height: 1.1;
+}
+.siau-title {
+  color: #3a2d13;
+  font-size: 28px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  margin-left: 30px;
+  font-family: 'Open Sans', Arial, sans-serif;
+}
+
+/* Title and Progress */
+.registro-title {
+  color: #009688;
+  font-weight: bold;
+  font-size: 32px;
+  margin: 18px 0 0 0;
+  letter-spacing: 0.5px;
+}
+.progress-container {
+  margin: 20px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.progress-bar-custom-wrap {
+  width: 340px;
+  margin: 0 auto;
+}
+.progress-bar-custom {
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 5px;
+  width: 100%;
+  position: relative;
+}
+.progress-bar-inner {
+  background-color: #009688;
+  border-radius: 5px;
+  height: 100%;
+  transition: width 0.3s;
+}
+.progress-text {
+  text-align: center;
+  font-size: 15px;
+  color: #555;
+  margin: 2px 0 0 0;
+}
+.required {
+  color: #d32f2f;
+  font-size: 15px;
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+/* Section Titles */
+.section-title {
+  border-left: 4px solid #009688;
+  padding-left: 10px;
+  margin: 30px 0 18px 0;
+  font-weight: bold;
+  color: #222;
+  font-size: 17px;
+}
+
+/* Form Inputs */
+.form-label {
+  font-weight: normal;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+.form-control,
+.form-select {
+  border-radius: 4px;
+  border: 1px solid #ced4da;
+  font-size: 15px;
+  padding: 6px 10px;
+}
+
+/* Buttons */
+.btn-verify {
+  background-color: #198754;
+  color: white;
+  width: 100%;
+  font-weight: bold;
+  font-size: 15px;
+  border-radius: 4px;
+}
+.btn-back,
+.btn-next {
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 4px;
+  min-width: 110px;
+  padding: 8px 16px;
+}
+.btn-back {
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  color: #333;
+}
+.btn-next {
+  background-color: #198754;
+  color: #fff;
+  border: none;
+}
+
+/* CAPTCHA */
+.captcha-img {
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 6px;
+  min-width: 120px;
+  min-height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 24px;
+  letter-spacing: 2px;
+  color: #333;
+}
+
+/* Links */
+.link-red {
+  color: #d32f2f;
+  text-decoration: underline;
+  font-size: 14px;
+  margin-top: 2px;
+  display: inline-block;
+}
+.link-blue {
+  color: #0d6efd;
+  text-decoration: underline;
+  font-size: 14px;
+  margin-top: 2px;
+  display: inline-block;
+}
+
+/* Form Checks */
+.form-check-label {
+  font-size: 15px;
+}
+.form-check-input[type="radio"] {
+  margin-top: 2px;
+}
+.form-check-inline {
+  margin-right: 18px;
+}
+.form-check {
+  margin-bottom: 0;
+}
+.custom-checkbox .form-check-input {
+  margin-top: 2px;
+}
+.custom-checkbox .form-check-label {
+  font-size: 15px;
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+  .siau-title {
+    font-size: 20px;
+    margin-left: 10px;
+  }
+  .registro-title {
+    font-size: 24px;
+  }
+  .logo-escudo {
+    height: 45px;
+    width: 45px;
+  }
+  .progress-bar-custom-wrap {
+    width: 220px;
+  }
+}
+@media (max-width: 767px) {
+  .siau-title {
+    font-size: 16px;
+    margin-left: 0;
+  }
+  .registro-title {
+    font-size: 20px;
+  }
+  .logo-escudo {
+    height: 35px;
+    width: 35px;
+  }
+  .progress-bar-custom-wrap {
+    width: 140px;
+  }
+}

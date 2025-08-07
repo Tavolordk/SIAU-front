@@ -361,32 +361,42 @@ export class CargaMasivaUsuariosComponent implements OnInit {
     }
 
     // --- Envía toda la carga masiva al API ---
+sending = false;
+
 async sendSolicitudMasiva() {
+  console.log('sendSolicitudMasiva invoked');
+  if (this.sending) {
+    return;
+  }
+
   if (!this.allPreviewData.length) {
     this.showToastMessage('No hay datos para enviar', 'warn');
     return;
   }
 
-  const ready = this.allPreviewData.filter(row => row.ok || row.editado);
-  const selectedReady = ready.filter(r => r.descargar);
-  let toSend: ExcelUsuarioRow[] = [];
-
-  if (selectedReady.length) {
-    toSend = selectedReady;
-  } else if (ready.length) {
-    toSend = ready;
+  // Prioriza los seleccionados válidos; si no hay, toma todos los correctos.
+  const seleccionadosValidos = this.allPreviewData.filter(r => r.descargar && (r.ok || r.editado));
+  let registrosAEnviar: ExcelUsuarioRow[] = [];
+  if (seleccionadosValidos.length) {
+    registrosAEnviar = seleccionadosValidos;
   } else {
+    registrosAEnviar = this.allPreviewData.filter(r => (r.ok || r.editado));
+  }
+
+  if (!registrosAEnviar.length) {
     this.showToastMessage('No hay ningún archivo correcto para cargar', 'warn');
     return;
   }
 
+  this.sending = true;
   this.overlayLoaderVisible = true;
   this.carmasivMostrandoLoader = true;
   this.carmasivProgreso = 0;
 
-  const calls = toSend.map((item, i) =>
+  const total = registrosAEnviar.length;
+  const calls = registrosAEnviar.map((item, i) =>
     this.svc.saveUsuarioSolicitud(item).pipe(res => {
-      this.carmasivProgreso = Math.round(((i + 1) / toSend.length) * 100);
+      this.carmasivProgreso = Math.round(((i + 1) / total) * 100);
       return res;
     })
   );
@@ -403,9 +413,11 @@ async sendSolicitudMasiva() {
       this.overlayLoaderVisible = false;
       this.carmasivMostrandoLoader = false;
       this.carmasivProgreso = 0;
+      this.sending = false;
     }
   });
 }
+
 
 async descargarPDFsMasivos() {
   if (!this.allPreviewData.length) {
@@ -668,4 +680,14 @@ getOriginalIndex(pageIndex: number): number {
 isListoParaDescargar(cedula: ExcelUsuarioRow, originalIndex: number): boolean {
   return !!(cedula.ok || this.isCorregido(originalIndex));
 }
+/** hay al menos un registro válido (ok o editado) */
+get hayRegistrosListos(): boolean {
+  return this.allPreviewData.some(r => !!(r.ok || r.editado));
+}
+
+/** hay seleccionados para enviar (marcados con descargar y válidos) */
+get haySeleccionadosListos(): boolean {
+  return this.allPreviewData.some(r => r.descargar && (r.ok || r.editado));
+}
+
 }

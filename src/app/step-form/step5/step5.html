@@ -1,0 +1,49 @@
+<!-- src/app/step-form/step5/step5.component.html -->
+<div class="container-fluid p-0">
+  <div class="header-bar py-3 text-center" style="background: #e3c89a;">
+    <img src="assets/images/escudo2.png" height="80">
+    <div class="logo-title">Seguridad</div>
+    <div class="logo-subtitle">
+      Secretaría de Seguridad<br>y Protección Ciudadana
+    </div>
+  </div>
+
+  <div class="text-center mt-2 mb-1">
+    <h2 class="registro-title">Registro</h2>
+  </div>
+  <div class="registro-bar-container mb-2">
+    <div class="registro-bar"
+         [style.width.%]="(currentStep/maxSteps)*100">
+    </div>
+  </div>
+  <p class="paso-text text-center">
+    Paso {{currentStep}} de {{maxSteps}}
+  </p>
+
+  <div class="main-card p-4">
+    <h3 class="mb-3">Validación de medios de contacto</h3>
+    <p class="info-box">
+      Ingresa el código enviado a tu correo o Telegram.
+    </p>
+    <form [formGroup]="form" (ngSubmit)="validate.emit()">
+      <div class="mb-3">
+        <label for="codigo" class="form-label">Código recibido</label>
+        <input id="codigo"
+               type="text"
+               formControlName="codigo"
+               class="form-control">
+        <div class="form-text">
+          El código solo será válido por 15 minutos.
+        </div>
+      </div>
+      <div class="d-flex gap-2 mb-2">
+        <button type="submit" class="btn btn-verificar">Verificar</button>
+        <button type="button" class="btn btn-regresar"
+                (click)="prev.emit()">Regresar</button>
+      </div>
+    </form>
+    <a href="#" class="reenviar-link d-block text-center">
+      ¿No recibiste el código? Reenviar
+    </a>
+  </div>
+</div>

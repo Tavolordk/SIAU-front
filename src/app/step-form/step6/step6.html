@@ -1,0 +1,48 @@
+<!-- src/app/step-form/step6/step6.component.html -->
+<div class="container mt-4">
+  <div class="folio-box text-center mb-4">
+    <div class="folio-number">{{ folio }}</div>
+    <p class="folio-instructions">
+      Guarda este folio para seguimiento.
+    </p>
+  </div>
+
+  <div class="process-box mb-4 p-3 border rounded">
+    <div class="process-header mb-2">
+      <i class="fas fa-tasks me-2"></i>Proceso de Revisión
+    </div>
+    <div class="process-body">
+      <div><strong>Estatus actual:</strong> En revisión</div>
+      <div><strong>Próximo paso:</strong> Validación por el Enlace</div>
+      <div><strong>Tiempo estimado:</strong> 3 a 5 días hábiles</div>
+    </div>
+  </div>
+
+  <div class="confirmation-box mb-4 text-center">
+    <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+    <div class="confirmation-title">¡Confirmación enviada!</div>
+    <div class="confirmation-msg">
+      Hemos enviado confirmación al número registrado vía WhatsApp/Telegram.
+    </div>
+  </div>
+
+  <div class="no-response-box mb-4 text-center">
+    <div class="no-response-title">¿No recibiste respuesta?</div>
+    <div class="no-response-msg">
+      Si en <strong>5 días hábiles</strong> no tienes resolución, contáctanos:
+    </div>
+    <div class="no-response-contact">
+      Mesa de servicio: 800-XXX-XXXX ext.123<br>
+      monitoreo&#64;cns.gob.mx
+    </div>
+  </div>
+
+  <div class="action-buttons text-center">
+    <button class="btn btn-custom-print me-2">
+      <i class="fas fa-print"></i> Imprimir
+    </button>
+    <button class="btn btn-custom-email">
+      <i class="fas fa-envelope-open-text"></i> Enviar por correo
+    </button>
+  </div>
+</div>

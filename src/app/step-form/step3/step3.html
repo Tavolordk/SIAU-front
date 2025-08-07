@@ -1,0 +1,53 @@
+<!-- src/app/step-form/step3/step3.component.html -->
+<div class="container custom-card py-4">
+  <h2 class="card-header-custom text-center">Sube tu documentación</h2>
+  <form [formGroup]="form">
+    <div *ngFor="let doc of documentos; let i = index"
+         class="file-upload-section mb-3">
+      <label class="form-label">
+        {{ doc.label }}<span class="required">*</span>
+      </label>
+      <input type="file"
+             class="form-control"
+             (change)="fileChange.emit({ event: $event, idx: i })">
+    </div>
+  </form>
+
+  <div class="table-responsive mb-4">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tipo</th>
+          <th>Fecha</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of uploadedDocs">
+          <td>{{ row.id }}</td>
+          <td>{{ row.tipo }}</td>
+          <td>{{ row.fecha }}</td>
+          <td>
+            <button class="btn btn-sm btn-danger me-2"
+                    (click)="removeUpload.emit(row)">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+            <button class="btn btn-sm btn-primary">
+              <i class="fas fa-eye"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="d-flex justify-content-between">
+    <button class="btn btn-outline-secondary" (click)="prev.emit()">
+      Regresar
+    </button>
+    <button class="btn btn-success" (click)="next.emit()">
+      Siguiente
+    </button>
+  </div>
+</div>

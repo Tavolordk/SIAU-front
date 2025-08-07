@@ -1,0 +1,125 @@
+<!-- File: src/app/pages/gestion-solicitudes/gestion-solicitudes.component.html -->
+
+<div class="d-flex">
+  <!-- Sidebar -->
+  <aside class="sidebar d-flex flex-column">
+    <div class="sidebar-title">
+      <i class="fas fa-shield-alt"></i>
+      Portal de Usuarios
+    </div>
+    <a routerLink="/solicitudes" routerLinkActive="active" class="nav-link">
+      <i class="fas fa-tasks"></i>
+      Gestión de Solicitudes
+    </a>
+    <a routerLink="/usuarios" routerLinkActive="active" class="nav-link">
+      <i class="fas fa-users"></i>
+      Usuarios
+    </a>
+    <a routerLink="/contrasena" routerLinkActive="active" class="nav-link bg-danger">
+      <i class="fas fa-key"></i>
+      Gestión de contraseña
+    </a>
+    <a routerLink="/logout" class="nav-link mt-auto">
+      <i class="fas fa-sign-out-alt"></i>
+      Cerrar sesión
+    </a>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main-content">
+    <header class="header-bar">
+      <span class="account-info">Cuenta: U654321</span>
+      <span class="link-info">Enlace: Lic. Israel Osorio Díaz</span>
+      <span class="city-info">Ciudad de México</span>
+      <span class="email-info">| isorioseguridad.gob.mx</span>
+      <i class="fas fa-cog"></i>
+      <i class="fas fa-expand"></i>
+    </header>
+
+    <section class="container-main">
+      <div class="page-title">
+        <i class="fas fa-tasks"></i>
+        Gestión de Solicitudes de Cuentas
+      </div>
+
+      <!-- Filter Section -->
+      <form class="filter-section d-flex align-items-end">
+        <div style="min-width: 220px; max-width: 220px;">
+          <label class="form-label">Buscar por nombre o folio</label>
+          <input type="text" class="form-control" placeholder="Ej. Juan Pérez o PM-2023-00158">
+        </div>
+
+        <div style="min-width: 160px; max-width: 160px;">
+          <label class="form-label">Entidad</label>
+          <select class="form-select">
+            <option selected>Todas</option>
+            <option>Ciudad de México</option>
+            <option>Estado de México</option>
+            <option>Jalisco</option>
+          </select>
+        </div>
+
+        <div style="min-width: 160px; max-width: 160px;">
+          <label class="form-label">Estatus de solicitud</label>
+          <select class="form-select">
+            <option selected>Todas</option>
+            <option>Pendiente</option>
+            <option>Validada</option>
+            <option>Rechazada</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary ms-2">Buscar/Filtrar</button>
+        <button type="button" class="btn btn-success ms-3">+ Nueva Solicitud</button>
+      </form>
+
+      <!-- Table Section -->
+      <section class="table-section mt-2">
+        <div class="table-header">
+          <i class="fas fa-inbox me-2"></i> Solicitudes recibidas
+        </div>
+
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Folio</th>
+                <th>Nombre</th>
+                <th>Entidad</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>PM-2023-00158</td>
+                <td>Juan Pérez López</td>
+                <td>Ciudad de México</td>
+                <td>2025-05-13</td>
+                <td><span class="badge-pendiente">Pendiente</span></td>
+                <td><button class="btn btn-revisar">Revisar</button></td>
+              </tr>
+              <tr>
+                <td>PM-2023-00159</td>
+                <td>María García Ruiz</td>
+                <td>Estado de México</td>
+                <td>2025-05-12</td>
+                <td><span class="badge-validada">Validada</span></td>
+                <td><button class="btn btn-revisar">Revisar</button></td>
+              </tr>
+              <tr>
+                <td>PM-2023-00160</td>
+                <td>Carlos Martínez</td>
+                <td>Jalisco</td>
+                <td>2025-05-10</td>
+                <td><span class="badge-rechazada">Rechazada</span></td>
+                <td><button class="btn btn-revisar">Revisar</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
+</div>
