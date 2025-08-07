@@ -36,15 +36,9 @@
               <option value="" disabled selected>
                 --- SELECCIONE ---
               </option>
-              <option value="identificacion">
-                COMPROBANTE DE IDENTIFICACIÓN
-              </option>
-              <option value="domicilio">
-                COMPROBANTE DE DOMICILIO
-              </option>
-              <option value="laboral">
-                COMPROBANTE LABORAL
-              </option>
+              <option value="identificacion">COMPROBANTE DE IDENTIFICACIÓN</option>
+              <option value="domicilio">COMPROBANTE DE DOMICILIO</option>
+              <option value="laboral">COMPROBANTE LABORAL</option>
             </select>
           </div>
         </div>
@@ -78,29 +72,55 @@
               SELECCIONE EL DOCUMENTO:<span class="required">*</span>
             </label>
           </div>
+
           <div class="col-md-8 col-12">
-            <div class="file-upload-section">
+            <div class="file-upload-section d-flex align-items-center gap-2 flex-wrap">
+              <!-- input real oculto -->
               <input
                 type="file"
-                formControlName="archivo"
+                id="fileInput"
                 class="form-control d-none"
-                id="fileInput">
-              <label
-                for="fileInput"
-                class="btn btn-outline-secondary mb-0">
+                formControlName="archivo"
+                accept=".jpg,.jpeg,application/pdf"
+                (change)="onFileSelected($event)">
+
+              <!-- botón que dispara el input -->
+              <label for="fileInput" class="btn btn-outline-secondary mb-0">
                 Seleccionar archivo
               </label>
+
+              <!-- nombre del archivo -->
               <span class="form-text">
-                {{ form.get('archivo')?.value?.name
-                   || 'Sin archivos seleccionados' }}
+                {{ (form.get('archivo')?.value?.name) || 'Sin archivos seleccionados' }}
               </span>
+
+              <!-- botón subir -->
               <button
                 type="button"
                 class="btn btn-secondary"
-                [disabled]="!form.get('archivo')?.value"
-                (click)="upload.emit()">
+                [disabled]="!form.get('archivo')?.value || form.get('archivo')?.invalid"
+                (click)="onUpload()">
                 Subir Archivo
               </button>
+            </div>
+
+            <!-- ayudas y errores -->
+            <div class="small mt-1 text-muted">
+              Solo se permiten archivos <strong>PDF</strong> o <strong>JPG</strong>. Tamaño máximo: <strong>10 MB</strong>.
+            </div>
+
+            <div
+              *ngIf="form.get('archivo')?.touched && form.get('archivo')?.invalid"
+              class="text-danger small mt-1">
+              <div *ngIf="form.get('archivo')?.errors?.['fileType']">
+                Solo se permiten archivos PDF o JPG.
+              </div>
+              <div *ngIf="form.get('archivo')?.errors?.['fileSize']">
+                El archivo no debe superar 10 MB.
+              </div>
+              <div *ngIf="form.get('archivo')?.errors?.['required']">
+                Este campo es obligatorio.
+              </div>
             </div>
           </div>
         </div>
