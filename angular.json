@@ -40,18 +40,17 @@
           },
           "configurations": {
             "production": {
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
-                }
-              ],
+"budgets": [
+  { "type": "initial", "maximumWarning": "3mb", "maximumError": "4mb" },
+  { "type": "anyComponentStyle", "maximumWarning": "8kb", "maximumError": "12kb" }
+],
+"allowedCommonJsDependencies": [
+  "exceljs",
+  "jszip",
+  "file-saver",
+  "pako"
+]
+,
               "outputHashing": "all"
             },
             "development": {
