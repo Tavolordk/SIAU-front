@@ -12,6 +12,27 @@
   <!-- Vista previa de los datos importados -->
   <div class="solicitudes_masiva-container">
     <div class="solicitudes_masiva-tabla-contenedor">
+      <!-- Filtro / acciones de tabla -->
+      <div class="solicitudes_masiva-toolbar">
+        <label class="chk">
+          <input type="checkbox" [(ngModel)]="mostrarSoloIncorrectos" />
+          Mostrar solo incorrectos
+        </label>
+
+        <span class="stats">
+          {{ enviadosCount }} enviados · {{ pendientesCount }} pendientes
+        </span>
+
+        <div class="spacer"></div>
+
+        <button type="button" class="btn-chico" (click)="selectValidos()">
+          Seleccionar válidos
+        </button>
+        <button type="button" class="btn-chico" (click)="limpiarSeleccion()">
+          Limpiar selección
+        </button>
+      </div>
+
       <table class="solicitudes_masiva-tabla">
         <thead>
           <tr>
@@ -23,38 +44,60 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngIf="!allPreviewData.length">
-            <td colspan="6">No hay datos cargados.</td>
+          <tr *ngIf="!(rowsVisibles?.length)">
+            <td colspan="5">No hay datos cargados.</td>
           </tr>
-          <tr *ngFor="let cedula of previewDataPaginated; let i = index">
+
+          <tr
+            *ngFor="let cedula of (rowsVisibles | slice:((currentPage-1)*itemsPerPage):(currentPage*itemsPerPage)); let i = index"
+            [class.row-sending]="cedula.__sending" [class.row-ok]="cedula.__okSent"
+            [class.row-fade-out]="cedula.__fadeOut">
+
+            <!-- # -->
             <td>{{ (currentPage-1)*itemsPerPage + i + 1 }}</td>
 
-            <td> <input type="checkbox" [(ngModel)]="cedula.descargar"
-                [disabled]="!isListoParaDescargar(cedula, getOriginalIndex(i))" [title]="!isListoParaDescargar(cedula, getOriginalIndex(i))
-                ? 'Corrige los errores o edítalo para poder descargarlo'
-                : 'Seleccionar para descargar PDF'" />
+            <!-- Nombre + checkbox selección -->
+            <td>
+              <input type="checkbox" [(ngModel)]="cedula.descargar"
+                [disabled]="cedula.__sending || !isListoParaDescargar(cedula, getOriginalIndex(i))" [title]="!isListoParaDescargar(cedula, getOriginalIndex(i))
+          ? 'Corrige los errores o edítalo para poder descargarlo'
+          : 'Seleccionar para descargar PDF'" />
+              {{ cedula.nombre }} {{ cedula.apellidoPaterno }} {{ cedula.apellidoMaterno }}
+            </td>
 
-              {{ cedula.nombre }} {{ cedula.apellidoPaterno }} {{ cedula.apellidoMaterno }}</td>
             <!-- Status -->
             <td style="text-align:center">
-              <img *ngIf="cedula.ok || isCorregido((currentPage-1)*itemsPerPage + i)"
-                src="assets/images/file_approva_ico.png" class="ok img-fluid" />
-              <img *ngIf="!(cedula.ok || isCorregido((currentPage-1)*itemsPerPage + i))"
-                src="assets/images/file_rejected_ico.png" class="nook img-fluid" />
-            </td>
-            <!-- Descripción de error -->
-            <td style="text-align:center">
-              <ng-container *ngIf="cedula.editado || !(cedula.descripcionerror?.trim()); else errores">
-                <span class="text-success fw-bold">LISTO PARA DESCARGAR</span>
+              <ng-container *ngIf="cedula.__sending; else estadoIcono">
+                <span class="mini-spinner"></span>
               </ng-container>
-              <ng-template #errores>
-                {{ cedula.descripcionerror }}
+              <ng-template #estadoIcono>
+                <img *ngIf="cedula.__okSent || cedula.ok || isCorregido((currentPage-1)*itemsPerPage + i)"
+                  src="assets/images/file_approva_ico.png" class="ok img-fluid" />
+                <img *ngIf="!(cedula.__okSent || cedula.ok || isCorregido((currentPage-1)*itemsPerPage + i))"
+                  src="assets/images/file_rejected_ico.png" class="nook img-fluid" />
               </ng-template>
             </td>
+
+            <!-- Descripción -->
             <td style="text-align:center">
-              <img *ngIf="cedula.ok || isCorregido((currentPage-1)*itemsPerPage + i)"
-                src="assets/images/file_download_pdf_ico.png" class="upload" (click)="downloadPDF(cedula)" />
-              <img *ngIf="!cedula.ok && !isCorregido((currentPage-1)*itemsPerPage + i)"
+              <ng-container *ngIf="cedula.__sending">Enviando…</ng-container>
+              <ng-container *ngIf="cedula.__okSent"><span class="text-success fw-bold">ENVIADO</span></ng-container>
+              <ng-container *ngIf="!cedula.__sending && !cedula.__okSent">
+                <ng-container *ngIf="cedula.editado || !(cedula.descripcionerror?.trim()); else errores">
+                  <span class="text-success fw-bold">LISTO PARA DESCARGAR</span>
+                </ng-container>
+                <ng-template #errores>
+                  {{ cedula.__errorMsg || cedula.descripcionerror }}
+                </ng-template>
+              </ng-container>
+            </td>
+
+            <!-- Acción -->
+            <td style="text-align:center">
+              <img *ngIf="!cedula.__sending && (cedula.ok || isCorregido((currentPage-1)*itemsPerPage + i))"
+                src="assets/images/file_download_pdf_ico.png" class="upload" [class.disabled]="cedula.__okSent"
+                (click)="!cedula.__okSent && downloadPDF(cedula)" />
+              <img *ngIf="!cedula.__sending && !cedula.ok && !isCorregido((currentPage-1)*itemsPerPage + i)"
                 src="assets/images/file_edit_ico.png" class="warning"
                 (click)="irIndividual(cedula, (currentPage-1)*itemsPerPage + i)" />
             </td>
@@ -83,11 +126,12 @@
       </button>
     </div>
     <div class="fila fila-2">
-      <button class="btn-chico" type="button" (click)="descargarPDFsMasivos()" [disabled]="!allPreviewData.length">
+      <button class="btn-chico" type="button" (click)="descargarPDFsMasivos()" [disabled]="!(allPreviewData?.length)">
         DESCARGAR
       </button>
       <button class="btn-chico" type="button" (click)="sendSolicitudMasiva()"
-        [disabled]="!selectedFile || !hayRegistrosListos">
+        [disabled]="sending || !haySeleccionValida">
+        <span *ngIf="sending" class="mini-spinner inline"></span>
         CARGAR
       </button>
     </div>

@@ -87,4 +87,9 @@ export class SolicitudesService {
     const url = `${this.apiBaseUrl}/data/solicitudes/${id}/pdf`;
     return this.http.get(url, { responseType: 'blob' });
   }
+    getPerfiles(): Observable<any[]> {
+    const url = `${this.apiBaseUrl}/data/perfiles`; 
+    // ⚠️ aquí debes poner el endpoint real que expone tu API de perfiles
+    return this.http.get<any[]>(url);
+  }
 }

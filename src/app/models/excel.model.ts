@@ -50,4 +50,5 @@ export interface ExcelUsuarioRow {
     nombreFirmaResponsable?: string | null;
     nombreFirmaEnlace?: string | null;
     editado?: boolean;
+    estado?: 'pendiente' | 'enviando' | 'ok' | 'error';
 }

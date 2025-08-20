@@ -43,5 +43,8 @@ estaCorregido(indice: number | string): boolean {
   if (isNaN(idx)) return false;
   return this.corregidos.has(idx);
 }
-
+removeRow(row: ExcelUsuarioRow) {
+  const datos = this.getDatosCargados().filter(r => r !== row);
+  this.setDatosCargados(datos);
+}
 }

@@ -1,6 +1,9 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { SolicitudesService } from '../../services/solicitudes.service';
+import { Observable } from 'rxjs';
+import { map, startWith } from 'rxjs/operators';
 
 @Component({
   selector: 'app-step1',
@@ -16,9 +19,12 @@ export class Step1Component implements OnInit {
   @Output() prev = new EventEmitter<void>();
 
   @Input() form!: FormGroup;
-  @Input() tipos: string[] = ['Tipo A', 'Tipo B', 'Tipo C'];
+  @Input() tipos: string[] = ['FEDERAL', 'ESTATAL', 'MUNICIPAL'];
+    perfiles: any[] = [];
+  filteredPerfiles$!: Observable<any[]>;
 
-  constructor(private fb: FormBuilder) {}
+
+  constructor(private fb: FormBuilder, private solicitudesService: SolicitudesService ) {}
 
   ngOnInit(): void {
     this.form = this.fb.group({
@@ -56,7 +62,8 @@ export class Step1Component implements OnInit {
       institucion2: ['', Validators.required],
       dependencia2: [''],
       corporacion2: [''],
-      aceptaTerminos: [false, Validators.requiredTrue]
+      aceptaTerminos: [false, Validators.requiredTrue],
     });
   }
+  
 }

@@ -16,14 +16,19 @@
     </div>
 
     <label class="label-obligatorio">Seleccione las opciones que aplican</label>
-    <div class="cdindi-checkbox-group">
+    <div class="cdindi-checkbox-group" formArrayName="checks">
       <label *ngFor="let opt of opciones; let i = index" class="checkbox-wrapper-47">
-        <input type="checkbox" [formControlName]="'checkBox' + (i + 1)" id="chk{{i}}"
-          (change)="onCheckboxChange(i + 1)" />
+        <input type="checkbox" [formControlName]="i" (change)="onCheckArrayChange(i, $event)" />
         <span class="custom-checkbox"></span>
         {{ opt }}
       </label>
     </div>
+
+    <!-- Mensaje si usas el validador singleTrue -->
+    <div *ngIf="checks.invalid && (checks.dirty || checks.touched)" class="validation-message">
+      Debe estar seleccionada exactamente una opción.
+    </div>
+
   </div>
 
   <!-- Sección Datos Generales -->

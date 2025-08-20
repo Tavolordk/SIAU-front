@@ -1,15 +1,17 @@
 // File: src/app/usuarios/carga-usuario/carga-usuario.component.ts
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CargaUsuarioService } from '../../services/carga-usuario.service';
 import { CedulaModel } from '../../models/cedula.model';
-import {CedulaModel as CedulaModelPDF} from '../../services/pdf.service';
+import { CedulaModel as CedulaModelPDF } from '../../services/pdf.service';
 import { CatalogosService, CatalogoItem, CatEstructuraDto } from '../../services/catalogos.service';
 import { UsuarioService } from '../../services/usuario.service';
 import { ExcelUsuarioRow } from '../../models/excel.model';
 import { CargaUsuarioStoreService } from '../../services/carga-usuario-store.service';
+import { FormArray, ValidatorFn } from '@angular/forms';
+
 
 /**
  * Componente para crear/editar la cédula de usuario
@@ -61,39 +63,66 @@ export class CargaUsuarioComponent implements OnInit {
   ngOnInit(): void {
     this.loading = true;
     this.initForm();
-    // Carga todos los catálogos de una sola llamada
+
+    // 1) Cargar todos los catálogos una sola vez
     this.catalogos.getAll().subscribe(res => {
-      console.log('CatalogosService.getAll returned', res);
       this.estructura = res.Estructura;
+
       this.tiposUsuario = res.TipoUsuario.map(x => ({ id: x.ID, nombre: x.TP_USUARIO }));
       this.entidades = res.Entidades.map(x => ({ id: x.ID, nombre: x.NOMBRE }));
       this.perfiles = res.Perfiles.map(x => ({ id: x.ID, clave: x.CLAVE, nombre: x.FUNCION }));
-      this.institucionOptions = this.estructura.filter(x => x.TIPO === 'INSTITUCION')
+
+      this.institucionOptions = this.estructura
+        .filter(x => x.TIPO === 'INSTITUCION')
         .map(x => ({ id: x.ID, nombre: x.NOMBRE }));
+
+      // Listas dependientes se llenan en cascada más adelante
       this.dependencias = [];
       this.corporaciones = [];
       this.areaOptions = [];
-      this.loading = false;
+
+      // 2) Si vienes de Carga Masiva, usa el objeto del state y NO hagas GET
+      const navState = this.router.getCurrentNavigation()?.extras?.state as any;
+      const cedulaParaEditar =
+        navState?.cedula ?? (history.state as any)?.cedula;
+
+      if (cedulaParaEditar) {
+        this.patchFormFromCedula(cedulaParaEditar);
+        this.loading = false;
+        return; // <- evita el GET si ya traes la cédula
+      }
+
+      // 3) Si NO hay state, intenta cargar por :indice
+      const idParam = this.route.snapshot.paramMap.get('indice');
+      const id = idParam ? Number(idParam) : NaN;
+
+      if (!isNaN(id) && id > 0) {
+        this.svc.getUsuario(id).subscribe({
+          next: (data: CedulaModel) => {
+            this.userForm.patchValue(data);
+            // disparar cascadas según valores del backend
+            this.onEntidadChange(data.entidad || null);
+            this.onEntidadComisionadoChange(data.entidad2 || null);
+            this.loading = false;
+          },
+          error: _ => {
+            this.loading = false;
+          }
+        });
+      } else {
+        this.loading = false;
+      }
     });
-
-const id = this.route.snapshot.params['indice'];
-    if (id) {
-      this.svc.getUsuario(id).subscribe((data: CedulaModel) => {
-        this.userForm.patchValue(data);
-        this.onEntidadChange(data.entidad || null);
-        this.onEntidadComisionadoChange(data.entidad2 || null);
-      });
-    }
-
-    const cedulaParaEditar = (history.state as any).cedula as ExcelUsuarioRow | undefined;
-    if (cedulaParaEditar) {
-      this.patchFormFromCedula(cedulaParaEditar);
-    }
-
   }
 
   /** Rellena el formulario con los valores de la fila de Excel */
   private patchFormFromCedula(c: ExcelUsuarioRow) {
+    // patchFormFromCedula(...)
+    const checksInit = [!!c.checkBox1, !!c.checkBox2, !!c.checkBox3, !!c.checkBox4, !!c.checkBox5];
+    this.checks.patchValue(checksInit, { emitEvent: false });
+    const idx = checksInit.findIndex(v => v);
+    if (idx >= 0) this.setSingleCheck(idx);
+    this.setSingleCheck(0);
     // 1) parchea valores básicos
     this.userForm.patchValue({
       fill1: c.fill1,
@@ -191,7 +220,36 @@ const id = this.route.snapshot.params['indice'];
 
     this.mostrarErrores(this.userForm);
   }
+  // Helper: deja exactamente 1 check en true (el i)
+  private setSingleCheck(i: number): void {
+    for (let j = 0; j < this.checks.length; j++) {
+      this.checks.at(j).setValue(j === i, { emitEvent: false });
+    }
+    this.checks.markAsDirty();
+    this.checks.updateValueAndValidity({ emitEvent: false });
+  }
 
+  // Cambia tu handler para NO depender del $event
+  onCheckArrayChange(i: number, ev?: Event): void {
+    if (i !== 0) return;
+
+    const checked = ev ? (ev.target as HTMLInputElement).checked
+      : !!this.checks.at(i).value;
+
+    if (checked) this.setSingleCheck(0);
+    else this.checks.at(0).setValue(true, { emitEvent: false }); // Siempre debe haber 1: dejamos 0 en true
+    if (checked) {
+      this.setSingleCheck(i); // activo -> apaga los demás
+    } else {
+      // lo dejaron en false, sin más
+      this.checks.at(i).setValue(false, { emitEvent: false });
+    }
+
+  }
+
+  get checks(): FormArray {
+    return this.userForm.get('checks') as FormArray;
+  }
 
   /** Inicializa el formulario con campos y validaciones */
   private initForm(): void {
@@ -204,11 +262,9 @@ const id = this.route.snapshot.params['indice'];
     this.userForm = this.fb.group({
       fill1: ['', [Validators.required, Validators.maxLength(20)]], // Oficio
       folio: [''],
-      checkBox1: [false],
-      checkBox2: [false],
-      checkBox3: [false],
-      checkBox4: [false],
-      checkBox5: [false],
+      checks: this.fb.array(
+        [false, false, false, false, false],
+      ),
 
       nombre: ['', [Validators.required, Validators.maxLength(100)]],
       nombre2: [''],
@@ -292,9 +348,21 @@ const id = this.route.snapshot.params['indice'];
       municipio2: [
         null,
         [
-          Validators.required,
-          (control: { value: number; }) => {
-            const existe = this.municipios2.some(m => m.id === control.value);
+          // sin Validators.required -> NO obligatorio
+          (control: AbstractControl): ValidationErrors | null => {
+            const v = control.value; // puede venir como number | '' | null
+
+            // vacío => válido
+            if (v === null || v === undefined || v === '') return null;
+
+            // normaliza a número
+            const id = typeof v === 'string' ? parseInt(v, 10) : v;
+
+            // si no es número válido, inválido
+            if (!Number.isFinite(id)) return { invalidOption: true };
+
+            // valida contra el catálogo sólo si hay valor
+            const existe = this.municipios2.some(m => m.id === id);
             return existe ? null : { invalidOption: true };
           }
         ]
@@ -307,7 +375,11 @@ const id = this.route.snapshot.params['indice'];
 
       UserId: userId
     });
-
+    const checksArr = this.userForm.get('checks') as FormArray;
+    checksArr.at(0).setValue(true, { emitEvent: false });   // Nueva Cuenta ON
+    for (let i = 1; i < checksArr.length; i++) {
+      checksArr.at(i).disable({ emitEvent: false });        // Mod. perfiles, Ampliación, Reactivación, Cambio Adscripción OFF/disabled
+    }
     // Reactivos para cargar municipios cuando cambia la entidad
     this.userForm.get('entidad')?.valueChanges.subscribe(val => this.onEntidadChange(val));
     this.userForm.get('entidad2')?.valueChanges.subscribe(val => this.onEntidadComisionadoChange(val));
@@ -378,207 +450,228 @@ const id = this.route.snapshot.params['indice'];
   }
 
   /** Envía el formulario al servicio */
-onSubmit(): void {
-  if (this.userForm.invalid) {
-    this.userForm.markAllAsTouched();
-    return;
-  }
-
-  const f = this.userForm.value;
-  const userId = this.usuarioSvc.getUserId();
-  if (userId === null) {
-    console.error('No hay userId en localStorage');
-    this.loading = false;
-    return;
-  }
-
-  // Helper para evitar null/undefined y forzar string seguro
-  const safeString = (v: any): string => (v === null || v === undefined ? '' : String(v));
-
-  // --- 1) Construir modelo para la API (POST) ---
-  const apiCedula: CedulaModel = {
-    fill1: f.fill1,
-    folio: '', // lo genera el SP
-    cuentaUsuario: '',
-    correoElectronico: f.correoElectronico,
-    telefono: f.telefono,
-    apellidoPaterno: f.apellidoPaterno,
-    apellidoMaterno: f.apellidoMaterno || null,
-    nombre: f.nombre,
-    nombre2: f.nombre2 || null,
-    rfc: f.rfc,
-    cuip: f.cuip || null,
-    curp: f.curp || null,
-    tipoUsuario: f.tipoUsuario,
-    entidad: f.entidad,
-    municipio: f.municipio,
-    institucion: f.institucion,
-    corporacion: f.corporacion,
-    area: this.getAreaJerarquica(f),
-    cargo: f.cargo,
-    funciones: f.funciones,
-    funciones2: f.funciones2 || null,
-    pais: f.pais || null,
-    entidad2: f.entidad2 || null,
-    municipio2: f.municipio2 || null,
-    corporacion2: f.corporacion2 || null,
-    consultaTextos: this.transformarPerfiles(f.consultaTextos),
-    modulosOperacion: this.transformarModulos(f.modulosOperacion),
-    checkBox1: f.checkBox1,
-    checkBox2: f.checkBox2,
-    checkBox3: f.checkBox3,
-    checkBox4: f.checkBox4,
-    checkBox5: f.checkBox5,
-    entidadNombre: '', // si tu API no requiere estos puedes dejarlos vacíos
-    municipioNombre: '',
-    institucionNombre: '',
-    dependenciaNombre: '',
-    corporacionNombre: '',
-    areaNombre: '',
-    entidad2Nombre: '',
-    municipio2Nombre: '',
-    corporacion2Nombre: '',
-    dependencia: 0,
-    descargar: false,
-    opciones: false,
-    perfiles: false
-  };
-
-  // --- 2) Construir modelo para el PDF ---
-  const pdfCedula: CedulaModelPDF = {
-    fill1: safeString(f.fill1) || null,
-    folio: safeString(f.folio) || null,
-    cuentaUsuario: undefined,
-    correoElectronico: f.correoElectronico,
-    telefono: f.telefono,
-    apellidoPaterno: f.apellidoPaterno,
-    apellidoMaterno: f.apellidoMaterno || null,
-    nombre: f.nombre,
-    nombre2: f.nombre2 || null,
-    rfc: f.rfc,
-    cuip: f.cuip || null,
-    curp: f.curp || null,
-    tipoUsuario: f.tipoUsuario,
-    entidad: f.entidad,
-    municipio: f.municipio,
-    institucion: f.institucion,
-    corporacion: f.corporacion,
-    area: this.getAreaJerarquica(f),
-    cargo: f.cargo,
-    funciones: f.funciones,
-    funciones2: f.funciones2 || null,
-    pais: f.pais || null,
-    entidad2: f.entidad2 || null,
-    municipio2: f.municipio2 || null,
-    corporacion2: f.corporacion2 || null,
-    consultaTextos: this.transformarPerfiles(f.consultaTextos),
-    modulosOperacion: this.transformarModulos(f.modulosOperacion),
-    checkBox1: f.checkBox1,
-    checkBox2: f.checkBox2,
-    checkBox3: f.checkBox3,
-    checkBox4: f.checkBox4,
-    checkBox5: f.checkBox5,
-  };
-
-  // --- 3) Edición proveniente de carga masiva ---
-  const cedulaParaEditar = (history.state as any).cedula as ExcelUsuarioRow | undefined;
-  const indiceParam = this.route.snapshot.params['indice'];
-  const indice = Number(indiceParam);
-  if (cedulaParaEditar && !isNaN(indice)) {
-    const datos = this.store.getDatosCargados();
-    const target = datos[indice];
-    if (target) {
-      // Actualiza mínimamente el ExcelUsuarioRow para reflejar cambios y marcarlo corregido
-      target.fill1 = pdfCedula.fill1 ?? target.fill1;
-      target.nombre = pdfCedula.nombre ?? target.nombre;
-      target.nombre2 = pdfCedula.nombre2 ?? target.nombre2;
-      target.apellidoPaterno = pdfCedula.apellidoPaterno ?? target.apellidoPaterno;
-      target.apellidoMaterno = pdfCedula.apellidoMaterno ?? target.apellidoMaterno;
-      target.rfc = pdfCedula.rfc ?? target.rfc;
-      target.curp = pdfCedula.curp ?? target.curp;
-      target.cuip = pdfCedula.cuip ?? target.cuip;
-      target.correoElectronico = pdfCedula.correoElectronico ?? target.correoElectronico;
-      target.telefono = pdfCedula.telefono ?? target.telefono;
-      target.tipoUsuario = pdfCedula.tipoUsuario ?? target.tipoUsuario;
-      target.entidad = pdfCedula.entidad != null ? pdfCedula.entidad : target.entidad;
-      target.municipio = pdfCedula.municipio != null ? String(pdfCedula.municipio) : target.municipio;
-      target.institucion = pdfCedula.institucion != null ? pdfCedula.institucion: target.institucion;
-      // dependencia si aplica igual que antes
-      target.corporacion = pdfCedula.corporacion != null ? pdfCedula.corporacion : target.corporacion;
-      target.area = pdfCedula.area != null ? pdfCedula.area: target.area;
-      target.cargo = pdfCedula.cargo ?? target.cargo;
-      target.funciones = pdfCedula.funciones ?? target.funciones;
-      target.pais = pdfCedula.pais ?? target.pais;
-      target.entidad2 = pdfCedula.entidad2 != null ? String(pdfCedula.entidad2) : target.entidad2;
-      target.municipio2 = pdfCedula.municipio2 != null ? String(pdfCedula.municipio2) : target.municipio2;
-      target.corporacion2 = pdfCedula.corporacion2 != null ? String(pdfCedula.corporacion2) : target.corporacion2;
-      target.consultaTextos = pdfCedula.consultaTextos || target.consultaTextos;
-      target.modulosOperacion = pdfCedula.modulosOperacion || target.modulosOperacion;
-
-      // Recalcular validación igual que en carga masiva original
-      const errores: string[] = [];
-      if (!target.fill1) errores.push('Oficio es obligatorio');
-      else if (target.fill1.length > 20) errores.push('Oficio: máximo 20 caracteres');
-
-      if (!target.nombre) errores.push('Nombre(s) es obligatorio');
-      else if (target.nombre.length > 100) errores.push('Nombre(s): máximo 100 caracteres');
-
-      if (!target.apellidoPaterno) errores.push('Apellido Paterno es obligatorio');
-      else if (target.apellidoPaterno.length > 100) errores.push('Apellido Paterno: máximo 100 caracteres');
-
-      if (target.apellidoMaterno && target.apellidoMaterno.length > 100)
-        errores.push('Apellido Materno: máximo 100 caracteres');
-
-      if (!target.rfc) errores.push('RFC es obligatorio');
-      else if (!/^[A-ZÑ&]{4}\d{6}[A-Z0-9]{3}$/i.test(target.rfc))
-        errores.push('RFC formato inválido');
-
-      if (!target.correoElectronico) errores.push('Correo electrónico es obligatorio');
-      else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(target.correoElectronico))
-        errores.push('Correo formato inválido');
-
-      if (target.telefono && !/^\d{7,10}$/.test(target.telefono))
-        errores.push('Teléfono debe tener 7–10 dígitos');
-
-      ['entidad', 'institucion', 'dependencia', 'area'].forEach(k => {
-        const v = target[k as keyof ExcelUsuarioRow] as number;
-        if (typeof v === 'number' && v <= 0) errores.push(`${k} debe ser mayor que 0`);
-      });
-
-      if (!target.cargo) errores.push('Cargo es obligatorio');
-      else if (target.cargo.length > 100) errores.push('Cargo: máximo 100 caracteres');
-
-      if (!target.funciones) errores.push('Funciones es obligatorio');
-      else if (target.funciones.length > 300) errores.push('Funciones: máximo 300 caracteres');
-
-      if (target.pais && target.pais.length > 100) errores.push('País: máximo 100 caracteres');
-
-      target.errores = errores;
-      target.ok = errores.length === 0;
-      target.descripcionerror = target.ok ? '' : `CAMPOS INCORRECTOS: ${errores.join(', ')}`;
-      target.editado = true;
-
-      this.store.setDatosCargados(datos);
-      this.store.marcarCorregido(indice);
+  onSubmit(): void {
+    if (this.userForm.invalid) {
+      this.userForm.markAllAsTouched();
+      return;
     }
-
-    this.router.navigate(['/cargamasiva']);
-    return;
-  }
-
-  // --- 4) Envío normal a backend ---
-  this.loading = true;
-  console.log('Payload API a enviar:', apiCedula);
-  console.log('Payload PDF construido (no se envía automáticamente):', pdfCedula);
-
-  this.svc.saveUsuarioSolicitud(apiCedula).subscribe({
-    next: () => this.router.navigate(['/solicitudes']),
-    error: err => {
-      console.error('Error guardando solicitud:', err);
+    const f = this.userForm.getRawValue();
+    const checks = (f.checks as boolean[]).map(Boolean);
+    const [cb1, cb2, cb3, cb4, cb5] = (this.checks.value as boolean[]).map(Boolean);
+    const municipioId: number =
+      typeof f.municipio === 'number'
+        ? f.municipio
+        : (
+          // intenta por nombre
+          this.catalogos.getMunicipioIdByName(String(f.municipio ?? '').trim())
+          // intenta parsear número
+          ?? parseInt(String(f.municipio ?? ''), 10)
+          // fallback
+          ?? 0
+        );
+    const municipioNombre =
+      this.catalogos.getMunicipioNameById?.(municipioId) // si tienes este helper
+      ?? (this.municipios.find(m => m.id === municipioId)?.nombre || '');
+    const userId = this.usuarioSvc.getUserId();
+    if (userId === null) {
+      console.error('No hay userId en localStorage');
       this.loading = false;
+      return;
     }
-  });
-}
+
+    // Helper para evitar null/undefined y forzar string seguro
+    const safeString = (v: any): string => (v === null || v === undefined ? '' : String(v));
+
+    // --- 1) Construir modelo para la API (POST) ---
+    const apiCedula: CedulaModel = {
+      fill1: f.fill1,
+      folio: '', // lo genera el SP
+      cuentaUsuario: '',
+      correoElectronico: f.correoElectronico,
+      telefono: f.telefono,
+      apellidoPaterno: f.apellidoPaterno,
+      apellidoMaterno: f.apellidoMaterno || null,
+      nombre: f.nombre,
+      nombre2: f.nombre2 || null,
+      checkBox1: cb1,
+      checkBox2: cb2,
+      checkBox3: cb3,
+      checkBox4: cb4,
+      checkBox5: cb5,
+      rfc: f.rfc,
+      cuip: f.cuip || null,
+      curp: f.curp || null,
+      tipoUsuario: f.tipoUsuario,
+      entidad: f.entidad,
+      municipio: municipioId,
+      institucion: f.institucion,
+      corporacion: f.corporacion,
+      area: this.getAreaJerarquica(f),
+      cargo: f.cargo,
+      funciones: f.funciones,
+      funciones2: f.funciones2 || null,
+      pais: f.pais || null,
+      entidad2: f.entidad2 || null,
+      municipio2: f.municipio2 || null,
+      corporacion2: f.corporacion2 || null,
+      consultaTextos: this.transformarPerfiles(f.consultaTextos),
+      modulosOperacion: this.transformarModulos(f.modulosOperacion),
+      entidadNombre: '', // si tu API no requiere estos puedes dejarlos vacíos
+      municipioNombre: '',
+      institucionNombre: '',
+      dependenciaNombre: '',
+      corporacionNombre: '',
+      areaNombre: '',
+      entidad2Nombre: '',
+      municipio2Nombre: '',
+      corporacion2Nombre: '',
+      dependencia: 0,
+      descargar: false,
+      opciones: false,
+      perfiles: false
+    };
+
+    // --- 2) Construir modelo para el PDF ---
+    const pdfCedula: CedulaModelPDF = {
+      fill1: safeString(f.fill1) || null,
+      folio: safeString(f.folio) || null,
+      cuentaUsuario: undefined,
+      correoElectronico: f.correoElectronico,
+      telefono: f.telefono,
+      apellidoPaterno: f.apellidoPaterno,
+      apellidoMaterno: f.apellidoMaterno || null,
+      nombre: f.nombre,
+      nombre2: f.nombre2 || null,
+      rfc: f.rfc,
+      cuip: f.cuip || null,
+      curp: f.curp || null,
+      tipoUsuario: f.tipoUsuario,
+      entidad: f.entidad,
+      municipio: f.municipio,
+      institucion: f.institucion,
+      corporacion: f.corporacion,
+      area: this.getAreaJerarquica(f),
+      cargo: f.cargo,
+      funciones: f.funciones,
+      funciones2: f.funciones2 || null,
+      pais: f.pais || null,
+      entidad2: f.entidad2 || null,
+      municipio2: f.municipio2 || null,
+      corporacion2: f.corporacion2 || null,
+      consultaTextos: this.transformarPerfiles(f.consultaTextos),
+      modulosOperacion: this.transformarModulos(f.modulosOperacion),
+      checkBox1: cb1,
+      checkBox2: cb2,
+      checkBox3: cb3,
+      checkBox4: cb4,
+      checkBox5: cb5,
+    };
+
+    // --- 3) Edición proveniente de carga masiva ---
+    const cedulaParaEditar = (history.state as any).cedula as ExcelUsuarioRow | undefined;
+    const indiceParam = this.route.snapshot.params['indice'];
+    const indice = Number(indiceParam);
+    if (cedulaParaEditar && !isNaN(indice)) {
+      const datos = this.store.getDatosCargados();
+      const target = datos[indice];
+      if (target) {
+        // Actualiza mínimamente el ExcelUsuarioRow para reflejar cambios y marcarlo corregido
+        target.fill1 = pdfCedula.fill1 ?? target.fill1;
+        target.nombre = pdfCedula.nombre ?? target.nombre;
+        target.nombre2 = pdfCedula.nombre2 ?? target.nombre2;
+        target.apellidoPaterno = pdfCedula.apellidoPaterno ?? target.apellidoPaterno;
+        target.apellidoMaterno = pdfCedula.apellidoMaterno ?? target.apellidoMaterno;
+        target.rfc = pdfCedula.rfc ?? target.rfc;
+        target.curp = pdfCedula.curp ?? target.curp;
+        target.cuip = pdfCedula.cuip ?? target.cuip;
+        target.correoElectronico = pdfCedula.correoElectronico ?? target.correoElectronico;
+        target.telefono = pdfCedula.telefono ?? target.telefono;
+        target.tipoUsuario = pdfCedula.tipoUsuario ?? target.tipoUsuario;
+        target.entidad = pdfCedula.entidad != null ? pdfCedula.entidad : target.entidad;
+        target.municipio = municipioNombre || target.municipio;
+        target.municipioNombre = municipioNombre || target.municipioNombre;
+        target.institucion = pdfCedula.institucion != null ? pdfCedula.institucion : target.institucion;
+        // dependencia si aplica igual que antes
+        target.corporacion = pdfCedula.corporacion != null ? pdfCedula.corporacion : target.corporacion;
+        target.area = pdfCedula.area != null ? pdfCedula.area : target.area;
+        target.cargo = pdfCedula.cargo ?? target.cargo;
+        target.funciones = pdfCedula.funciones ?? target.funciones;
+        target.pais = pdfCedula.pais ?? target.pais;
+        target.entidad2 = pdfCedula.entidad2 != null ? String(pdfCedula.entidad2) : target.entidad2;
+        target.municipio2 = pdfCedula.municipio2 != null ? String(pdfCedula.municipio2) : target.municipio2;
+        target.corporacion2 = pdfCedula.corporacion2 != null ? String(pdfCedula.corporacion2) : target.corporacion2;
+        target.consultaTextos = pdfCedula.consultaTextos || target.consultaTextos;
+        target.modulosOperacion = pdfCedula.modulosOperacion || target.modulosOperacion;
+        target.checkBox1 = cb1;
+        target.checkBox2 = cb2;
+        target.checkBox3 = cb3;
+        target.checkBox4 = cb4;
+        target.checkBox5 = cb5;
+        // Recalcular validación igual que en carga masiva original
+        const errores: string[] = [];
+        if (!target.fill1) errores.push('Oficio es obligatorio');
+        else if (target.fill1.length > 20) errores.push('Oficio: máximo 20 caracteres');
+
+        if (!target.nombre) errores.push('Nombre(s) es obligatorio');
+        else if (target.nombre.length > 100) errores.push('Nombre(s): máximo 100 caracteres');
+
+        if (!target.apellidoPaterno) errores.push('Apellido Paterno es obligatorio');
+        else if (target.apellidoPaterno.length > 100) errores.push('Apellido Paterno: máximo 100 caracteres');
+
+        if (target.apellidoMaterno && target.apellidoMaterno.length > 100)
+          errores.push('Apellido Materno: máximo 100 caracteres');
+
+        if (!target.rfc) errores.push('RFC es obligatorio');
+        else if (!/^[A-ZÑ&]{4}\d{6}[A-Z0-9]{3}$/i.test(target.rfc))
+          errores.push('RFC formato inválido');
+
+        if (!target.correoElectronico) errores.push('Correo electrónico es obligatorio');
+        else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(target.correoElectronico))
+          errores.push('Correo formato inválido');
+
+        if (target.telefono && !/^\d{7,10}$/.test(target.telefono))
+          errores.push('Teléfono debe tener 7–10 dígitos');
+
+        ['entidad', 'institucion', 'dependencia', 'area'].forEach(k => {
+          const v = target[k as keyof ExcelUsuarioRow] as number;
+          if (typeof v === 'number' && v <= 0) errores.push(`${k} debe ser mayor que 0`);
+        });
+
+        if (!target.cargo) errores.push('Cargo es obligatorio');
+        else if (target.cargo.length > 100) errores.push('Cargo: máximo 100 caracteres');
+
+        if (!target.funciones) errores.push('Funciones es obligatorio');
+        else if (target.funciones.length > 300) errores.push('Funciones: máximo 300 caracteres');
+
+        if (target.pais && target.pais.length > 100) errores.push('País: máximo 100 caracteres');
+
+        target.errores = errores;
+        target.ok = errores.length === 0;
+        target.descripcionerror = target.ok ? '' : `CAMPOS INCORRECTOS: ${errores.join(', ')}`;
+        target.editado = true;
+
+        this.store.setDatosCargados(datos);
+        this.store.marcarCorregido(indice);
+      }
+
+      this.router.navigate(['/cargamasiva']);
+      return;
+    }
+
+    // --- 4) Envío normal a backend ---
+    this.loading = true;
+    console.log('Payload API a enviar:', apiCedula);
+    console.log('Payload PDF construido (no se envía automáticamente):', pdfCedula);
+    console.log('DEBUG checks FormArray:', this.checks.value); // <-- debe mostrar uno en true
+    console.log('Payload API a enviar:', apiCedula);
+    this.svc.saveSolicitudFromCedula(apiCedula).subscribe({
+      next: () => this.router.navigate(['/solicitudes']),
+      error: err => {
+        console.error('Error guardando solicitud:', err);
+        this.loading = false;
+      }
+    });
+  }
 
   /** Cancela y regresa a Solicitudes */
   onCancel(): void {
@@ -675,12 +768,16 @@ onSubmit(): void {
   }
 
   onCheckboxChange(selectedIndex: number): void {
-    const totalCheckboxes = this.opciones.length;
-    for (let i = 1; i <= totalCheckboxes; i++) {
+    // Enciende explícitamente el seleccionado…
+    this.userForm.get('checkBox' + selectedIndex)?.setValue(true, { emitEvent: false });
+
+    // …y apaga todos los demás
+    for (let i = 1; i <= this.opciones.length; i++) {
       if (i === selectedIndex) continue;
       this.userForm.get('checkBox' + i)?.setValue(false, { emitEvent: false });
     }
   }
+
   private getAreaJerarquica(f: any): number {
     if (f.area && f.area !== 0) return f.area;
     if (f.corporacion && f.corporacion !== 0) return f.corporacion;

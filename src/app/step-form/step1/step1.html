@@ -138,7 +138,9 @@
               class="form-select"
               required>
         <option value="" disabled>Selecciona</option>
-        <!-- <option *ngFor="let s of sexos" [value]="s">{{ s }}</option> -->
+        <option value="1">MASCULINO</option>
+        <option value="2">FEMENINO</option>
+        <option value="2">OTROS</option>
       </select>
     </div>
     <div class="col-md-4">
@@ -194,6 +196,9 @@
               class="form-select"
               required>
         <option value="" disabled>Selecciona tu Municipio/Alcaldía</option>
+        <option value="1" disabled>IZTACALCO</option>
+        <option value="2" disabled>COYOACAN</option>
+        <option value="2" disabled>ÁLVARO OBREGÓN</option>
       </select>
     </div>
   </div>
@@ -205,6 +210,10 @@
               formControlName="estadoCivil"
               class="form-select">
         <option value="" disabled>Selecciona tu Estado Civil</option>
+        <option value="1" disabled>SOLTERO</option>
+        <option value="2" disabled>CASADO</option>
+        <option value="2" disabled>DIVORCIADO</option>
+        <option value="2" disabled>VIUDO</option>
       </select>
     </div>
     <div class="col-md-4">

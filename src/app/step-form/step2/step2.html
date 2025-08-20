@@ -1,4 +1,3 @@
-<!-- src/app/step-form/step2/step2.component.html -->
 <div class="container-fluid px-0">
   <!-- Título y progreso -->
   <div class="header-title">Registro</div>
@@ -14,31 +13,43 @@
     <div class="divider"></div>
 
     <div class="section-content">
-      <form [formGroup]="form" (ngSubmit)="addPerfil.emit()">
+      <!-- FORM -->
+      <form [formGroup]="form" (ngSubmit)="agregarPerfil()">
         <div class="form-inline mb-0">
           <label for="perfilInput" class="form-label">*Perfil:</label>
+
+          <!-- input con datalist -->
           <input id="perfilInput"
                  type="text"
                  formControlName="perfil"
+                 list="listaPerfiles"
                  class="form-control"
-                 placeholder="Ej: 3101 SUPERVISOR IPH">
+                 placeholder="Ej: 3101 SUPERVISOR IPH" />
+
+          <datalist id="listaPerfiles">
+            @for (perfil of perfilesFiltrados; track $index) {
+              <option [value]="`${perfil.CLAVE} - ${perfil.FUNCION}`"></option>
+            }
+          </datalist>
+
           <button type="button"
                   class="btn btn-agregar"
-                  (click)="addPerfil.emit()">
+                  (click)="agregarPerfil()">
             Agregar
           </button>
         </div>
       </form>
 
-      <div class="perfil-list">
-        @for (p of perfiles;track p) {
+      <!-- LISTA -->
+      <div class="perfil-list mt-3">
+        @for (perfil of perfilesAgregados; track $index) {
           <div class="perfil-item">
-            <span class="perfil-id">{{ p }}</span>
+            <span class="perfil-id">{{ perfil.CLAVE }}</span>
             <span class="perfil-remove"
-                  (click)="removePerfil.emit(perfiles.indexOf(p))">
+                  (click)="eliminarPerfil($index)">
               <i class="fas fa-times"></i>
             </span>
-            <span class="perfil-desc">{{ p }}</span>
+            <span class="perfil-desc">{{ perfil.FUNCION }}</span>
           </div>
         }
         @empty {
@@ -49,7 +60,7 @@
 
     <div class="divider mt-4"></div>
 
-    <!-- Botones de pie de página -->
+    <!-- Botones de pie -->
     <div class="footer-actions">
       <button class="btn btn-regresar" (click)="prev.emit()">Regresar</button>
       <button class="btn btn-siguiente" (click)="next.emit()">Siguiente</button>

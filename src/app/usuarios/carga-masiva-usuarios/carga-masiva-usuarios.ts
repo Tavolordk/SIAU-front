@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Workbook } from 'exceljs';
-import { forkJoin } from 'rxjs';
+import { forkJoin, from, of } from 'rxjs';
 import { CargaUsuarioService } from '../../services/carga-usuario.service';
 import { ExcelUsuarioRow } from '../../models/excel.model';
 import { CedulaModel, PdfService } from '../../services/pdf.service';
@@ -11,7 +11,16 @@ import { CatalogosService } from '../../services/catalogos.service';
 import { CargaUsuarioStoreService } from '../../services/carga-usuario-store.service';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import { mapExcelRowToCedula, mapExcelRowToSolicitudBody, pdfFileName } from '../../models/cedula.mapper.model';
+import { catchError, concatMap, finalize, tap } from 'rxjs/operators';
+import { UsuarioService } from '../../services/usuario.service';
 
+type RowVM = ExcelUsuarioRow & {
+    __sending?: boolean;
+    __okSent?: boolean;
+    __errorMsg?: string;
+    __fadeOut?: boolean;
+};
 @Component({
     selector: 'app-carga-masiva-usuarios',
     standalone: true,
@@ -19,11 +28,57 @@ import { saveAs } from 'file-saver';
     templateUrl: './carga-masiva-usuarios.html',
     styleUrls: ['./carga-masiva-usuarios.scss']
 })
+
 export class CargaMasivaUsuariosComponent implements OnInit {
+    // Toggle en la vista
+    mostrarSoloIncorrectos = false;
+
+    // Asegura que todas las filas tengan las banderas UI
+    private hydrateRows(rows: ExcelUsuarioRow[]): RowVM[] {
+        return rows.map(r => ({
+            ...r,
+            __sending: false,
+            __okSent: false,
+            __errorMsg: '',
+            __fadeOut: false
+        }));
+    }
+
+    // Si necesitas hidratar sólo si aún no traen banderas
+    private ensureHydrated(rows: ExcelUsuarioRow[]): RowVM[] {
+        return rows.map(r => ('__sending' in r ? (r as RowVM) : {
+            ...r,
+            __sending: false,
+            __okSent: false,
+            __errorMsg: '',
+            __fadeOut: false
+        }));
+    }
+
+    // Se usa en el *ngFor del HTML
+    get rowsVisibles(): RowVM[] {
+        const data = (this.allPreviewData as RowVM[]) ?? [];
+        return this.mostrarSoloIncorrectos
+            ? data.filter(r => !r.__okSent && !(r.ok || r.editado))
+            : data.filter(r => !r.__okSent);
+    }
+
+    // Habilita el botón CARGAR
+    get haySeleccionValida(): boolean {
+        return (this.allPreviewData as RowVM[]).some(
+            r => r.descargar && (r.ok || r.editado) && !r.__okSent
+        );
+    }
+
     // — Datos de vista previa
     public get allPreviewData(): ExcelUsuarioRow[] {
         return this.store.getDatosCargados();
     }
+    // O ELIMÍNALO. Si lo dejas, que NO se llame a sí mismo:
+    set allPreviewData(v: ExcelUsuarioRow[]) {
+        this.store.setDatosCargados(v);
+    }
+
     public isCorregido(originalIndex: number): boolean {
         return this.store.estaCorregido(originalIndex) || !!this.allPreviewData[originalIndex].editado;
     }
@@ -63,15 +118,13 @@ export class CargaMasivaUsuariosComponent implements OnInit {
         const start = (this.currentPage - 1) * this.itemsPerPage;
         return this.allPreviewData.slice(start, start + this.itemsPerPage);
     }
-
-
-
     constructor(
         private router: Router,
         private svc: CargaUsuarioService,
         private catalogoService: CatalogosService,
         private store: CargaUsuarioStoreService,
-        private pdfService: PdfService
+        private pdfService: PdfService,
+        private usuarioSvc: UsuarioService
     ) { }
 
     ngOnInit(): void {
@@ -105,8 +158,11 @@ export class CargaMasivaUsuariosComponent implements OnInit {
             this.catalogoService.areas = res.Estructura
                 .filter(e => e.TIPO === 'AREA')
                 .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
+            this.catalogoService.perfiles = res.Perfiles
+                .map(p => ({ id: p.ID, clave: p.CLAVE, nombre: p.FUNCION }));
         });
-        this.store.setDatosCargados(this.allPreviewData); // después de poblar previewData local
+        const hydrated = this.ensureHydrated(this.allPreviewData);
+        this.store.setDatosCargados(hydrated);
     }
 
     // Cambia página
@@ -320,31 +376,45 @@ export class CargaMasivaUsuariosComponent implements OnInit {
             // ——— 4) EXTRAER “Perfil Solicitado” ———
 
             // Lista de cabeceras tal como aparecen en fila 6
-            const perfilKeys = ['perfil 1', 'perfil 2', 'perfil 3', 'perfil 4', 'perfil 5'];
-
-            // Resuelve cada nombre a su columna (si existe)
+            // --- 4) EXTRAER “Perfil Solicitado” (soporta varios en una celda) ---
+            const perfilKeys = ['perfil 1', 'perfil 2', 'perfil 3', 'perfil 4', 'perfil 5', 'perfiles', 'perfil']; // agrega alias si tu hoja usa otro nombre
             const perfilCols: number[] = perfilKeys
-                .map(k => findCol(k))    // findCol = tu helper que busca en headerMap
+                .map(k => findCol(k))
                 .filter((c): c is number => !!c);
 
-            // Lee los valores no vacíos
             const codes: string[] = [];
+
+            // helper: recibe el texto de una celda y agrega todas las claves encontradas
+            const pushCodesFromCell = (raw: string) => {
+                // separa por coma, punto y coma, salto de línea, barra vertical o slash
+                raw.split(/[,\n;|/]+/).forEach(piece => {
+                    const p = piece.trim();
+                    if (!p) return;
+
+                    // si viene "0401 - Algo", "0401 Algo", "0401"… extrae la clave (3–5 dígitos)
+                    const m = p.match(/(\d{3,5})/);
+                    if (m) codes.push(m[1]);
+                });
+            };
+
             for (const col of perfilCols) {
-                const txt = (row.getCell(col).value ?? '').toString().trim();
-                if (txt) {
-                    codes.push(txt);
-                }
+                const raw = (row.getCell(col).value ?? '').toString();
+                if (raw) pushCodesFromCell(raw);
             }
 
+            // quita duplicados y normaliza
+            const uniqueCodes = Array.from(new Set(codes));
+
+            const valid = new Set((this.catalogoService.perfiles || []).map(p => String(p.clave).trim()));
+            const validCodes = codes.map(c => String(c || '').trim()).filter(c => c && valid.has(c));
             // ——— 5) ASIGNAR A consultaTextos Y modulosOperacion ———
-            for (let i = 0; i < codes.length && i < 56; i++) {
-                const key = `Text${8 + i}`;        // Text8, Text9, … Text63
-                if (i < 28) {
-                    rec.consultaTextos[key] = codes[i];
-                } else {
-                    rec.modulosOperacion[key] = codes[i];
-                }
+            for (let i = 0; i < validCodes.length && i < 56; i++) {
+                const key = `Text${8 + i}`;
+                if (i < 28) rec.consultaTextos[key] = validCodes[i];
+                else rec.modulosOperacion[key] = validCodes[i];
             }
+            rec.consultaTextos = { ...(rec.consultaTextos || {}) };
+            rec.modulosOperacion = { ...(rec.modulosOperacion || {}) };
             rec.ok = rec.errores.length === 0;
             rec.descripcionerror = rec.ok
                 ? ''
@@ -355,200 +425,172 @@ export class CargaMasivaUsuariosComponent implements OnInit {
             rec.dependenciaNombre = this.catalogoService.getDependenciaNameById(rec.dependencia) || '';
             rec.corporacionNombre = this.catalogoService.getCorporacionNameById(rec.corporacion) || '';
             rec.areaNombre = this.catalogoService.getAreaNameById(rec.area) || '';
-            this.allPreviewData.push(rec);
-            this.store.setDatosCargados(this.allPreviewData);
+            const recVM: RowVM = {
+                ...rec,
+                __sending: false,
+                __okSent: false,
+                __errorMsg: '',
+                __fadeOut: false,
+                consultaTextos: { ...(rec.consultaTextos || {}) },
+                modulosOperacion: { ...(rec.modulosOperacion || {}) },
+            };
+
+            // actualización inmutable para evitar efectos raros del getter
+            this.store.setDatosCargados([...(this.allPreviewData as RowVM[]), recVM]);
+
         }
     }
 
     // --- Envía toda la carga masiva al API ---
-sending = false;
+    sending = false;
 
-async sendSolicitudMasiva() {
-  console.log('sendSolicitudMasiva invoked');
-  if (this.sending) {
-    return;
-  }
+    async sendSolicitudMasiva() {
+        if (this.sending) return;
+        if (!this.allPreviewData.length) { this.showToastMessage('No hay datos para enviar', 'warn'); return; }
 
-  if (!this.allPreviewData.length) {
-    this.showToastMessage('No hay datos para enviar', 'warn');
-    return;
-  }
+        const rows = (this.allPreviewData as RowVM[]);
+        const seleccionadosValidos = rows.filter(r => r.descargar && (r.ok || r.editado));
+        const registrosAEnviar = (seleccionadosValidos.length ? seleccionadosValidos : rows.filter(r => (r.ok || r.editado)));
 
-  // Prioriza los seleccionados válidos; si no hay, toma todos los correctos.
-  const seleccionadosValidos = this.allPreviewData.filter(r => r.descargar && (r.ok || r.editado));
-  let registrosAEnviar: ExcelUsuarioRow[] = [];
-  if (seleccionadosValidos.length) {
-    registrosAEnviar = seleccionadosValidos;
-  } else {
-    registrosAEnviar = this.allPreviewData.filter(r => (r.ok || r.editado));
-  }
+        if (!registrosAEnviar.length) {
+            this.showToastMessage('No hay ningún archivo correcto para cargar', 'warn');
+            return;
+        }
 
-  if (!registrosAEnviar.length) {
-    this.showToastMessage('No hay ningún archivo correcto para cargar', 'warn');
-    return;
-  }
+        this.sending = true;
+        this.overlayLoaderVisible = true;
+        this.carmasivMostrandoLoader = true;
+        this.carmasivProgreso = 0;
 
-  this.sending = true;
-  this.overlayLoaderVisible = true;
-  this.carmasivMostrandoLoader = true;
-  this.carmasivProgreso = 0;
+        const total = registrosAEnviar.length;
+        let exito = 0, fallo = 0;
 
-  const total = registrosAEnviar.length;
-  const calls = registrosAEnviar.map((item, i) =>
-    this.svc.saveUsuarioSolicitud(item).pipe(res => {
-      this.carmasivProgreso = Math.round(((i + 1) / total) * 100);
-      return res;
-    })
-  );
+        from(registrosAEnviar).pipe(
+            concatMap((row, idx) => {
+                row.__sending = true;
+                return this.svc.saveUsuarioSolicitud(row).pipe(
+                    tap(() => {
+                        row.__sending = false;
+                        row.__okSent = true;
+                        row.__errorMsg = '';
+                        exito++;
+                        this.carmasivProgreso = Math.round(((idx + 1) / total) * 100);
+                    }),
+                    catchError(err => {
+                        row.__sending = false;
+                        row.__okSent = false;
+                        row.__errorMsg = (err?.error?.detail || err?.message || 'Error desconocido');
+                        fallo++;
+                        this.carmasivProgreso = Math.round(((idx + 1) / total) * 100);
+                        return of(null);
+                    })
+                );
+            }),
+            finalize(() => {
+                // 1) animación: marca fadeOut a los OK
+                const toRemoveIdxs: number[] = [];
+                for (let i = rows.length - 1; i >= 0; i--) {
+                    if (rows[i].__okSent) {
+                        rows[i].__fadeOut = true;
+                        toRemoveIdxs.push(i);
+                    }
+                }
 
-  forkJoin(calls).subscribe({
-    next: () => {
-      this.showToastMessage('Carga masiva completada', 'success');
-    },
-    error: err => {
-      console.error('Error en carga masiva:', err);
-      this.showToastMessage('Error al guardar algunos registros', 'error');
-    },
-    complete: () => {
-      this.overlayLoaderVisible = false;
-      this.carmasivMostrandoLoader = false;
-      this.carmasivProgreso = 0;
-      this.sending = false;
+                // 2) espera la transición y elimina del array + store
+                setTimeout(() => {
+                    for (let j = 0; j < toRemoveIdxs.length; j++) {
+                        const idx = toRemoveIdxs[j];
+                        // ojo: si prefieres evitar problemas con índices, quita de atrás hacia adelante:
+                        // (pero como esperamos 200ms, el orden ya no importa mucho)
+                    }
+                    for (let i = rows.length - 1; i >= 0; i--) {
+                        if (rows[i].__okSent) rows.splice(i, 1);
+                    }
+
+                    this.store?.setDatosCargados?.(rows);
+
+                    // 3) fin UI
+                    this.overlayLoaderVisible = false;
+                    this.carmasivMostrandoLoader = false;
+                    this.carmasivProgreso = 0;
+                    this.sending = false;
+
+                    // 4) resumen
+                    const totalEnv = total;
+                    if (fallo === 0) {
+                        this.showToastMessage(`Carga masiva completada (${exito}/${totalEnv})`, 'success');
+                    } else if (exito === 0) {
+                        this.showToastMessage(`Todos fallaron (${fallo}/${totalEnv}). Revisa los errores.`, 'error');
+                    } else {
+                        this.showToastMessage(`Carga parcial: ${exito} ok, ${fallo} con error (de ${totalEnv}).`, 'warn');
+                    }
+                }, 200); // duración de la transición CSS
+            })
+        ).subscribe();
     }
-  });
-}
-
-
-async descargarPDFsMasivos() {
-  if (!this.allPreviewData.length) {
-    this.showToastMessage('No hay datos para descargar', 'warn');
-    return;
-  }
-
-  const ready = this.allPreviewData.filter(row => row.ok || row.editado);
-  const selectedReady = ready.filter(r => r.descargar);
-  let toDownload: ExcelUsuarioRow[] = [];
-
-  if (selectedReady.length) {
-    toDownload = selectedReady;
-  } else if (ready.length) {
-    toDownload = ready;
-  } else {
-    this.showToastMessage('No hay ningún archivo correcto para descargar', 'warn');
-    return;
-  }
-
-  this.showToastMessage('Generando PDFs y creando ZIP...', 'info');
-  const zip = new JSZip();
-
-  for (const cedula of toDownload) {
-    // Construye el modelo para PDF igual que en downloadPDF individual
-    const datos: CedulaModel = {
-      fill1: cedula.fill1,
-      folio: cedula.fill1,
-      cuentaUsuario: cedula.cuentaUsuario,
-      correoElectronico: cedula.correoElectronico,
-      telefono: cedula.telefono,
-      apellidoPaterno: cedula.apellidoPaterno,
-      apellidoMaterno: cedula.apellidoMaterno,
-      nombre: cedula.nombre,
-      nombre2: cedula.nombre2,
-      rfc: cedula.rfc,
-      cuip: cedula.cuip,
-      curp: cedula.curp,
-      tipoUsuario: cedula.tipoUsuario,
-      entidad: cedula.entidad,
-      municipio: this.catalogoService.getMunicipioIdByName(cedula.municipio!),
-      institucion: cedula.institucion,
-      corporacion: cedula.corporacion,
-      area: cedula.area,
-      cargo: cedula.cargo,
-      funciones: cedula.funciones,
-      funciones2: '',
-      pais: cedula.pais,
-      entidad2: this.catalogoService.getEntidadIdByName(cedula.entidad2!),
-      municipio2: this.catalogoService.getMunicipioIdByName(cedula.municipio2!),
-      corporacion2: this.catalogoService.getCorporacionIdByName(cedula.corporacion2!),
-      consultaTextos: cedula.consultaTextos,
-      modulosOperacion: cedula.modulosOperacion,
-      checkBox1: cedula.checkBox1,
-      checkBox2: cedula.checkBox2,
-      checkBox3: cedula.checkBox3,
-      checkBox4: cedula.checkBox4,
-      checkBox5: cedula.checkBox5,
-
-      entidadNombre: (() => {
-        const id = Number(cedula.entidad);
-        if (!isNaN(id) && id > 0) return this.catalogoService.getEntidadNameById(id) || '';
-        return typeof cedula.entidad === 'string' ? cedula.entidad : '';
-      })(),
-      municipioNombre: (() => {
-        const id = Number(cedula.municipio);
-        if (!isNaN(id) && id > 0) return this.catalogoService.getMunicipioNameById(id) || '';
-        return typeof cedula.municipio === 'string' ? cedula.municipio : '';
-      })(),
-      institucionNombre: (() => {
-        const id = Number(cedula.institucion);
-        if (!isNaN(id) && id > 0) return this.catalogoService.getInstitucionNameById(id) || '';
-        return typeof cedula.institucion === 'string' ? cedula.institucion : '';
-      })(),
-      dependenciaNombre: (() => {
-        const id = Number(cedula.dependencia);
-        if (!isNaN(id) && id > 0) return this.catalogoService.getDependenciaNameById(id) || '';
-        return typeof cedula.dependencia === 'string' ? cedula.dependencia : '';
-      })(),
-      corporacionNombre: (() => {
-        const id = Number(cedula.corporacion);
-        if (!isNaN(id) && id > 0) return this.catalogoService.getCorporacionNameById(id) || '';
-        return typeof cedula.corporacion === 'string' ? cedula.corporacion : '';
-      })(),
-      areaNombre: (() => {
-        const id = Number(cedula.area);
-        if (!isNaN(id) && id > 0) return this.catalogoService.getAreaNameById(id) || '';
-        return typeof cedula.area === 'string' ? cedula.area : '';
-      })(),
-      entidad2Nombre: (() => {
-        const id = Number(cedula.entidad2);
-        if (!isNaN(id) && id > 0) return this.catalogoService.getEntidadNameById(id) || '';
-        return typeof cedula.entidad2 === 'string' ? cedula.entidad2 : '';
-      })(),
-      municipio2Nombre: (() => {
-        const id = Number(cedula.municipio2);
-        if (!isNaN(id) && id > 0) return this.catalogoService.getMunicipioNameById(id) || '';
-        return typeof cedula.municipio2 === 'string' ? cedula.municipio2 : '';
-      })(),
-      corporacion2Nombre: (() => {
-        const id = Number(cedula.corporacion2);
-        if (!isNaN(id) && id > 0) return this.catalogoService.getCorporacionNameById(id) || '';
-        return typeof cedula.corporacion2 === 'string' ? cedula.corporacion2 : '';
-      })(),
-
-      nombreFirmaEnlace: cedula.nombreFirmaEnlace,
-      nombreFirmaResponsable: cedula.nombreFirmaResponsable,
-      nombreFirmaUsuario: cedula.nombreFirmaUsuario
-    };
-
-    try {
-      const pdfBytes = await this.pdfService.generar(datos);
-      const safe = (s: string | undefined | null) => (s || 'SIN_NOMBRE').replace(/\s+/g, '_');
-      const filename = `CED_${safe(cedula.nombre)}_${safe(cedula.apellidoPaterno)}_${safe(cedula.apellidoMaterno)}.pdf`;
-      zip.file(filename, pdfBytes);
-    } catch (e) {
-      console.error('Error generando PDF para', cedula, e);
+    get enviadosCount(): number {
+        return (this.allPreviewData ?? []).filter((r: any) => r.__okSent).length;
     }
-  }
 
-  // Genera ZIP
-  try {
-    const content = await zip.generateAsync({ type: 'blob' });
-    const ts = new Date().toISOString().replace(/[:.]/g, '-');
-    saveAs(content, `PDFs_Masivos_${ts}.zip`);
-    this.showToastMessage('ZIP con PDFs generado.', 'success');
-  } catch (e) {
-    console.error('Error creando ZIP', e);
-    this.showToastMessage('No se pudo crear el ZIP', 'error');
-  }
-}
+    get pendientesCount(): number {
+        return (this.allPreviewData ?? []).filter((r: any) => !r.__okSent).length;
+    }
+
+    async descargarPDFsMasivos() {
+        if (!this.allPreviewData.length) {
+            this.showToastMessage('No hay datos para descargar', 'warn');
+            return;
+        }
+
+        const ready = this.allPreviewData.filter(row => row.ok || row.editado);
+        const selectedReady = ready.filter(r => r.descargar);
+        const toDownload = selectedReady.length ? selectedReady : ready;
+
+        if (!toDownload.length) {
+            this.showToastMessage('No hay ningún archivo correcto para descargar', 'warn');
+            return;
+        }
+
+        this.showToastMessage('Generando PDFs y creando ZIP...', 'info');
+
+        const zip = new JSZip();
+        const OMITIR_SI_SIN_PERFILES = false; // cambia a true si quieres saltar PDFs sin perfiles válidos
+
+        for (const cedula of toDownload) {
+            const model = mapExcelRowToCedula(cedula, this.catalogoService);
+
+            // <<< AQUI filtramos contra catálogo >>>
+            this.filtrarPerfilesInvalidos(model);
+
+            if (OMITIR_SI_SIN_PERFILES) {
+                const totalPerfiles =
+                    Object.keys(model.consultaTextos || {}).length +
+                    Object.keys(model.modulosOperacion || {}).length;
+                if (totalPerfiles === 0) {
+                    console.warn('Sin perfiles válidos; omitiendo PDF de', model.rfc);
+                    continue;
+                }
+            }
+
+            try {
+                const pdfBytes = await this.pdfService.generar(model);
+                zip.file(pdfFileName(model), pdfBytes);
+            } catch (e) {
+                console.error('Error generando PDF', model.rfc, e);
+            }
+        }
+
+        try {
+            const content = await zip.generateAsync({ type: 'blob' });
+            const ts = new Date().toISOString().replace(/[:.]/g, '-');
+            saveAs(content, `PDFs_Masivos_${ts}.zip`);
+            this.showToastMessage('ZIP con PDFs generado.', 'success');
+        } catch (e) {
+            console.error('Error creando ZIP', e);
+            this.showToastMessage('No se pudo crear el ZIP', 'error');
+        }
+    }
+
 
 
     private showToastMessage(msg: string, color: string) {
@@ -577,117 +619,74 @@ async descargarPDFsMasivos() {
             return;
         }
 
-        // Mapea sólo los campos que tu PdfService necesita.
-        // Completa con '' o 0 donde falte.
-        const datos: CedulaModel = {
-            fill1: cedula.fill1,
-            folio: cedula.fill1,
-            cuentaUsuario: cedula.cuentaUsuario,
-            correoElectronico: cedula.correoElectronico,
-            telefono: cedula.telefono,
-            apellidoPaterno: cedula.apellidoPaterno,
-            apellidoMaterno: cedula.apellidoMaterno,
-            nombre: cedula.nombre,
-            nombre2: cedula.nombre2,
-            rfc: cedula.rfc,
-            cuip: cedula.cuip,
-            curp: cedula.curp,
-            tipoUsuario: cedula.tipoUsuario,
-            entidad: cedula.entidad,
-            municipio: this.catalogoService.getMunicipioIdByName(cedula.municipio!),
-            institucion: cedula.institucion,
-            corporacion: cedula.corporacion,
-            area: cedula.area,
-            cargo: cedula.cargo,
-            funciones: cedula.funciones,
-            funciones2: '',
-            pais: cedula.pais,
-            entidad2: this.catalogoService.getEntidadIdByName(cedula.entidad2!),
-            municipio2: this.catalogoService.getMunicipioIdByName(cedula.municipio2!),
-            corporacion2: this.catalogoService.getCorporacionIdByName(cedula.corporacion2!),
-            consultaTextos: cedula.consultaTextos,
-            modulosOperacion: cedula.modulosOperacion,
-            checkBox1: cedula.checkBox1,
-            checkBox2: cedula.checkBox2,
-            checkBox3: cedula.checkBox3,
-            checkBox4: cedula.checkBox4,
-            checkBox5: cedula.checkBox5,
-
-            // estos campos de nombre para el PDF
-            entidadNombre: (() => {
-                const id = Number(cedula.entidad);
-                if (!isNaN(id) && id > 0) return this.catalogoService.getEntidadNameById(id) || '';
-                return typeof cedula.entidad === 'string' ? cedula.entidad : '';
-            })(),
-            municipioNombre: (() => {
-                const id = Number(cedula.municipio);
-                if (!isNaN(id) && id > 0) return this.catalogoService.getMunicipioNameById(id) || '';
-                return typeof cedula.municipio === 'string' ? cedula.municipio : '';
-            })(),
-            institucionNombre: (() => {
-                const id = Number(cedula.institucion);
-                if (!isNaN(id) && id > 0) return this.catalogoService.getInstitucionNameById(id) || '';
-                return typeof cedula.institucion === 'string' ? cedula.institucion : '';
-            })(),
-            dependenciaNombre: (() => {
-                const id = Number(cedula.dependencia);
-                if (!isNaN(id) && id > 0) return this.catalogoService.getDependenciaNameById(id) || '';
-                return typeof cedula.dependencia === 'string' ? cedula.dependencia : '';
-            })(),
-            corporacionNombre: (() => {
-                const id = Number(cedula.corporacion);
-                if (!isNaN(id) && id > 0) return this.catalogoService.getCorporacionNameById(id) || '';
-                return typeof cedula.corporacion === 'string' ? cedula.corporacion : '';
-            })(),
-            areaNombre: (() => {
-                const id = Number(cedula.area);
-                if (!isNaN(id) && id > 0) return this.catalogoService.getAreaNameById(id) || '';
-                return typeof cedula.area === 'string' ? cedula.area : '';
-            })(),
-            entidad2Nombre: (() => {
-                const id = Number(cedula.entidad2);
-                if (!isNaN(id) && id > 0) return this.catalogoService.getEntidadNameById(id) || '';
-                return typeof cedula.entidad2 === 'string' ? cedula.entidad2 : '';
-            })(),
-            municipio2Nombre: (() => {
-                const id = Number(cedula.municipio2);
-                if (!isNaN(id) && id > 0) return this.catalogoService.getMunicipioNameById(id) || '';
-                return typeof cedula.municipio2 === 'string' ? cedula.municipio2 : '';
-            })(),
-            corporacion2Nombre: (() => {
-                const id = Number(cedula.corporacion2);
-                if (!isNaN(id) && id > 0) return this.catalogoService.getCorporacionNameById(id) || '';
-                return typeof cedula.corporacion2 === 'string' ? cedula.corporacion2 : '';
-            })(),
-
-            nombreFirmaEnlace: cedula.nombreFirmaEnlace,
-            nombreFirmaResponsable: cedula.nombreFirmaResponsable,
-            nombreFirmaUsuario: cedula.nombreFirmaUsuario
-        };
+        const model = mapExcelRowToCedula(cedula, this.catalogoService);
 
         try {
-            await this.pdfService.generarYDescargar(datos);
+            await this.pdfService.generarYDescargar(model);
         } catch (e) {
             console.error('Error generando PDF', e);
             this.showToastMessage('No se pudo generar el PDF', 'error');
         }
     }
-/** índice original absoluto calculado desde la página */
-getOriginalIndex(pageIndex: number): number {
-  return (this.currentPage - 1) * this.itemsPerPage + pageIndex;
-}
 
-isListoParaDescargar(cedula: ExcelUsuarioRow, originalIndex: number): boolean {
-  return !!(cedula.ok || this.isCorregido(originalIndex));
-}
-/** hay al menos un registro válido (ok o editado) */
-get hayRegistrosListos(): boolean {
-  return this.allPreviewData.some(r => !!(r.ok || r.editado));
-}
+    /** índice original absoluto calculado desde la página */
+    getOriginalIndex(pageIndex: number): number {
+        return (this.currentPage - 1) * this.itemsPerPage + pageIndex;
+    }
 
-/** hay seleccionados para enviar (marcados con descargar y válidos) */
-get haySeleccionadosListos(): boolean {
-  return this.allPreviewData.some(r => r.descargar && (r.ok || r.editado));
-}
+    isListoParaDescargar(cedula: ExcelUsuarioRow, originalIndex: number): boolean {
+        const r = cedula as RowVM;
+        return !!((cedula.ok || this.isCorregido(originalIndex)) && !r.__sending && !r.__okSent);
+    }
+
+    /** hay al menos un registro válido (ok o editado) */
+    get hayRegistrosListos(): boolean {
+        return this.allPreviewData.some(r => !!(r.ok || r.editado));
+    }
+
+    /** hay seleccionados para enviar (marcados con descargar y válidos) */
+    get haySeleccionadosListos(): boolean {
+        return this.allPreviewData.some(r => r.descargar && (r.ok || r.editado));
+    }
+    selectValidos(): void {
+        for (const r of (this.allPreviewData as RowVM[])) {
+            if ((r.ok || r.editado) && !r.__okSent && !r.__sending) {
+                r.descargar = true;
+            }
+        }
+    }
+
+    limpiarSeleccion(): void {
+        for (const r of (this.allPreviewData as RowVM[])) {
+            if (!r.__okSent && !r.__sending) {
+                r.descargar = false;
+            }
+        }
+    }
+
+    // Reempaca valores en Text8.. o Text36.. sin huecos
+    private repack(values: string[], start: number): Record<string, string> {
+        const out: Record<string, string> = {};
+        values.forEach((code, i) => out[`Text${start + i}`] = code);
+        return out;
+    }
+
+    // Elimina claves que no existan en el catálogo y reempaca
+    private filtrarPerfilesInvalidos(model: CedulaModel): void {
+        const valid = new Set(
+            (this.catalogoService.perfiles || []).map(p => String(p.clave).trim())
+        );
+
+        const consVals = Object.values(model.consultaTextos || [])
+            .map(v => String(v || '').trim())
+            .filter(v => v && valid.has(v));
+
+        const modVals = Object.values(model.modulosOperacion || [])
+            .map(v => String(v || '').trim())
+            .filter(v => v && valid.has(v));
+
+        model.consultaTextos = this.repack(consVals, 8);    // Text8..Text35
+        model.modulosOperacion = this.repack(modVals, 36);  // Text36..Text63
+    }
 
 }

@@ -182,7 +182,12 @@ img.warning {
   background: var(--rojo);
   transition: width 0.3s;
 }
-
+.solicitudes_masiva-container{
+  height: auto !important;
+}
+.solicitudes_masiva-tabla-contenedor{
+    height: auto !important;
+}
 /* ================================= */
 /*       Toast notifications         */
 /* ================================= */
@@ -286,4 +291,25 @@ input[disabled] {
   opacity: 0.5;
   cursor: not-allowed;
 }
+.mini-spinner {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border: 2px solid rgba(0,0,0,.2);
+  border-top-color: rgba(0,0,0,.6);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+  &.inline { margin-right: 6px; vertical-align: middle; }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
+.row-sending { opacity: .6; }
+.row-ok { opacity: .7; }
+.row-fade-out { animation: fadeOut .5s ease forwards; }
+@keyframes fadeOut { to { opacity: 0; height: 0; } }
+
+.solicitudes_masiva-toolbar{
+  display:flex; align-items:center; gap:.75rem; margin:.5rem 0 1rem;
+  .spacer{flex:1}
+  .chk{display:flex; align-items:center; gap:.5rem}
+  .stats{opacity:.7}
+}

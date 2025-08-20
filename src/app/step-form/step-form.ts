@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Step1Component } from './step1/step1';
 import { Step2Component } from './step2/step2';
@@ -7,6 +7,9 @@ import { Step4Component } from './step4/step4';
 import { Step5Component } from './step5/step5';
 import { Step6Component } from './step6/step6';
 import { CommonModule } from '@angular/common';
+import { StepFormModel } from '../services/personas.service';
+import { PersonasService } from '../services/personas.service';
+import { CatPerfilDto } from '../services/catalogos.service';
 @Component({
   selector: 'app-step-form',
   templateUrl: './step-form.html',
@@ -15,11 +18,15 @@ import { CommonModule } from '@angular/common';
   imports:[Step1Component, Step2Component, Step3Component,Step4Component, Step5Component,Step6Component, CommonModule, ReactiveFormsModule]
 })
 export class StepFormComponent implements OnInit {
+    private personas = inject(PersonasService);
+
+  // Supón que ya tienes armado el modelo consolidado de los pasos:
+  model!: StepFormModel;
   form!: FormGroup;
   currentStep = 1;
   maxSteps = 6;
-  tipos = ['Tipo A', 'Tipo B', 'Tipo C'];
-  perfiles: string[] = [];
+  tipos = ['FEDERAL', 'ESTATAL', 'MUNICIPAL'];
+  perfiles: CatPerfilDto[] = [];       // 👈 catálogo completo
   documentos = [
     { label: 'Comprobante de Identificación' },
     { label: 'Comprobante de Domicilio' },
@@ -61,4 +68,22 @@ export class StepFormComponent implements OnInit {
   }
   removeUpload(row: any) { this.uploadedDocs = this.uploadedDocs.filter(r => r.id !== row.id); }
   onValidateCode() { if (this.form.get('codigo')?.valid) this.nextStep(); }
+
+  guardando = false;
+
+  finalizar() {
+    this.guardando = true;
+    this.personas.saveFromStepForm(this.model).subscribe({
+      next: (personaId) => {
+        this.guardando = false;
+        // navegar o mostrar éxito
+        // this.router.navigate(['/personas', personaId]);
+        console.log('Persona guardada:', personaId);
+      },
+      error: (err) => {
+        this.guardando = false;
+        console.error('Error al guardar', err);
+      }
+    });
+  }
 }
