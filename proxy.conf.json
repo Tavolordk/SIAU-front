@@ -1,0 +1,14 @@
+{
+  "/data": {
+    "target": "http://localhost:2525",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/apiCedula": {
+    "target": "http://localhost:2525",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

@@ -1,95 +1,105 @@
 import { Injectable, Inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { REQUEST_API_BASE_URL } from '../core/token'; // asegúrate que el token exista y esté proveído
 
+// ===== Tipos que tu componente está importando =====
 export interface PageResult<T> {
   currentPage: number;
-  pageSize:   number;
+  pageSize: number;
   totalPages: number;
   totalItems: number;
-  items:      T[];
+  items: T[];
 }
 
+// OJO: el backend envía "año". Puedes tiparlo literal entre comillas.
 export interface Solicitud {
   id: number;
-  fill1: string;
+  fill1: string;                 // numero_oficio
   folio: string;
-  caducaEn: string | null;
-  checkBox1: boolean;
-  checkBox2: boolean;
-  checkBox3: boolean;
-  checkBox4: boolean;
-  checkBox5: boolean;
-  cuentaUsuario: string;
-  correoElectronico: string;
-  telefono: string;
-  apellidoPaterno: string;
-  apellidoMaterno: string | null;
   nombre: string;
-  nombre2: string;
-  rfc: string;
-  dia: number;
-  mes: number;
-  año: number;
-  cuip: string;
-  curp: string | null;
-  tipoUsuario: number;
+  apellidoPaterno: string;
+  apellidoMaterno?: string | null;
+  cuentaUsuario: string;
+  correoElectronico?: string;
+  telefono?: string;
   entidad: number;
-  municipio: number;
+  'año': number;
+  mes: number;
+  dia: number;
+  municipio:   number;   // antes: number | null | undefined
   institucion: number;
   dependencia: number;
   corporacion: number;
-  area: number;
-  cargo: string;
-  funciones: string;
-  funciones2: string | null;
-  pais: string;
-  entidad2: number;
-  municipio2: number;
-  corporacion2: number | null;
+  area:        number;
 
-  /** Textos Text8..Text35 */
-  consultaTextos: Record<`Text${8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | 32 | 33 | 34 | 35}`, string>;
+  // los demás pueden quedarse como estaban
+  tipoUsuario?: number | null;
+  cargo?: string | null;
+  funciones?: string | null;
+  pais?: string | null;
 
-  /** Textos Text36..Text63 */
-  modulosOperacion: Record<`Text${36 | 37 | 38 | 39 | 40 | 41 | 42 | 43 | 44 | 45 | 46 | 47 | 48 | 49 | 50 | 51 | 52 | 53 | 54 | 55 | 56 | 57 | 58 | 59 | 60 | 61 | 62 | 63}`, string>;
-
-  firma1: any;
-  firma2: any;
-  firma3: any;
-  ok: boolean;
-  estadosolicitud: number;
-  descripcionerror: string | null;
+  // si usas estos en otros lados, puedes dejarlos opcionales:
+  entidad2?: number | null;
+  municipio2?: number | null;
+  corporacion2?: number | null;
 }
 
 
+export interface CrearSolicitudRequest {
+  areaId: number;
+  asunto: string;
+  descripcion: string;
+  prioridad: 'ALTA' | 'MEDIA' | 'BAJA';
+  adjuntos?: { nombre: string; mime: string; base64: string }[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class SolicitudesService {
-  // No hardcodees rutas: úsalo inyectado
   constructor(
     private http: HttpClient,
-    @Inject('API_BASE_URL') private apiBaseUrl: string
+    @Inject(REQUEST_API_BASE_URL) private baseUrl: string
   ) {}
 
-  /** Trae una página de solicitudes desde GET https://…/data/solicitudes?page=X */
-  getPage(page: number, userId: number): Observable<PageResult<Solicitud>> {
-    const url = `${this.apiBaseUrl}/data/solicitudes`;
-    const params = new HttpParams()
-      .set('userId', userId.toString())
-      .set('page',  page.toString());
-    return this.http.get<PageResult<Solicitud>>(url, { params });
+  // ===== Mantengo "listar" si ya lo usas en otros lados =====
+  listar(params: Record<string, any>) {
+    return this.http.get<PageResult<Solicitud>>(
+      `${this.baseUrl}/data/solicitudes`,
+      { params }
+    );
   }
-  getSolicitud(id: number): Observable<Solicitud> {
-    return this.http.get<Solicitud>(`${this.apiBaseUrl}/${id}`);
+
+  // ===== Alias con el nombre que usa tu componente =====
+  getPage(page: number, userId?: number, pageSize = 10): Observable<PageResult<Solicitud>> {
+    const params = new HttpParams({
+      fromObject: {
+        page: String(page),
+        pageSize: String(pageSize),
+        ...(userId != null ? { userId: String(userId) } : {})
+      }
+    });
+    return this.http.get<PageResult<Solicitud>>(
+      `${this.baseUrl}/data/solicitudes`,
+      { params }
+    );
   }
-  /** Si tienes un endpoint para descargar PDF */
-  downloadPdf(id: number): Observable<Blob> {
-    const url = `${this.apiBaseUrl}/data/solicitudes/${id}/pdf`;
-    return this.http.get(url, { responseType: 'blob' });
+
+  crear(req: CrearSolicitudRequest) {
+    return this.http.post<{ solicitudId: number; folio: string }>(
+      `${this.baseUrl}/solicitudes`,
+      req
+    );
   }
-    getPerfiles(): Observable<any[]> {
-    const url = `${this.apiBaseUrl}/data/perfiles`; 
-    // ⚠️ aquí debes poner el endpoint real que expone tu API de perfiles
-    return this.http.get<any[]>(url);
+
+  detalle(id: number) {
+    return this.http.get<any>(`${this.baseUrl}/solicitudes/${id}`);
+  }
+
+  cambiarEstado(id: number, estado: string, motivo?: string) {
+    return this.http.put(`${this.baseUrl}/solicitudes/${id}/estado`, { estado, motivo }, { observe: 'response' });
+  }
+
+  subirAdjunto(id: number, adjunto: { nombre: string; mime: string; base64: string }) {
+    return this.http.post(`${this.baseUrl}/solicitudes/${id}/adjuntos`, adjunto, { observe: 'response' });
   }
 }

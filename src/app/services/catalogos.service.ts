@@ -1,9 +1,10 @@
 // src/app/services/catalogos.service.ts
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../environments/environment';
+import { environmentCatalog } from '../environments/environments.catalogos';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
+import { CATALOG_API_BASE_URL } from '../core/token';
 
 /** Opción genérica (para selects / PDF) */
 export interface CatalogoItem {
@@ -43,12 +44,13 @@ export class CatalogosService {
   private _munByEntidad = new Map<number, CatalogoItem[]>();
 
   /** Endpoint base para catálogos */
-  private url = `${environment.apiBaseUrl}/catalogos/tpusuario`;
+  private url = `${environmentCatalog.apiBaseUrl}/catalogos/tpusuario`;
 
   /** Cache de la respuesta completa */
   private allCatalogos$!: Observable<CatalogosResponseDto>;
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, @Inject(CATALOG_API_BASE_URL) private baseUrl: string) {
+        this.url = `${this.baseUrl}/catalogos/tpusuario`;
     this.allCatalogos$ = this.http.get<CatalogosResponseDto>(this.url).pipe(shareReplay(1));
 
     // Construye catálogos e índices una sola vez

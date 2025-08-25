@@ -40,17 +40,24 @@
           },
           "configurations": {
             "production": {
-"budgets": [
-  { "type": "initial", "maximumWarning": "3mb", "maximumError": "4mb" },
-  { "type": "anyComponentStyle", "maximumWarning": "8kb", "maximumError": "12kb" }
-],
-"allowedCommonJsDependencies": [
-  "exceljs",
-  "jszip",
-  "file-saver",
-  "pako"
-]
-,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "3mb",
+                  "maximumError": "4mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "8kb",
+                  "maximumError": "12kb"
+                }
+              ],
+              "allowedCommonJsDependencies": [
+                "exceljs",
+                "jszip",
+                "file-saver",
+                "pako"
+              ],
               "outputHashing": "all"
             },
             "development": {
@@ -63,6 +70,10 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "port": 4200,
+            "proxyConfig": "proxy.conf.json"
+          },
           "configurations": {
             "production": {
               "buildTarget": "OSUsuarios-Angular:build:production"

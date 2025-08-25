@@ -44,13 +44,17 @@ export class SolicitudesComponent implements OnInit {
     this.catalogos.getAll().subscribe(res => {
       // Entidades y municipios vienen juntos en res.Entidades
         console.log('Respuesta de catalogos:', res);
-      res.Entidades.forEach(e => {
-        if (e.FK_PADRE === null) {
-          this.entidadesMap.set(e.ID, e.NOMBRE);
-        } else if (e.FK_PADRE !== null) {
-          this.municipiosMap.set(e.ID, e.NOMBRE);
-        }
-      });
+res.Entidades.forEach((e: any) => {
+    const id      = e.ID ?? e.id;
+    const nombre  = e.NOMBRE ?? e.nombre;
+    const fkPadre = e.FK_PADRE ?? e.fk_padre;
+
+    if (fkPadre == null) {
+      this.entidadesMap.set(Number(id), nombre);
+    } else {
+      this.municipiosMap.set(Number(id), nombre);
+    }
+  });
       // Estructura organizacional: instituciones, dependencias, corporaciones, áreas
       res.Estructura.forEach(x => {
         switch (x.TIPO) {

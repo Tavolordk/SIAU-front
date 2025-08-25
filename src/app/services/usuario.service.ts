@@ -4,12 +4,13 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { LoginResponse } from '../models/login-response.model';
+import { USER_API_BASE_URL } from '../core/token';
 
 @Injectable({ providedIn: 'root' })
 export class UsuarioService {
   constructor(
     private http: HttpClient,
-    @Inject('API_BASE_URL') private baseUrl: string
+    @Inject(USER_API_BASE_URL) private baseUrl: string 
   ) {}
 
   /**
