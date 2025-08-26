@@ -57,15 +57,15 @@ res.Entidades.forEach((e: any) => {
   });
       // Estructura organizacional: instituciones, dependencias, corporaciones, áreas
       res.Estructura.forEach(x => {
-        switch (x.TIPO) {
+        switch (x.tipo) {
           case 'INSTITUCION':
-            this.institucionesMap.set(x.ID, x.NOMBRE); break;
+            this.institucionesMap.set(x.id, x.nombre); break;
           case 'DEPENDENCIA':
-            this.dependenciasMap.set(x.ID, x.NOMBRE); break;
+            this.dependenciasMap.set(x.id, x.nombre); break;
           case 'CORPORACION':
-            this.corporacionesMap.set(x.ID, x.NOMBRE); break;
+            this.corporacionesMap.set(x.id, x.nombre); break;
           case 'AREA':
-            this.areasMap.set(x.ID, x.NOMBRE); break;
+            this.areasMap.set(x.id, x.nombre); break;
         }
       });
       // Para el bloque 2 (si es mismo catálogo de Entidades/Municipios)

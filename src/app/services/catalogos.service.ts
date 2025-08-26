@@ -13,10 +13,10 @@ export interface CatalogoItem {
 }
 
 /** DTOs que refleja tu API */
-export interface TipoUsuarioDto { ID: number; TP_USUARIO: string; }
-export interface CatEntiDto { ID: number; NOMBRE: string; TIPO: string; FK_PADRE: number | null; }
-export interface CatEstructuraDto { ID: number; NOMBRE: string; TIPO: string; FK_PADRE: number | null; }
-export interface CatPerfilDto { ID: number; CLAVE: string; FUNCION: string; }
+export interface TipoUsuarioDto { id: number; tP_USUARIO: string; }
+export interface CatEntiDto { id: number; nombre: string; tipo: string; fK_PADRE: number | null; }
+export interface CatEstructuraDto { id: number; nombre: string; tipo: string; fK_PADRE: number | null; }
+export interface CatPerfilDto { id: number; clave: string; funcion: string; }
 
 export interface CatalogosResponseDto {
   TipoUsuario: TipoUsuarioDto[];
@@ -50,7 +50,7 @@ export class CatalogosService {
   private allCatalogos$!: Observable<CatalogosResponseDto>;
 
   constructor(private http: HttpClient, @Inject(CATALOG_API_BASE_URL) private baseUrl: string) {
-        this.url = `${this.baseUrl}/catalogos/tpusuario`;
+    this.url = `${this.baseUrl}/catalogos/tpusuario`;
     this.allCatalogos$ = this.http.get<CatalogosResponseDto>(this.url).pipe(shareReplay(1));
 
     // Construye catálogos e índices una sola vez
@@ -59,33 +59,48 @@ export class CatalogosService {
       this._entidadesRaw = res.Entidades ?? [];
 
       // Tipos de usuario
-      this.tiposUsuario = (res.TipoUsuario ?? []).map(u => ({ id: u.ID, nombre: u.TP_USUARIO }));
+      this.tiposUsuario = (res.TipoUsuario ?? []).map(u => ({ id: u.id, nombre: u.tP_USUARIO }));
 
       // Estados y Municipios para UI
-      this.entidades = (res.Entidades ?? [])
-        .filter(e => e.FK_PADRE === null)
-        .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
+      this._entidadesRaw = res.Entidades ?? [];
 
-      this.municipios = (res.Entidades ?? [])
-        .filter(e => e.FK_PADRE !== null)
-        .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
+      // Tipos de usuario
+      this.tiposUsuario = (res.TipoUsuario ?? [])
+        .map(u => ({ id: u.id, nombre: u.tP_USUARIO }));
+
+      // Estados (tipo=ESTADO) y Municipios (fK_PADRE != null)
+      this.entidades = this._entidadesRaw
+        .filter(e => e.fK_PADRE == null && e.tipo === 'ESTADO')
+        .map(e => ({ id: e.id, nombre: e.nombre }));
+
+      this.municipios = this._entidadesRaw
+        .filter(e => e.fK_PADRE != null)
+        .map(e => ({ id: e.id, nombre: e.nombre }));
 
       // Índice municipios por entidad
       this._munByEntidad.clear();
-      for (const e of (res.Entidades ?? [])) {
-        if (e.FK_PADRE != null) {
-          const arr = this._munByEntidad.get(e.FK_PADRE) || [];
-          arr.push({ id: e.ID, nombre: e.NOMBRE });
-          this._munByEntidad.set(e.FK_PADRE, arr);
+      for (const e of this._entidadesRaw) {
+        if (e.fK_PADRE != null) {
+          const arr = this._munByEntidad.get(e.fK_PADRE) || [];
+          arr.push({ id: e.id, nombre: e.nombre });
+          this._munByEntidad.set(e.fK_PADRE, arr);
         }
       }
 
+
       // Estructura
+      // Estructura: 1=INSTITUCION, 2=DEPENDENCIA, 3=CORPORACION, 4=AREA (según tu JSON)
       const estr = res.Estructura ?? [];
-      this.instituciones = estr.filter(e => e.TIPO === 'INSTITUCION').map(e => ({ id: e.ID, nombre: e.NOMBRE }));
-      this.dependencias = estr.filter(e => e.TIPO === 'DEPENDENCIA').map(e => ({ id: e.ID, nombre: e.NOMBRE }));
-      this.corporaciones = estr.filter(e => e.TIPO === 'CORPORACION').map(e => ({ id: e.ID, nombre: e.NOMBRE }));
-      this.areas = estr.filter(e => e.TIPO === 'AREA').map(e => ({ id: e.ID, nombre: e.NOMBRE }));
+      this.instituciones = estr
+        .filter(e => e.tipo === '1' && (e.fK_PADRE == null))
+        .map(e => ({ id: e.id, nombre: e.nombre }));
+      this.dependencias = estr.filter(e => e.tipo === '2').map(e => ({ id: e.id, nombre: e.nombre }));
+      this.corporaciones = estr.filter(e => e.tipo === '3').map(e => ({ id: e.id, nombre: e.nombre }));
+      this.areas = estr.filter(e => e.tipo === '4').map(e => ({ id: e.id, nombre: e.nombre }));
+
+      // Perfiles
+      this.perfiles = (res.Perfiles ?? [])
+        .map(p => ({ id: p.id, clave: p.clave, nombre: p.funcion }));
     });
   }
 
@@ -110,21 +125,21 @@ export class CatalogosService {
 
   getEntidadIdByName(nombre: string): number | null {
     const n = this.norm(nombre);
-    const hit = this._entidadesRaw.find(e => e.FK_PADRE === null && this.norm(e.NOMBRE) === n);
-    return hit ? hit.ID : null;
+    const hit = this._entidadesRaw.find(e => e.fK_PADRE === null && this.norm(e.nombre) === n);
+    return hit ? hit.id : null;
   }
 
   /** Busca municipio por nombre; si se pasa entidadId, restringe la búsqueda */
   getMunicipioIdByName(nombre: string, entidadId?: number): number | null {
     const n = this.norm(nombre);
     if (entidadId) {
-      const lista = this._entidadesRaw.filter(e => e.FK_PADRE === entidadId);
-      const hit = lista.find(e => this.norm(e.NOMBRE) === n);
-      return hit ? hit.ID : null;
+      const lista = this._entidadesRaw.filter(e => e.fK_PADRE === entidadId);
+      const hit = lista.find(e => this.norm(e.nombre) === n);
+      return hit ? hit.id : null;
     }
     // Evita usar esta ruta sin entidad si puedes (puede haber homónimos)
-    const any = this._entidadesRaw.find(e => e.FK_PADRE !== null && this.norm(e.NOMBRE) === n);
-    return any ? any.ID : null;
+    const any = this._entidadesRaw.find(e => e.fK_PADRE !== null && this.norm(e.nombre) === n);
+    return any ? any.id : null;
   }
 
   getInstitucionIdByName(nombre: string): number | null {
@@ -161,13 +176,13 @@ export class CatalogosService {
   }
 
   getEntidadNameById(id: number): string | null {
-    const hit = this._entidadesRaw.find(e => e.ID === id);
-    return hit ? hit.NOMBRE : null;
+    const hit = this._entidadesRaw.find(e => e.id === id);
+    return hit ? hit.nombre : null;
   }
 
   getMunicipioNameById(id: number): string | null {
-    const hit = this._entidadesRaw.find(e => e.ID === id);
-    return hit ? hit.NOMBRE : null;
+    const hit = this._entidadesRaw.find(e => e.id === id);
+    return hit ? hit.nombre : null;
   }
 
   getInstitucionNameById(id: number): string | null {
@@ -196,11 +211,11 @@ export class CatalogosService {
 
   /** Verifica si un municipio pertenece a una entidad (via FK_PADRE) */
   isMunicipioDeEntidad(munId: number, entidadId: number): boolean {
-    const m = this._entidadesRaw.find(e => e.ID === munId && e.FK_PADRE !== null);
-    return !!m && m.FK_PADRE === entidadId;
+    const m = this._entidadesRaw.find(e => e.id === munId && e.fK_PADRE !== null);
+    return !!m && m.fK_PADRE === entidadId;
   }
   getEntidadIdByMunicipioId(municipioId: number): number | null {
-    const muni = this._entidadesRaw.find(e => e.ID === municipioId);
-    return muni?.FK_PADRE ?? null;
+    const muni = this._entidadesRaw.find(e => e.id === municipioId);
+    return muni?.fK_PADRE ?? null;
   }
 }

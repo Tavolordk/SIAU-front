@@ -135,31 +135,31 @@ export class CargaMasivaUsuariosComponent implements OnInit {
         this.catalogoService.getAll().subscribe(res => {
             // Tipos de usuario (radio)
             this.catalogoService.tiposUsuario = res.TipoUsuario
-                .map(u => ({ id: u.ID, nombre: u.TP_USUARIO }));
+                .map(u => ({ id: u.id, nombre: u.tP_USUARIO }));
 
             // Estados / Municipios
             this.catalogoService.entidades = res.Entidades
-                .filter(e => e.FK_PADRE === null)
-                .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
+                .filter(e => e.fK_PADRE === null)
+                .map(e => ({ id: e.id, nombre: e.nombre }));
             this.catalogoService.municipios = res.Entidades
-                .filter(e => e.FK_PADRE !== null)
-                .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
+                .filter(e => e.fK_PADRE !== null)
+                .map(e => ({ id: e.id, nombre: e.nombre }));
 
             // Instituciones / Dependencias / Corporaciones / Áreas
             this.catalogoService.instituciones = res.Estructura
-                .filter(e => e.TIPO === 'INSTITUCION')
-                .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
+                .filter(e => e.tipo === 'INSTITUCION')
+                .map(e => ({ id: e.id, nombre: e.nombre }));
             this.catalogoService.dependencias = res.Estructura
-                .filter(e => e.TIPO === 'DEPENDENCIA')
-                .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
+                .filter(e => e.tipo === 'DEPENDENCIA')
+                .map(e => ({ id: e.id, nombre: e.nombre }));
             this.catalogoService.corporaciones = res.Estructura
-                .filter(e => e.TIPO === 'CORPORACION')
-                .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
+                .filter(e => e.tipo === 'CORPORACION')
+                .map(e => ({ id: e.id, nombre: e.nombre }));
             this.catalogoService.areas = res.Estructura
-                .filter(e => e.TIPO === 'AREA')
-                .map(e => ({ id: e.ID, nombre: e.NOMBRE }));
+                .filter(e => e.tipo === 'AREA')
+                .map(e => ({ id: e.id, nombre: e.nombre }));
             this.catalogoService.perfiles = res.Perfiles
-                .map(p => ({ id: p.ID, clave: p.CLAVE, nombre: p.FUNCION }));
+                .map(p => ({ id: p.id, clave: p.clave, nombre: p.funcion }));
         });
         const hydrated = this.ensureHydrated(this.allPreviewData);
         this.store.setDatosCargados(hydrated);

@@ -66,17 +66,27 @@ export class CargaUsuarioComponent implements OnInit {
 
     // 1) Cargar todos los catálogos una sola vez
     this.catalogos.getAll().subscribe(res => {
-      this.estructura = res.Estructura;
+      this.estructura = res.Estructura; // Ojo: usa id, nombre, tipo, fK_PADRE
 
-      this.tiposUsuario = res.TipoUsuario.map(x => ({ id: x.ID, nombre: x.TP_USUARIO }));
-      this.entidades = res.Entidades.map(x => ({ id: x.ID, nombre: x.NOMBRE }));
-      this.perfiles = res.Perfiles.map(x => ({ id: x.ID, clave: x.CLAVE, nombre: x.FUNCION }));
+      // Tipo de usuario (id / tP_USUARIO)
+      this.tiposUsuario = (res.TipoUsuario || [])
+        .map((x: any) => ({ id: x.id, nombre: x.tP_USUARIO }));
 
-      this.institucionOptions = this.estructura
-        .filter(x => x.TIPO === 'INSTITUCION')
-        .map(x => ({ id: x.ID, nombre: x.NOMBRE }));
+      // Entidades: sólo los ESTADO para el combo principal
+      this.entidades = (res.Entidades || [])
+        .filter((e: any) => e.tipo === 'ESTADO')
+        .map((e: any) => ({ id: e.id, nombre: e.nombre }));
 
-      // Listas dependientes se llenan en cascada más adelante
+      // Perfiles: funcion -> nombre
+      this.perfiles = (res.Perfiles || [])
+        .map((p: any) => ({ id: p.id, clave: p.clave, nombre: p.funcion }));
+
+      // Instituciones = tipo '1'
+      this.institucionOptions = (this.estructura || [])
+        .filter((n: any) => n.tipo === '1' && (n.fK_PADRE == null))
+        .map((n: any) => ({ id: n.id, nombre: n.nombre }));
+
+      // Listas dependientes
       this.dependencias = [];
       this.corporaciones = [];
       this.areaOptions = [];
@@ -682,55 +692,45 @@ export class CargaUsuarioComponent implements OnInit {
   * Carga dependencias hijas de la institución seleccionada,
   * o agrega el fallback { id: 0, nombre: 'NO APLICA' } si no hay datos.
   */
-  public cargarDependencias(parentId: number | null) {
-    if (!parentId) {
-      this.dependencias = [{ id: 0, nombre: 'NO APLICA' }];
-      this.userForm.get('dependencia')!.setValue(0);
-      return;
-    }
-    const items = this.estructura
-      .filter(x => x.TIPO === 'DEPENDENCIA' && x.FK_PADRE === parentId)
-      .map(x => ({ id: x.ID, nombre: x.NOMBRE }));
-    this.dependencias = items.length ? items : [{ id: 0, nombre: 'NO APLICA' }];
-    this.userForm.get('dependencia')!.setValue(this.dependencias[0].id);
-    console.log('Dependencias:', this.dependencias);
+public cargarDependencias(parentId: number | null) {
+  if (!parentId) {
+    this.dependencias = [{ id: 0, nombre: 'NO APLICA' }];
+    this.userForm.get('dependencia')!.setValue(0);
+    return;
   }
+  const items = (this.estructura || [])
+    .filter((x: any) => x.tipo === '2' && x.fK_PADRE === parentId)
+    .map((x: any) => ({ id: x.id, nombre: x.nombre }));
+  this.dependencias = items.length ? items : [{ id: 0, nombre: 'NO APLICA' }];
+  this.userForm.get('dependencia')!.setValue(this.dependencias[0].id);
+}
 
-  /**
-   * Carga corporaciones hijas de la dependencia seleccionada,
-   * o fallback si está vacío.
-   */
-  public cargarCorporaciones(parentId: number | null) {
-    if (!parentId) {
-      this.corporaciones = [{ id: 0, nombre: 'NO APLICA' }];
-      this.userForm.get('corporacion')!.setValue(0);
-      return;
-    }
-    const items = this.estructura
-      .filter(x => x.TIPO === 'CORPORACION' && x.FK_PADRE === parentId)
-      .map(x => ({ id: x.ID, nombre: x.NOMBRE }));
-    this.corporaciones = items.length ? items : [{ id: 0, nombre: 'NO APLICA' }];
-    this.userForm.get('corporacion')!.setValue(this.corporaciones[0].id);
-    console.log('Corporaciones:', this.corporaciones);
+public cargarCorporaciones(parentId: number | null) {
+  if (!parentId) {
+    this.corporaciones = [{ id: 0, nombre: 'NO APLICA' }];
+    this.userForm.get('corporacion')!.setValue(0);
+    return;
   }
+  const items = (this.estructura || [])
+    .filter((x: any) => x.tipo === '3' && x.fK_PADRE === parentId)
+    .map((x: any) => ({ id: x.id, nombre: x.nombre }));
+  this.corporaciones = items.length ? items : [{ id: 0, nombre: 'NO APLICA' }];
+  this.userForm.get('corporacion')!.setValue(this.corporaciones[0].id);
+}
 
-  /**
-   * Carga áreas hijas de la corporación seleccionada,
-   * o fallback si está vacío.
-   */
-  public cargarAreas(parentId: number | null) {
-    if (!parentId) {
-      this.areaOptions = [{ id: 0, nombre: 'NO APLICA' }];
-      this.userForm.get('area')!.setValue(0);
-      return;
-    }
-    const items = this.estructura
-      .filter(x => x.TIPO === 'AREA' && x.FK_PADRE === parentId)
-      .map(x => ({ id: x.ID, nombre: x.NOMBRE }));
-    this.areaOptions = items.length ? items : [{ id: 0, nombre: 'NO APLICA' }];
-    this.userForm.get('area')!.setValue(this.areaOptions[0].id);
-    console.log('Áreas:', this.areaOptions);
+public cargarAreas(parentId: number | null) {
+  if (!parentId) {
+    this.areaOptions = [{ id: 0, nombre: 'NO APLICA' }];
+    this.userForm.get('area')!.setValue(0);
+    return;
   }
+  const items = (this.estructura || [])
+    .filter((x: any) => x.tipo === '4' && x.fK_PADRE === parentId)
+    .map((x: any) => ({ id: x.id, nombre: x.nombre }));
+  this.areaOptions = items.length ? items : [{ id: 0, nombre: 'NO APLICA' }];
+  this.userForm.get('area')!.setValue(this.areaOptions[0].id);
+}
+
 
   /**
  * Carga municipios según entidad seleccionada (mismo patrón que dependencias)

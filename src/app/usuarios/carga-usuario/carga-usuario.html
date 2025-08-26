@@ -121,7 +121,7 @@
         <label for="tipoUsuario">Tipo de Usuario:</label>
         <select id="tipoUsuario" formControlName="tipoUsuario">
           <option [ngValue]="null">--Selecciona Tipo Usuario--</option>
-          <option *ngFor="let t of tiposUsuario" [value]="t.id">{{ t.nombre }}</option>
+          <option *ngFor="let t of tiposUsuario" [ngValue]="t.id">{{ t.nombre }}</option>
         </select>
       </div>
       <div>

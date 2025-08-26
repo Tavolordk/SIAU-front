@@ -28,7 +28,7 @@
 
           <datalist id="listaPerfiles">
             @for (perfil of perfilesFiltrados; track $index) {
-              <option [value]="`${perfil.CLAVE} - ${perfil.FUNCION}`"></option>
+              <option [value]="`${perfil.clave} - ${perfil.funcion}`"></option>
             }
           </datalist>
 
@@ -44,12 +44,12 @@
       <div class="perfil-list mt-3">
         @for (perfil of perfilesAgregados; track $index) {
           <div class="perfil-item">
-            <span class="perfil-id">{{ perfil.CLAVE }}</span>
+            <span class="perfil-id">{{ perfil.clave }}</span>
             <span class="perfil-remove"
                   (click)="eliminarPerfil($index)">
               <i class="fas fa-times"></i>
             </span>
-            <span class="perfil-desc">{{ perfil.FUNCION }}</span>
+            <span class="perfil-desc">{{ perfil.funcion }}</span>
           </div>
         }
         @empty {

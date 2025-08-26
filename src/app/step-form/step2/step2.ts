@@ -46,7 +46,7 @@ export class Step2Component implements OnInit {
     this.form.get('perfil')!.valueChanges.subscribe(value => {
       const val = value?.toLowerCase() || '';
       this.perfilesFiltrados = this.perfiles.filter(p =>
-        p.FUNCION.toLowerCase().includes(val) || p.CLAVE.toLowerCase().includes(val)
+        p.funcion.toLowerCase().includes(val) || p.clave.toLowerCase().includes(val)
       );
     });
   }
@@ -55,11 +55,11 @@ export class Step2Component implements OnInit {
     const clavePerfil = this.form.value.perfil;
 
     const perfilSeleccionado = this.perfiles.find(p =>
-      p.CLAVE.toLowerCase() === clavePerfil.toLowerCase() ||
-      p.FUNCION.toLowerCase() === clavePerfil.toLowerCase()
+      p.clave.toLowerCase() === clavePerfil.toLowerCase() ||
+      p.funcion.toLowerCase() === clavePerfil.toLowerCase()
     );
 
-    if (perfilSeleccionado && !this.perfilesAgregados.some(p => p.ID === perfilSeleccionado.ID)) {
+    if (perfilSeleccionado && !this.perfilesAgregados.some(p => p.id === perfilSeleccionado.id)) {
       this.perfilesAgregados.push(perfilSeleccionado);
       this.addPerfil.emit();
       this.form.reset();
