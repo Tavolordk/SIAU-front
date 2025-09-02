@@ -41,7 +41,11 @@ export class CargaUsuarioComponent implements OnInit {
   institucionOptions: CatalogoItem[] = [];
   areaOptions: CatalogoItem[] = [];
   estructura: CatEstructuraDto[] = [];
-
+  paisOptions: CatalogoItem[] = [];    // <-- nuevo
+  // catálogos secundarios
+  dependencias2: CatalogoItem[] = [];
+  corporaciones2: CatalogoItem[] = [];
+  areaOptions2: CatalogoItem[] = [];
 
   // Opciones tipo checkbox
   opciones = ['Nueva Cuenta',
@@ -66,7 +70,21 @@ export class CargaUsuarioComponent implements OnInit {
 
     // 1) Cargar todos los catálogos una sola vez
     this.catalogos.getAll().subscribe(res => {
-      this.estructura = res.Estructura; // Ojo: usa id, nombre, tipo, fK_PADRE
+      // justo al recibir res:
+      this.estructura = (res.Estructura || []).map((e: any) => ({
+        id: e.id ?? e.ID,
+        nombre: e.nombre ?? e.NOMBRE,
+        tipo: String(e.tipo ?? e.TIPO).toLowerCase(), // <- normalizado
+        fK_PADRE: e.fK_PADRE ?? e.FK_PADRE
+      }));
+
+      this.institucionOptions = this.estructura
+        .filter(n => n.tipo === 'institucion' && n.fK_PADRE == null)
+        .map(n => ({ id: n.id, nombre: n.nombre }));
+
+      // y para dependencias/corporaciones/áreas
+      // this.estructura.filter(x => x.tipo === 'dependencia' && x.fK_PADRE === institucionId) ...
+
 
       // Tipo de usuario (id / tP_USUARIO)
       this.tiposUsuario = (res.TipoUsuario || [])
@@ -81,15 +99,11 @@ export class CargaUsuarioComponent implements OnInit {
       this.perfiles = (res.Perfiles || [])
         .map((p: any) => ({ id: p.id, clave: p.clave, nombre: p.funcion }));
 
-      // Instituciones = tipo '1'
-      this.institucionOptions = (this.estructura || [])
-        .filter((n: any) => n.tipo === '1' && (n.fK_PADRE == null))
-        .map((n: any) => ({ id: n.id, nombre: n.nombre }));
-
       // Listas dependientes
       this.dependencias = [];
       this.corporaciones = [];
       this.areaOptions = [];
+      this.paisOptions = (res.Paises || []).map(p => ({ id: p.id, nombre: p.nombre }));
 
       // 2) Si vienes de Carga Masiva, usa el objeto del state y NO hagas GET
       const navState = this.router.getCurrentNavigation()?.extras?.state as any;
@@ -209,7 +223,10 @@ export class CargaUsuarioComponent implements OnInit {
     // 5) corporación → áreas
     this.cargarAreas(c.corporacion);
     this.userForm.patchValue({ area: c.area });
-
+    if (c.pais && typeof c.pais === 'string') {
+      const paisId = this.catalogos.getPaisIdByName(c.pais);
+      if (paisId) this.userForm.patchValue({ pais: paisId });
+    }
     // Actualiza el estado de todos los controles y valida de nuevo
     Object.values(this.userForm.controls).forEach(control => {
       control.updateValueAndValidity();
@@ -377,9 +394,41 @@ export class CargaUsuarioComponent implements OnInit {
           }
         ]
       ],
-      pais: ['', Validators.maxLength(100)],
-      corporacion2: [''],
-
+      pais: [
+        null,
+        [
+          // si no es obligatorio, no pongas Validators.required
+          (ctrl: AbstractControl): ValidationErrors | null => {
+            const v = ctrl.value;
+            if (v === null || v === undefined || v === '') return null; // vacío = válido
+            const id = typeof v === 'string' ? parseInt(v, 10) : v;
+            if (!Number.isFinite(id)) return { invalidOption: true };
+            const existe = this.paisOptions?.some(p => p.id === id);
+            return existe ? null : { invalidOption: true };
+          }
+        ]
+      ],
+      institucion2: [null, [
+        (c: AbstractControl) => {
+          const v = c.value; if (v == null || v === '') return null;
+          const id = typeof v === 'string' ? parseInt(v, 10) : v;
+          return this.institucionOptions.some(i => i.id === id) ? null : { invalidOption: true };
+        }
+      ]],
+      dependencia2: [null, [
+        (c: AbstractControl) => {
+          const v = c.value; if (v == null || v === '') return null;
+          const id = typeof v === 'string' ? parseInt(v, 10) : v;
+          return this.dependencias2.some(d => d.id === id) ? null : { invalidOption: true };
+        }
+      ]],
+      corporacion2: [null, [
+        (c: AbstractControl) => {
+          const v = c.value; if (v == null || v === '') return null;
+          const id = typeof v === 'string' ? parseInt(v, 10) : v;
+          return this.corporaciones2.some(x => x.id === id) ? null : { invalidOption: true };
+        }
+      ]],
       consultaTextos: this.fb.group({}),
       modulosOperacion: this.fb.group({}),
 
@@ -488,11 +537,14 @@ export class CargaUsuarioComponent implements OnInit {
       this.loading = false;
       return;
     }
-
+    console.log(municipioNombre);
     // Helper para evitar null/undefined y forzar string seguro
     const safeString = (v: any): string => (v === null || v === undefined ? '' : String(v));
-
+    const paisId: number | null =
+      typeof f.pais === 'number' ? f.pais : (this.catalogos.getPaisIdByName(String(f.pais ?? '')) ?? null);
+    const paisNombre = paisId ? this.catalogos.getPaisNameById(paisId) : null;
     // --- 1) Construir modelo para la API (POST) ---
+    const estructura2Id = this.getAreaJerarquica2(f);
     const apiCedula: CedulaModel = {
       fill1: f.fill1,
       folio: '', // lo genera el SP
@@ -513,17 +565,18 @@ export class CargaUsuarioComponent implements OnInit {
       curp: f.curp || null,
       tipoUsuario: f.tipoUsuario,
       entidad: f.entidad,
-      municipio: municipioId,
+      municipio: f.municipio,
       institucion: f.institucion,
       corporacion: f.corporacion,
       area: this.getAreaJerarquica(f),
       cargo: f.cargo,
       funciones: f.funciones,
       funciones2: f.funciones2 || null,
-      pais: f.pais || null,
-      entidad2: f.entidad2 || null,
-      municipio2: f.municipio2 || null,
-      corporacion2: f.corporacion2 || null,
+      pais: paisId || null || undefined,
+     entidad2: f.entidad2 || null,
+     municipio2: f.municipio2 || null,
+  // manda el ID final de estructura de comisión aquí:
+      corporacion2: estructura2Id || null||undefined,
       consultaTextos: this.transformarPerfiles(f.consultaTextos),
       modulosOperacion: this.transformarModulos(f.modulosOperacion),
       entidadNombre: '', // si tu API no requiere estos puedes dejarlos vacíos
@@ -543,6 +596,7 @@ export class CargaUsuarioComponent implements OnInit {
 
     // --- 2) Construir modelo para el PDF ---
     const pdfCedula: CedulaModelPDF = {
+
       fill1: safeString(f.fill1) || null,
       folio: safeString(f.folio) || null,
       cuentaUsuario: undefined,
@@ -564,7 +618,7 @@ export class CargaUsuarioComponent implements OnInit {
       cargo: f.cargo,
       funciones: f.funciones,
       funciones2: f.funciones2 || null,
-      pais: f.pais || null,
+      pais: paisNombre || null,
       entidad2: f.entidad2 || null,
       municipio2: f.municipio2 || null,
       corporacion2: f.corporacion2 || null,
@@ -575,6 +629,24 @@ export class CargaUsuarioComponent implements OnInit {
       checkBox3: cb3,
       checkBox4: cb4,
       checkBox5: cb5,
+      entidadNombre: this.catalogos.getEntidadNameById(f.entidad) ??
+        this.entidades.find(e => e.id === f.entidad)?.nombre ?? '',
+      municipioNombre: this.catalogos.getMunicipioNameById?.(f.municipio) ??
+        this.municipios.find(m => m.id === municipioId)?.nombre ?? '',
+      institucionNombre: this.catalogos.getInstitucionNameById(f.institucion) ??
+        this.institucionOptions.find(i => i.id === f.institucion)?.nombre ?? '',
+      dependenciaNombre: f.dependencia && f.dependencia !== 0
+        ? (this.catalogos.getDependenciaNameById(f.dependencia) ??
+          this.dependencias.find(d => d.id === f.dependencia)?.nombre ?? '')
+        : '',
+      corporacionNombre: f.corporacion && f.corporacion !== 0
+        ? (this.catalogos.getCorporacionNameById(f.corporacion) ??
+          this.corporaciones.find(c => c.id === f.corporacion)?.nombre ?? '')
+        : '',
+      areaNombre: f.area && f.area !== 0
+        ? (this.catalogos.getAreaNameById(f.area) ??
+          this.areaOptions.find(a => a.id === f.area)?.nombre ?? '')
+        : '',
     };
 
     // --- 3) Edición proveniente de carga masiva ---
@@ -692,44 +764,51 @@ export class CargaUsuarioComponent implements OnInit {
   * Carga dependencias hijas de la institución seleccionada,
   * o agrega el fallback { id: 0, nombre: 'NO APLICA' } si no hay datos.
   */
-public cargarDependencias(parentId: number | null) {
-  if (!parentId) {
-    this.dependencias = [{ id: 0, nombre: 'NO APLICA' }];
-    this.userForm.get('dependencia')!.setValue(0);
-    return;
-  }
-  const items = (this.estructura || [])
-    .filter((x: any) => x.tipo === '2' && x.fK_PADRE === parentId)
-    .map((x: any) => ({ id: x.id, nombre: x.nombre }));
-  this.dependencias = items.length ? items : [{ id: 0, nombre: 'NO APLICA' }];
-  this.userForm.get('dependencia')!.setValue(this.dependencias[0].id);
-}
+  public cargarDependencias(parentId: number | null) {
+    const pid = parentId ? Number(parentId) : null;        // por si viene '12'
+    if (!pid) {
+      this.dependencias = [{ id: 0, nombre: 'NO APLICA' }];
+      this.userForm.get('dependencia')!.setValue(0);
+      return;
+    }
+    const items = (this.estructura || [])
+      .filter(x => x.tipo === 'dependencia' && x.fK_PADRE === pid)  // <-- string
+      .map(x => ({ id: x.id, nombre: x.nombre }));
 
-public cargarCorporaciones(parentId: number | null) {
-  if (!parentId) {
-    this.corporaciones = [{ id: 0, nombre: 'NO APLICA' }];
-    this.userForm.get('corporacion')!.setValue(0);
-    return;
+    this.dependencias = items.length ? items : [{ id: 0, nombre: 'NO APLICA' }];
+    this.userForm.get('dependencia')!.setValue(this.dependencias[0].id);
   }
-  const items = (this.estructura || [])
-    .filter((x: any) => x.tipo === '3' && x.fK_PADRE === parentId)
-    .map((x: any) => ({ id: x.id, nombre: x.nombre }));
-  this.corporaciones = items.length ? items : [{ id: 0, nombre: 'NO APLICA' }];
-  this.userForm.get('corporacion')!.setValue(this.corporaciones[0].id);
-}
 
-public cargarAreas(parentId: number | null) {
-  if (!parentId) {
-    this.areaOptions = [{ id: 0, nombre: 'NO APLICA' }];
-    this.userForm.get('area')!.setValue(0);
-    return;
+  public cargarCorporaciones(parentId: number | null) {
+    const pid = parentId ? Number(parentId) : null;
+    if (!pid) {
+      this.corporaciones = [{ id: 0, nombre: 'NO APLICA' }];
+      this.userForm.get('corporacion')!.setValue(0);
+      return;
+    }
+    const items = (this.estructura || [])
+      .filter(x => x.tipo === 'corporacion' && x.fK_PADRE === pid)  // <-- string
+      .map(x => ({ id: x.id, nombre: x.nombre }));
+
+    this.corporaciones = items.length ? items : [{ id: 0, nombre: 'NO APLICA' }];
+    this.userForm.get('corporacion')!.setValue(this.corporaciones[0].id);
   }
-  const items = (this.estructura || [])
-    .filter((x: any) => x.tipo === '4' && x.fK_PADRE === parentId)
-    .map((x: any) => ({ id: x.id, nombre: x.nombre }));
-  this.areaOptions = items.length ? items : [{ id: 0, nombre: 'NO APLICA' }];
-  this.userForm.get('area')!.setValue(this.areaOptions[0].id);
-}
+
+  public cargarAreas(parentId: number | null) {
+    const pid = parentId ? Number(parentId) : null;
+    if (!pid) {
+      this.areaOptions = [{ id: 0, nombre: 'NO APLICA' }];
+      this.userForm.get('area')!.setValue(0);
+      return;
+    }
+    const items = (this.estructura || [])
+      .filter(x => x.tipo === 'area' && x.fK_PADRE === pid)        // <-- string
+      .map(x => ({ id: x.id, nombre: x.nombre }));
+
+    this.areaOptions = items.length ? items : [{ id: 0, nombre: 'NO APLICA' }];
+    this.userForm.get('area')!.setValue(this.areaOptions[0].id);
+  }
+
 
 
   /**
@@ -809,4 +888,46 @@ public cargarAreas(parentId: number | null) {
       }
     });
   }
+  public cargarDependencias2(parentId: number | null) {
+  const pid = parentId ? Number(parentId) : null;
+  if (!pid) { this.dependencias2 = []; this.userForm.get('dependencia2')!.setValue(null); return; }
+
+  const items = (this.estructura || [])
+    .filter(x => x.tipo === 'dependencia' && x.fK_PADRE === pid)
+    .map(x => ({ id: x.id, nombre: x.nombre }));
+
+  this.dependencias2 = items;
+  if (!items.length) this.userForm.get('dependencia2')!.setValue(null);
+}
+
+public cargarCorporaciones2(parentId: number | null) {
+  const pid = parentId ? Number(parentId) : null;
+  if (!pid) { this.corporaciones2 = []; this.userForm.get('corporacion2')!.setValue(null); return; }
+
+  const items = (this.estructura || [])
+    .filter(x => x.tipo === 'corporacion' && x.fK_PADRE === pid)
+    .map(x => ({ id: x.id, nombre: x.nombre }));
+
+  this.corporaciones2 = items;
+  if (!items.length) this.userForm.get('corporacion2')!.setValue(null);
+}
+
+public cargarAreas2(parentId: number | null) {
+  const pid = parentId ? Number(parentId) : null;
+  if (!pid) { this.areaOptions2 = []; this.userForm.get('area2')!.setValue(null); return; }
+
+  const items = (this.estructura || [])
+    .filter(x => x.tipo === 'area' && x.fK_PADRE === pid)
+    .map(x => ({ id: x.id, nombre: x.nombre }));
+
+  this.areaOptions2 = items;
+  if (!items.length) this.userForm.get('area2')!.setValue(null);
+}
+private getAreaJerarquica2(f: any): number | null {
+  if (f.area2)        return Number(f.area2);
+  if (f.corporacion2) return Number(f.corporacion2);
+  if (f.dependencia2) return Number(f.dependencia2);
+  if (f.institucion2) return Number(f.institucion2);
+  return null;
+}
 }

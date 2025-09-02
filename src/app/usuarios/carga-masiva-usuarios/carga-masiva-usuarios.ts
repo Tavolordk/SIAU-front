@@ -251,7 +251,7 @@ export class CargaMasivaUsuariosComponent implements OnInit {
                 pais: (findCol('país', 'pais') ? row.getCell(findCol('país', 'pais')!).text?.toString() : null) ?? null,
                 entidad2: (findCol('ENTIDAD1') ? row.getCell(findCol('ENTIDAD1')!).text?.toString() : null) ?? null,
                 municipio2: (findCol('MUNICIPIO1') ? row.getCell(findCol('MUNICIPIO1')!).text?.toString() : null) ?? null,
-                corporacion2: (findCol('CORPORACION1') ? row.getCell(findCol('CORPORACION1')!).text?.toString() : null) ?? null,
+                corporacion2: (findCol('CORPORACION1') ? row.getCell(findCol('CORPORACION1')!).text?.toString() : '') ?? null,
                 consultaTextos: {},
                 modulosOperacion: {},
                 checkBox1: false,

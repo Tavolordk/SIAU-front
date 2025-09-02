@@ -36,10 +36,10 @@ export interface CedulaModel {
   cargo: string;
   funciones: string;
   funciones2?: string;
-  pais?: string;
+  pais?: number;
   entidad2?: number;
   municipio2?: number;
-  corporacion2?: string;
+  corporacion2?: number;
   consultaTextos: Record<string, string>;
   modulosOperacion: Record<string, string>;
   firma1?: string;

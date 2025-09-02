@@ -29,7 +29,7 @@ export interface ExcelUsuarioRow {
     pais: string | null;
     entidad2: string | null;
     municipio2: string | null;
-    corporacion2: string | null;
+    corporacion2: string;
     // Los checkboxes de movimiento (nueva cuenta, modificación, etc.)
     checkBox1: boolean;
     checkBox2: boolean;

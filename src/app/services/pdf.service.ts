@@ -61,6 +61,7 @@ export class PdfService {
    * Todos los campos nulos o undefined se convierten en cadenas vacías.
    */
 async generarYDescargar(datos: CedulaModel): Promise<void> {
+  console.log('DATOS DE PDF: ' + datos.municipioNombre)
   const pdfBytes = await this.generar(datos);
   const toText = (v: string | number | null | undefined): string => {
     if (v == null) return '';

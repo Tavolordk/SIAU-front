@@ -234,11 +234,39 @@
       </div>
       <div>
         <label>País</label>
-        <input formControlName="pais" />
+        <select formControlName="pais">
+          <option [ngValue]="null">-- Selecciona País --</option>
+          <option *ngFor="let p of paisOptions" [ngValue]="p.id">
+            {{ p.nombre }}
+          </option>
+        </select>
+        <div *ngIf="userForm.get('pais')?.touched && userForm.get('pais')?.errors as paisErr">
+          <div *ngIf="paisErr['invalidOption']" class="validation-message">Opción inválida.</div>
+        </div>
       </div>
+      <!-- INSTITUCIÓN (comisión) -->
+      <div>
+        <label>Institución</label>
+        <select formControlName="institucion2" (change)="cargarDependencias2(userForm.get('institucion2')!.value)">
+          <option [ngValue]="null">--Selecciona Institución--</option>
+          <option *ngFor="let i of institucionOptions" [ngValue]="i.id">{{ i.nombre }}</option>
+        </select>
+      </div>
+      <!-- DEPENDENCIA (comisión) -->
+      <div>
+        <label>Dependencia</label>
+        <select formControlName="dependencia2" (change)="cargarCorporaciones2(userForm.get('dependencia2')!.value)">
+          <option [ngValue]="null">--Selecciona Dependencia--</option>
+          <option *ngFor="let d of dependencias2" [ngValue]="d.id">{{ d.nombre }}</option>
+        </select>
+      </div>
+      <!-- CORPORACIÓN (comisión) -->
       <div>
         <label>Corporación</label>
-        <input formControlName="corporacion2" />
+        <select formControlName="corporacion2" (change)="cargarAreas2(userForm.get('corporacion2')!.value)">
+          <option [ngValue]="null">--Selecciona Corporación--</option>
+          <option *ngFor="let c of corporaciones2" [ngValue]="c.id">{{ c.nombre }}</option>
+        </select>
       </div>
     </div>
   </div>

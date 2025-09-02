@@ -1,13 +1,27 @@
 // src/app/usuarios/cedula-model.builder.ts
 import { CedulaModel } from '../models/cedula.model';
 import { ExcelUsuarioRow } from '../models/excel.model';
+import { CatalogosService } from '../services/catalogos.service';
 
-export function buildCedulaModelFromExcelRow(row: ExcelUsuarioRow): CedulaModel {
+export function buildCedulaModelFromExcelRow(row: ExcelUsuarioRow,  cat?: CatalogosService
+): CedulaModel {
   const toNumberOrUndefined = (v: any): number | undefined => {
   if (v == null) return undefined;
   const n = typeof v === 'number' ? v : Number(v);
   return Number.isFinite(n) ? n : undefined;
 };
+  const paisId: number | undefined =
+    typeof row.pais === 'number'
+      ? row.pais
+      : (typeof row.pais === 'string'
+          ? (cat?.getPaisIdByName(row.pais) ?? undefined)
+          : undefined);
+    const corporacion2Id: number | undefined =
+    typeof row.corporacion2 === 'number'
+      ? row.corporacion2
+      : (typeof row.corporacion2 === 'string'
+          ? (cat?.getCorporacionIdByName(row.corporacion2) ?? undefined)
+          : undefined);
   return {
     fill1: row.fill1 || '',
     folio: '', // lo genera el backend
@@ -34,10 +48,10 @@ export function buildCedulaModelFromExcelRow(row: ExcelUsuarioRow): CedulaModel 
     cargo: row.cargo || '',
     funciones: row.funciones || '',
     funciones2: '', // si lo llenas en otro lugar, ajusta
-    pais: row.pais || undefined,
+    pais: paisId || undefined,
     entidad2: toNumberOrUndefined(row.entidad2),
     municipio2: toNumberOrUndefined(row.municipio2),
-    corporacion2: row.corporacion2 ?? undefined,
+    corporacion2: corporacion2Id,
 
     consultaTextos: row.consultaTextos || {},
     modulosOperacion: row.modulosOperacion || {},

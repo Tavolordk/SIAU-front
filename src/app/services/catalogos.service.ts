@@ -2,8 +2,8 @@
 import { Inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environmentCatalog } from '../environments/environments.catalogos';
-import { Observable } from 'rxjs';
-import { map, shareReplay } from 'rxjs/operators';
+import { firstValueFrom, Observable } from 'rxjs';
+import { map, shareReplay, tap } from 'rxjs/operators';
 import { CATALOG_API_BASE_URL } from '../core/token';
 
 /** Opción genérica (para selects / PDF) */
@@ -17,12 +17,15 @@ export interface TipoUsuarioDto { id: number; tP_USUARIO: string; }
 export interface CatEntiDto { id: number; nombre: string; tipo: string; fK_PADRE: number | null; }
 export interface CatEstructuraDto { id: number; nombre: string; tipo: string; fK_PADRE: number | null; }
 export interface CatPerfilDto { id: number; clave: string; funcion: string; }
+export interface CatPaisesDto { id:number; nombre:string; ISO2?:string; ISO3?:string }
+
 
 export interface CatalogosResponseDto {
   TipoUsuario: TipoUsuarioDto[];
   Entidades: CatEntiDto[];      // Estados (FK_PADRE=null) y Municipios (FK_PADRE!=null)
   Estructura: CatEstructuraDto[]; // INSTITUCION/DEPENDENCIA/CORPORACION/AREA
   Perfiles: CatPerfilDto[];
+  Paises:CatPaisesDto[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -36,6 +39,8 @@ export class CatalogosService {
   corporaciones: CatalogoItem[] = [];
   areas: CatalogoItem[] = [];
   tiposUsuario: CatalogoItem[] = [];
+  paises:CatalogoItem[]=[];
+
 
   /** Respaldo crudo con FK_PADRE (clave del fix) */
   private _entidadesRaw: CatEntiDto[] = [];
@@ -54,54 +59,40 @@ export class CatalogosService {
     this.allCatalogos$ = this.http.get<CatalogosResponseDto>(this.url).pipe(shareReplay(1));
 
     // Construye catálogos e índices una sola vez
-    this.allCatalogos$.subscribe((res) => {
-      // Guarda crudo (con FK_PADRE)
-      this._entidadesRaw = res.Entidades ?? [];
+// CatalogosService
+this.allCatalogos$ = this.http.get<CatalogosResponseDto>(this.url).pipe(
+  tap(res => {
+    // normaliza Entidades
+const raw = (res.Entidades ?? []).map(e => ({
+  id: e.id, nombre: e.nombre, tipo: (e.tipo || '').toLowerCase(), fK_PADRE: e.fK_PADRE
+}));
+this._entidadesRaw = raw; 
+    this.entidades = raw.filter(e => e.fK_PADRE == null && e.tipo === 'estado')
+                        .map(e => ({ id: e.id, nombre: e.nombre }));
 
-      // Tipos de usuario
-      this.tiposUsuario = (res.TipoUsuario ?? []).map(u => ({ id: u.id, nombre: u.tP_USUARIO }));
-
-      // Estados y Municipios para UI
-      this._entidadesRaw = res.Entidades ?? [];
-
-      // Tipos de usuario
-      this.tiposUsuario = (res.TipoUsuario ?? [])
-        .map(u => ({ id: u.id, nombre: u.tP_USUARIO }));
-
-      // Estados (tipo=ESTADO) y Municipios (fK_PADRE != null)
-      this.entidades = this._entidadesRaw
-        .filter(e => e.fK_PADRE == null && e.tipo === 'ESTADO')
-        .map(e => ({ id: e.id, nombre: e.nombre }));
-
-      this.municipios = this._entidadesRaw
-        .filter(e => e.fK_PADRE != null)
-        .map(e => ({ id: e.id, nombre: e.nombre }));
-
-      // Índice municipios por entidad
-      this._munByEntidad.clear();
-      for (const e of this._entidadesRaw) {
-        if (e.fK_PADRE != null) {
-          const arr = this._munByEntidad.get(e.fK_PADRE) || [];
-          arr.push({ id: e.id, nombre: e.nombre });
-          this._munByEntidad.set(e.fK_PADRE, arr);
-        }
-      }
-
-
-      // Estructura
-      // Estructura: 1=INSTITUCION, 2=DEPENDENCIA, 3=CORPORACION, 4=AREA (según tu JSON)
-      const estr = res.Estructura ?? [];
-      this.instituciones = estr
-        .filter(e => e.tipo === '1' && (e.fK_PADRE == null))
-        .map(e => ({ id: e.id, nombre: e.nombre }));
-      this.dependencias = estr.filter(e => e.tipo === '2').map(e => ({ id: e.id, nombre: e.nombre }));
-      this.corporaciones = estr.filter(e => e.tipo === '3').map(e => ({ id: e.id, nombre: e.nombre }));
-      this.areas = estr.filter(e => e.tipo === '4').map(e => ({ id: e.id, nombre: e.nombre }));
-
-      // Perfiles
-      this.perfiles = (res.Perfiles ?? [])
-        .map(p => ({ id: p.id, clave: p.clave, nombre: p.funcion }));
+    // índice de municipios por entidad
+    this._munByEntidad.clear();
+    raw.filter(e => e.fK_PADRE != null).forEach(m => {
+      const list = this._munByEntidad.get(m.fK_PADRE!) ?? [];
+      list.push({ id: m.id, nombre: m.nombre });
+      this._munByEntidad.set(m.fK_PADRE!, list);
     });
+
+    // estructura normalizada
+    const estr = (res.Estructura ?? []).map(x => ({
+      id: x.id, nombre: x.nombre, tipo: (x.tipo || '').toLowerCase(), fK_PADRE: x.fK_PADRE
+    }));
+    this.instituciones = estr.filter(x => x.tipo === 'institucion' && x.fK_PADRE == null)
+                             .map(x => ({ id: x.id, nombre: x.nombre }));
+    this.dependencias  = estr.filter(x => x.tipo === 'dependencia').map(x => ({ id: x.id, nombre: x.nombre }));
+    this.corporaciones = estr.filter(x => x.tipo === 'corporacion').map(x => ({ id: x.id, nombre: x.nombre }));
+    this.areas         = estr.filter(x => x.tipo === 'area').map(x => ({ id: x.id, nombre: x.nombre }));
+
+    this.paises = (res.Paises ?? []).map(p => ({ id: p.id, nombre: p.nombre }));
+  }),
+  shareReplay({ bufferSize: 1, refCount: false })
+);
+
   }
 
   /** Normaliza strings para comparaciones */
@@ -110,6 +101,17 @@ export class CatalogosService {
   /** Carga completa (resumida por shareReplay) */
   getAll(): Observable<CatalogosResponseDto> {
     return this.allCatalogos$;
+  }
+
+    getPaisNameById(id: number): string | null {
+    const hit = this.paises.find(p => p.id === id);
+    return hit ? hit.nombre : null;
+  }
+
+  getPaisIdByName(nombre: string): number | null {
+    const n = (nombre || '').trim().toUpperCase();
+    const hit = this.paises.find(p => p.nombre.trim().toUpperCase() === n);
+    return hit ? hit.id : null;
   }
 
   /** Municipios por entidad usando índice (rápido y seguro) */
@@ -218,4 +220,7 @@ export class CatalogosService {
     const muni = this._entidadesRaw.find(e => e.id === municipioId);
     return muni?.fK_PADRE ?? null;
   }
+  async ensureReady(): Promise<void> {
+  await firstValueFrom(this.allCatalogos$);
+}
 }
