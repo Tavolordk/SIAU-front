@@ -10,6 +10,7 @@ import {
 } from '../../shared/validators';
 import { StepFormStateService } from '../state/step-form-state.service';
 import { CatalogosService, CatalogoItem } from '../../services/catalogos.service';
+type NodoEstructura = { id: number; nombre: string; tipo: string; fK_PADRE: number | null };
 
 @Component({
   selector: 'app-step1',
@@ -27,6 +28,7 @@ export class Step1Component implements OnInit, OnDestroy {
 
   @Input() form!: FormGroup;
   @Input() tipos: string[] = [];
+  private estructura: NodoEstructura[] = [];
 
   // Catálogos
   sexos: CatalogoItem[] = [];
@@ -37,6 +39,7 @@ export class Step1Component implements OnInit, OnDestroy {
   tipoDeUsuario: CatalogoItem[] = [];
   paises: CatalogoItem[] = [];
   areas: CatalogoItem[] = [];
+  NO_APLICA: CatalogoItem = { id: 0, nombre: 'NO APLICA' };
 
   // Cascadas
   municipiosNacimiento: CatalogoItem[] = [];
@@ -140,14 +143,25 @@ export class Step1Component implements OnInit, OnDestroy {
     this.catalogos.getAmbito$().pipe(takeUntil(this.destroy$)).subscribe(v => this.ambitos = v);
     this.catalogos.getTiposUsuario$().subscribe(v => this.tipoDeUsuario = v);
 
-    this.catalogos.getAll().pipe(takeUntil(this.destroy$)).subscribe(() => {
-      // Entidades viene del mismo payload
-      this.catalogos.getEntidades$?.().pipe(takeUntil(this.destroy$)).subscribe(e => this.entidades = e);
-      // fallback en caso de no tener getEntidades$
-      if (!this.catalogos.getEntidades$) {
-        this.entidades = this.catalogos.entidades || [];
-      }
-    });
+this.catalogos.getAll().pipe(takeUntil(this.destroy$)).subscribe(res => {
+  this.estructura = (res?.Estructura || []).map((e: any) => ({
+    id: Number(e.id ?? e.ID),
+    nombre: String(e.nombre ?? e.NOMBRE).trim(),
+    tipo: String(e.tipo ?? e.TIPO).toLowerCase().trim(),
+    fK_PADRE: (e.fK_PADRE ?? e.FK_PADRE) == null ? null : Number(e.fK_PADRE ?? e.FK_PADRE),
+  }));
+
+  // instituciones raíz (padre null)
+  this.instituciones = this.estructura
+    .filter(n => n.tipo === 'institucion' && n.fK_PADRE == null)
+    .map(n => ({ id: n.id, nombre: n.nombre }));
+
+  // Entidades (si las traes en ese payload)
+  this.entidades = (res?.Entidades || [])
+    .filter((e: any) => (e.tipo ?? '').toString().toUpperCase() === 'ESTADO')
+    .map((e: any) => ({ id: Number(e.id), nombre: String(e.nombre) }));
+});
+
 
     // ----- encadenamientos -----
 
@@ -182,46 +196,31 @@ export class Step1Component implements OnInit, OnDestroy {
       });
 
     // Adscripción: ámbito (tipoInstitucion) -> instituciones
+    // Adscripción: ámbito (tipoInstitucion) -> instituciones
     this.form.get('tipoInstitucion')!.valueChanges
       .pipe(
         startWith(this.form.get('tipoInstitucion')!.value),
-        tap(() => this.resetControls(['institucion', 'dependencia', 'corporacion'])),
-        switchMap(() => {
-          // ahora mismo todas las instituciones; si luego filtras por ámbito, aquí aplicas filtro
-          return this.catalogos.getInstituciones$ ? this.catalogos.getInstituciones$() : of(this.catalogos.instituciones);
-        }),
-        takeUntil(this.destroy$)
-      ).subscribe(list => this.instituciones = list);
-
-    // institucion -> dependencias
-    this.form.get('institucion')!.valueChanges
-      .pipe(
-        startWith(this.form.get('institucion')!.value as number | null),
-        tap(() => this.resetControls(['dependencia', 'corporacion'])),
-        switchMap((instId: number | null) =>
-          instId ? this.catalogos.getDependencias$(instId) : of<CatalogoItem[]>([])
-        ),
+        tap(() => this.resetControls(['institucion', 'dependencia', 'corporacion', 'area'])),
+        switchMap(() => this.catalogos.getInstituciones$ ? this.catalogos.getInstituciones$() : of(this.catalogos.instituciones)),
         takeUntil(this.destroy$)
       )
-      .subscribe(list => {
-        this.dependencias = list;
-        this.validateInList('dependencia', list);
-      });
+      .subscribe(list => this.instituciones = list);
 
+    // institucion -> dependencias (con reset de corporación y área)
+this.form.get('institucion')!.valueChanges
+  .pipe(startWith(this.form.get('institucion')!.value), takeUntil(this.destroy$))
+  .subscribe(v => this.cargarDependenciasLocal(v));
     // dependencia -> corporaciones
-    this.form.get('dependencia')!.valueChanges
-      .pipe(
-        startWith(this.form.get('dependencia')!.value as number | null),
-        tap(() => this.resetControls(['corporacion'])),
-        switchMap((depId: number | null) =>
-          depId ? this.catalogos.getCorporaciones$(depId) : of<CatalogoItem[]>([])
-        ),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(list => {
-        this.corporaciones = list;
-        this.validateInList('corporacion', list);
-      });
+    // dependencia -> corporaciones (con fallback y manejo de 0)
+this.form.get('dependencia')!.valueChanges
+  .pipe(startWith(this.form.get('dependencia')!.value), takeUntil(this.destroy$))
+  .subscribe(v => this.cargarCorporacionesLocal(v));
+    // Corporación -> Áreas (con fallback y manejo de 0)
+this.form.get('corporacion')!.valueChanges
+  .pipe(startWith(this.form.get('corporacion')!.value), takeUntil(this.destroy$))
+  .subscribe(v => this.cargarAreasLocal(v));
+
+
 
     // Comisión: entidad2 -> municipioAlcaldia3
     this.form.get('entidad2')!.valueChanges
@@ -286,18 +285,7 @@ export class Step1Component implements OnInit, OnDestroy {
         this.validateInList('paisNacimiento', list);
       });
 
-    // Corporación -> Áreas
-    this.form.get('corporacion')!.valueChanges
-      .pipe(
-        startWith(this.form.get('corporacion')!.value as number | null),
-        tap(() => this.resetControls(['area'])),
-        switchMap((corpId: number | null) => corpId ? this.catalogos.getAreas$(corpId) : of<CatalogoItem[]>([])),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(list => {
-        this.areas = list;
-        this.validateInList('area', list);
-      });
+
 
   }
 
@@ -375,4 +363,72 @@ export class Step1Component implements OnInit, OnDestroy {
 
   // para *ngFor trackBy
   trackById = (_: number, it: CatalogoItem) => it.id;
+
+  private cargarDependenciasLocal(parentId: number | null) {
+  const pid = parentId == null ? null : Number(parentId);
+
+  if (pid == null) {
+    this.dependencias = [];
+    this.form.get('dependencia')!.setValue(null, { emitEvent: false });
+    this.corporaciones = [];
+    this.form.get('corporacion')!.setValue(null, { emitEvent: false });
+    this.areas = [];
+    this.form.get('area')!.setValue(null, { emitEvent: false });
+    return;
+  }
+
+  const items = this.estructura
+    .filter(x => x.tipo === 'dependencia' && x.fK_PADRE === pid)
+    .map(x => ({ id: x.id, nombre: x.nombre }));
+
+  this.dependencias = items.length ? items : [this.NO_APLICA];
+  this.form.get('dependencia')!.setValue(this.dependencias[0].id, { emitEvent: true });
+}
+
+private cargarCorporacionesLocal(parentId: number | null) {
+  const pid = parentId == null ? null : Number(parentId);
+
+  if (pid == null) {
+    this.corporaciones = [];
+    this.form.get('corporacion')!.setValue(null, { emitEvent: false });
+    this.areas = [];
+    this.form.get('area')!.setValue(null, { emitEvent: false });
+    return;
+  }
+  if (pid === 0) { // NO APLICA → propaga
+    this.corporaciones = [this.NO_APLICA];
+    this.form.get('corporacion')!.setValue(0, { emitEvent: true });
+    return;
+  }
+
+  const items = this.estructura
+    .filter(x => x.tipo === 'corporacion' && x.fK_PADRE === pid)
+    .map(x => ({ id: x.id, nombre: x.nombre }));
+
+  this.corporaciones = items.length ? items : [this.NO_APLICA];
+  this.form.get('corporacion')!.setValue(this.corporaciones[0].id, { emitEvent: true });
+}
+
+private cargarAreasLocal(parentId: number | null) {
+  const pid = parentId == null ? null : Number(parentId);
+
+  if (pid == null) {
+    this.areas = [];
+    this.form.get('area')!.setValue(null, { emitEvent: false });
+    return;
+  }
+  if (pid === 0) { // NO APLICA → propaga
+    this.areas = [this.NO_APLICA];
+    this.form.get('area')!.setValue(0, { emitEvent: false });
+    return;
+  }
+
+  const items = this.estructura
+    .filter(x => x.tipo === 'area' && x.fK_PADRE === pid)
+    .map(x => ({ id: x.id, nombre: x.nombre }));
+
+  this.areas = items.length ? items : [this.NO_APLICA];
+  this.form.get('area')!.setValue(this.areas[0].id, { emitEvent: false });
+}
+
 }
