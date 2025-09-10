@@ -6,11 +6,18 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { CargaUsuarioService } from '../../services/carga-usuario.service';
 import { CedulaModel } from '../../models/cedula.model';
 import { CedulaModel as CedulaModelPDF } from '../../services/pdf.service';
-import { CatalogosService, CatalogoItem, CatEstructuraDto } from '../../services/catalogos.service';
+import { CatalogosService, CatalogoItem, CatEstructuraDto, CatAmbitoDto } from '../../services/catalogos.service';
 import { UsuarioService } from '../../services/usuario.service';
 import { ExcelUsuarioRow } from '../../models/excel.model';
 import { CargaUsuarioStoreService } from '../../services/carga-usuario-store.service';
 import { FormArray, ValidatorFn } from '@angular/forms';
+import {
+  rfcValidator,
+  curpValidator,
+  emailBasicValidator,
+  phoneMxValidator,
+  notOnlyWhitespaceValidator,
+} from '../../shared/validators';
 
 
 /**
@@ -32,7 +39,7 @@ export class CargaUsuarioComponent implements OnInit {
   loading = false;
 
   // Catálogos para selects
-  tiposUsuario: CatalogoItem[] = [];
+  tiposUsuario:CatAmbitoDto[] = [];
   entidades: CatalogoItem[] = [];
   municipios: CatalogoItem[] = [];
   municipios2: CatalogoItem[] = [];
@@ -87,8 +94,8 @@ export class CargaUsuarioComponent implements OnInit {
 
 
       // Tipo de usuario (id / tP_USUARIO)
-      this.tiposUsuario = (res.TipoUsuario || [])
-        .map((x: any) => ({ id: x.id, nombre: x.tP_USUARIO }));
+      this.tiposUsuario = (res.Ambito || [])
+        .map((x: any) => ({ id: x.id, descripcion: x.descripcion }));
 
       // Entidades: sólo los ESTADO para el combo principal
       this.entidades = (res.Entidades || [])
@@ -293,26 +300,28 @@ export class CargaUsuarioComponent implements OnInit {
         [false, false, false, false, false],
       ),
 
-      nombre: ['', [Validators.required, Validators.maxLength(100)]],
+      nombre: ['', [Validators.required, Validators.maxLength(100), notOnlyWhitespaceValidator()]],
       nombre2: [''],
-      apellidoPaterno: ['', [Validators.required, Validators.maxLength(100)]],
+      apellidoPaterno: ['', [Validators.required, Validators.maxLength(100), notOnlyWhitespaceValidator()]],
       apellidoMaterno: ['', [Validators.maxLength(100)]],
       fechaSolicitud: [new Date().toISOString().substring(0, 10), Validators.required],
 
       rfc: ['', [
         Validators.required,
         Validators.maxLength(13),
-        Validators.pattern(/^[A-ZÑ&]{4}\d{6}[A-Z0-9]{3}$/i)
+        rfcValidator({ checkDV: true }),
       ]],
 
-      curp: ['', Validators.maxLength(18)],
-      correoElectronico: ['', [
+      curp: ['', [
+        Validators.maxLength(18),
+        curpValidator({ checkDV: true }),
+      ]], correoElectronico: ['', [
         Validators.required,
         Validators.email,
-        Validators.pattern(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)
+        emailBasicValidator(),
       ]],
       telefono: ['', [
-        Validators.pattern(/^\d{7,10}$/)
+        phoneMxValidator(),
       ]],
       cuip: ['', Validators.maxLength(20)],
 
@@ -573,10 +582,10 @@ export class CargaUsuarioComponent implements OnInit {
       funciones: f.funciones,
       funciones2: f.funciones2 || null,
       pais: paisId || null || undefined,
-     entidad2: f.entidad2 || null,
-     municipio2: f.municipio2 || null,
-  // manda el ID final de estructura de comisión aquí:
-      corporacion2: estructura2Id || null||undefined,
+      entidad2: f.entidad2 || null,
+      municipio2: f.municipio2 || null,
+      // manda el ID final de estructura de comisión aquí:
+      corporacion2: estructura2Id || null || undefined,
       consultaTextos: this.transformarPerfiles(f.consultaTextos),
       modulosOperacion: this.transformarModulos(f.modulosOperacion),
       entidadNombre: '', // si tu API no requiere estos puedes dejarlos vacíos
@@ -889,45 +898,45 @@ export class CargaUsuarioComponent implements OnInit {
     });
   }
   public cargarDependencias2(parentId: number | null) {
-  const pid = parentId ? Number(parentId) : null;
-  if (!pid) { this.dependencias2 = []; this.userForm.get('dependencia2')!.setValue(null); return; }
+    const pid = parentId ? Number(parentId) : null;
+    if (!pid) { this.dependencias2 = []; this.userForm.get('dependencia2')!.setValue(null); return; }
 
-  const items = (this.estructura || [])
-    .filter(x => x.tipo === 'dependencia' && x.fK_PADRE === pid)
-    .map(x => ({ id: x.id, nombre: x.nombre }));
+    const items = (this.estructura || [])
+      .filter(x => x.tipo === 'dependencia' && x.fK_PADRE === pid)
+      .map(x => ({ id: x.id, nombre: x.nombre }));
 
-  this.dependencias2 = items;
-  if (!items.length) this.userForm.get('dependencia2')!.setValue(null);
-}
+    this.dependencias2 = items;
+    if (!items.length) this.userForm.get('dependencia2')!.setValue(null);
+  }
 
-public cargarCorporaciones2(parentId: number | null) {
-  const pid = parentId ? Number(parentId) : null;
-  if (!pid) { this.corporaciones2 = []; this.userForm.get('corporacion2')!.setValue(null); return; }
+  public cargarCorporaciones2(parentId: number | null) {
+    const pid = parentId ? Number(parentId) : null;
+    if (!pid) { this.corporaciones2 = []; this.userForm.get('corporacion2')!.setValue(null); return; }
 
-  const items = (this.estructura || [])
-    .filter(x => x.tipo === 'corporacion' && x.fK_PADRE === pid)
-    .map(x => ({ id: x.id, nombre: x.nombre }));
+    const items = (this.estructura || [])
+      .filter(x => x.tipo === 'corporacion' && x.fK_PADRE === pid)
+      .map(x => ({ id: x.id, nombre: x.nombre }));
 
-  this.corporaciones2 = items;
-  if (!items.length) this.userForm.get('corporacion2')!.setValue(null);
-}
+    this.corporaciones2 = items;
+    if (!items.length) this.userForm.get('corporacion2')!.setValue(null);
+  }
 
-public cargarAreas2(parentId: number | null) {
-  const pid = parentId ? Number(parentId) : null;
-  if (!pid) { this.areaOptions2 = []; this.userForm.get('area2')!.setValue(null); return; }
+  public cargarAreas2(parentId: number | null) {
+    const pid = parentId ? Number(parentId) : null;
+    if (!pid) { this.areaOptions2 = []; this.userForm.get('area2')!.setValue(null); return; }
 
-  const items = (this.estructura || [])
-    .filter(x => x.tipo === 'area' && x.fK_PADRE === pid)
-    .map(x => ({ id: x.id, nombre: x.nombre }));
+    const items = (this.estructura || [])
+      .filter(x => x.tipo === 'area' && x.fK_PADRE === pid)
+      .map(x => ({ id: x.id, nombre: x.nombre }));
 
-  this.areaOptions2 = items;
-  if (!items.length) this.userForm.get('area2')!.setValue(null);
-}
-private getAreaJerarquica2(f: any): number | null {
-  if (f.area2)        return Number(f.area2);
-  if (f.corporacion2) return Number(f.corporacion2);
-  if (f.dependencia2) return Number(f.dependencia2);
-  if (f.institucion2) return Number(f.institucion2);
-  return null;
-}
+    this.areaOptions2 = items;
+    if (!items.length) this.userForm.get('area2')!.setValue(null);
+  }
+  private getAreaJerarquica2(f: any): number | null {
+    if (f.area2) return Number(f.area2);
+    if (f.corporacion2) return Number(f.corporacion2);
+    if (f.dependencia2) return Number(f.dependencia2);
+    if (f.institucion2) return Number(f.institucion2);
+    return null;
+  }
 }

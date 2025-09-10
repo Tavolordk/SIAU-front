@@ -2,11 +2,12 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { CatalogosService, CatPerfilDto } from '../../services/catalogos.service';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 @Component({
   selector: 'app-step2',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, NgSelectModule],
   templateUrl: './step2.html',
   styleUrls: ['./step2.scss']
 })
@@ -20,9 +21,13 @@ export class Step2Component implements OnInit {
   @Output() next         = new EventEmitter<void>();
   @Output() prev         = new EventEmitter<void>();
 
-  @Input() perfiles: CatPerfilDto[] = [];       // 👈 catálogo completo
-  perfilesFiltrados: CatPerfilDto[] = [];
+  // Catálogo y listas
+  @Input() perfiles: CatPerfilDto[] = [];
+  perfilesDisponibles: CatPerfilDto[] = []; // 👈 fuente del ng-select
   perfilesAgregados: CatPerfilDto[] = [];
+
+  // Placeholder dinámico
+  perfilPlaceholder = 'Ej: 3101 SUPERVISOR IPH';
 
   constructor(
     private fb: FormBuilder,
@@ -32,42 +37,48 @@ export class Step2Component implements OnInit {
   ngOnInit(): void {
     if (!this.form) {
       this.form = this.fb.group({
-        perfil: ['', Validators.required]
+        perfil: [null, Validators.required] // guarda OBJETO, no string
       });
     }
 
-    // 🔥 Cargar Perfiles desde CatalogosService
     this.catalogosService.getAll().subscribe(res => {
-      this.perfiles = res.Perfiles;
-      this.perfilesFiltrados = res.Perfiles;
+      this.perfiles = res.Perfiles ?? [];
+      this.perfilesDisponibles = [...this.perfiles];
     });
 
-    // Autocomplete básico
-    this.form.get('perfil')!.valueChanges.subscribe(value => {
-      const val = value?.toLowerCase() || '';
-      this.perfilesFiltrados = this.perfiles.filter(p =>
-        p.funcion.toLowerCase().includes(val) || p.clave.toLowerCase().includes(val)
-      );
-    });
   }
 
-  agregarPerfil(): void {
-    const clavePerfil = this.form.value.perfil;
+  // Búsqueda en ng-select
+  searchPerfil = (term: string, item: CatPerfilDto) =>
+    (item.clave + ' ' + item.funcion).toLowerCase().includes((term || '').toLowerCase());
 
-    const perfilSeleccionado = this.perfiles.find(p =>
-      p.clave.toLowerCase() === clavePerfil.toLowerCase() ||
-      p.funcion.toLowerCase() === clavePerfil.toLowerCase()
-    );
-
-    if (perfilSeleccionado && !this.perfilesAgregados.some(p => p.id === perfilSeleccionado.id)) {
-      this.perfilesAgregados.push(perfilSeleccionado);
-      this.addPerfil.emit();
-      this.form.reset();
+  onPerfilSelected(item: CatPerfilDto | null) {
+    if (item) {
+      this.perfilPlaceholder = `${item.clave} - ${item.funcion}`;
     }
   }
 
+  agregarPerfil(): void {
+    const p = this.form.value.perfil as CatPerfilDto | null;
+    if (!p) return;
+
+    if (!this.perfilesAgregados.some(x => x.id === p.id)) {
+      this.perfilesAgregados.push(p);
+      // Quita del select
+      this.perfilesDisponibles = this.perfilesDisponibles.filter(x => x.id !== p.id);
+      this.addPerfil.emit();
+    }
+
+    // Limpia el control (placeholder ya quedó con el texto seleccionado)
+    this.form.patchValue({ perfil: null });
+  }
+
   eliminarPerfil(index: number): void {
+    const p = this.perfilesAgregados[index];
     this.perfilesAgregados.splice(index, 1);
+    // Regresa al select y ordena por clave (opcional)
+    this.perfilesDisponibles = [...this.perfilesDisponibles, p]
+      .sort((a, b) => a.clave.localeCompare(b.clave));
     this.removePerfil.emit(index);
   }
 }

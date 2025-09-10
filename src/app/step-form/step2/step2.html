@@ -2,8 +2,7 @@
   <!-- Título y progreso -->
   <div class="header-title">Registro</div>
   <div class="progress-bar-bg">
-    <div class="progress-bar-fill"
-         [style.width.%]="(currentStep/maxSteps)*100">
+    <div class="progress-bar-fill" [style.width.%]="(currentStep/maxSteps)*100">
     </div>
   </div>
   <p class="progress-step">Paso {{ currentStep }} de {{ maxSteps }}</p>
@@ -17,24 +16,19 @@
       <form [formGroup]="form" (ngSubmit)="agregarPerfil()">
         <div class="form-inline mb-0">
           <label for="perfilInput" class="form-label">*Perfil:</label>
-
           <!-- input con datalist -->
-          <input id="perfilInput"
-                 type="text"
-                 formControlName="perfil"
-                 list="listaPerfiles"
-                 class="form-control"
-                 placeholder="Ej: 3101 SUPERVISOR IPH" />
-
-          <datalist id="listaPerfiles">
-            @for (perfil of perfilesFiltrados; track $index) {
-              <option [value]="`${perfil.clave} - ${perfil.funcion}`"></option>
-            }
-          </datalist>
-
-          <button type="button"
-                  class="btn btn-agregar"
-                  (click)="agregarPerfil()">
+          <ng-select id="perfilInput" class="cdindi-ngselect form-control" [items]="perfilesDisponibles" bindLabel="funcion"
+            [searchable]="true" [clearable]="true" [dropdownPosition]="'auto'" [appendTo]="'body'"
+            [searchFn]="searchPerfil" [placeholder]="perfilPlaceholder" (change)="onPerfilSelected($event)"
+            formControlName="perfil">
+            <ng-template ng-option-tmp let-item="item">
+              {{ item.clave }} - {{ item.funcion }}
+            </ng-template>
+            <ng-template ng-label-tmp let-item="item">
+              {{ item.clave }} - {{ item.funcion }}
+            </ng-template>
+          </ng-select>
+          <button type="button" class="btn btn-agregar" (click)="agregarPerfil()">
             Agregar
           </button>
         </div>
@@ -43,17 +37,16 @@
       <!-- LISTA -->
       <div class="perfil-list mt-3">
         @for (perfil of perfilesAgregados; track $index) {
-          <div class="perfil-item">
-            <span class="perfil-id">{{ perfil.clave }}</span>
-            <span class="perfil-remove"
-                  (click)="eliminarPerfil($index)">
-              <i class="fas fa-times"></i>
-            </span>
-            <span class="perfil-desc">{{ perfil.funcion }}</span>
-          </div>
+        <div class="perfil-item">
+          <span class="perfil-id">{{ perfil.clave }}</span>
+          <span class="perfil-remove" (click)="eliminarPerfil($index)">
+            <i class="fas fa-times"></i>
+          </span>
+          <span class="perfil-desc">{{ perfil.funcion }}</span>
+        </div>
         }
         @empty {
-          <div class="text-muted">No hay perfiles agregados.</div>
+        <div class="text-muted">No hay perfiles agregados.</div>
         }
       </div>
     </div>

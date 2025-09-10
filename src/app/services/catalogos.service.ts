@@ -17,7 +17,11 @@ export interface TipoUsuarioDto { id: number; tP_USUARIO: string; }
 export interface CatEntiDto { id: number; nombre: string; tipo: string; fK_PADRE: number | null; }
 export interface CatEstructuraDto { id: number; nombre: string; tipo: string; fK_PADRE: number | null; }
 export interface CatPerfilDto { id: number; clave: string; funcion: string; }
-export interface CatPaisesDto { id:number; nombre:string; ISO2?:string; ISO3?:string }
+export interface CatPaisesDto { id: number; nombre: string; ISO2?: string; ISO3?: string }
+export interface CatAmbitoDto { id: number, descripcion: string }
+export interface CatSexoDto { id: number; descripcion: string; }
+export interface CatEstadoCivilDto { id: number; descripcion: string; }
+export interface CatNacionalidadDto { id: number; descripcion: string; pais_id: number; pais: string; }
 
 
 export interface CatalogosResponseDto {
@@ -25,7 +29,11 @@ export interface CatalogosResponseDto {
   Entidades: CatEntiDto[];      // Estados (FK_PADRE=null) y Municipios (FK_PADRE!=null)
   Estructura: CatEstructuraDto[]; // INSTITUCION/DEPENDENCIA/CORPORACION/AREA
   Perfiles: CatPerfilDto[];
-  Paises:CatPaisesDto[];
+  Paises: CatPaisesDto[];
+  Ambito: CatAmbitoDto[];
+  Sexos: CatSexoDto[];
+  EstadosCiviles: CatEstadoCivilDto[];
+  Nacionalidades: CatNacionalidadDto[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -39,7 +47,11 @@ export class CatalogosService {
   corporaciones: CatalogoItem[] = [];
   areas: CatalogoItem[] = [];
   tiposUsuario: CatalogoItem[] = [];
-  paises:CatalogoItem[]=[];
+  paises: CatalogoItem[] = [];
+  ambito: CatalogoItem[] = [];
+  sexos: CatalogoItem[] = [];
+  estadosCiviles: CatalogoItem[] = [];
+  nacionalidades: CatalogoItem[] = [];
 
 
   /** Respaldo crudo con FK_PADRE (clave del fix) */
@@ -59,39 +71,57 @@ export class CatalogosService {
     this.allCatalogos$ = this.http.get<CatalogosResponseDto>(this.url).pipe(shareReplay(1));
 
     // Construye catálogos e índices una sola vez
-// CatalogosService
-this.allCatalogos$ = this.http.get<CatalogosResponseDto>(this.url).pipe(
-  tap(res => {
-    // normaliza Entidades
-const raw = (res.Entidades ?? []).map(e => ({
-  id: e.id, nombre: e.nombre, tipo: (e.tipo || '').toLowerCase(), fK_PADRE: e.fK_PADRE
-}));
-this._entidadesRaw = raw; 
-    this.entidades = raw.filter(e => e.fK_PADRE == null && e.tipo === 'estado')
-                        .map(e => ({ id: e.id, nombre: e.nombre }));
+    // CatalogosService
+    this.allCatalogos$ = this.http.get<CatalogosResponseDto>(this.url).pipe(
+      tap(res => {
+        // normaliza Entidades
+        const raw = (res.Entidades ?? []).map(e => ({
+          id: e.id, nombre: e.nombre, tipo: (e.tipo || '').toLowerCase(), fK_PADRE: e.fK_PADRE
+        }));
+        this._entidadesRaw = raw;
+        this.entidades = raw.filter(e => e.fK_PADRE == null && e.tipo === 'estado')
+          .map(e => ({ id: e.id, nombre: e.nombre }));
 
-    // índice de municipios por entidad
-    this._munByEntidad.clear();
-    raw.filter(e => e.fK_PADRE != null).forEach(m => {
-      const list = this._munByEntidad.get(m.fK_PADRE!) ?? [];
-      list.push({ id: m.id, nombre: m.nombre });
-      this._munByEntidad.set(m.fK_PADRE!, list);
-    });
+        // índice de municipios por entidad
+        this._munByEntidad.clear();
+        raw.filter(e => e.fK_PADRE != null).forEach(m => {
+          const list = this._munByEntidad.get(m.fK_PADRE!) ?? [];
+          list.push({ id: m.id, nombre: m.nombre });
+          this._munByEntidad.set(m.fK_PADRE!, list);
+        });
 
-    // estructura normalizada
-    const estr = (res.Estructura ?? []).map(x => ({
-      id: x.id, nombre: x.nombre, tipo: (x.tipo || '').toLowerCase(), fK_PADRE: x.fK_PADRE
-    }));
-    this.instituciones = estr.filter(x => x.tipo === 'institucion' && x.fK_PADRE == null)
-                             .map(x => ({ id: x.id, nombre: x.nombre }));
-    this.dependencias  = estr.filter(x => x.tipo === 'dependencia').map(x => ({ id: x.id, nombre: x.nombre }));
-    this.corporaciones = estr.filter(x => x.tipo === 'corporacion').map(x => ({ id: x.id, nombre: x.nombre }));
-    this.areas         = estr.filter(x => x.tipo === 'area').map(x => ({ id: x.id, nombre: x.nombre }));
+        // estructura normalizada
+        const estr = (res.Estructura ?? []).map(x => ({
+          id: x.id, nombre: x.nombre, tipo: (x.tipo || '').toLowerCase(), fK_PADRE: x.fK_PADRE
+        }));
+        this.instituciones = estr.filter(x => x.tipo === 'institucion' && x.fK_PADRE == null)
+          .map(x => ({ id: x.id, nombre: x.nombre }));
+        this.dependencias = estr.filter(x => x.tipo === 'dependencia').map(x => ({ id: x.id, nombre: x.nombre }));
+        this.corporaciones = estr.filter(x => x.tipo === 'corporacion').map(x => ({ id: x.id, nombre: x.nombre }));
+        this.areas = estr.filter(x => x.tipo === 'area').map(x => ({ id: x.id, nombre: x.nombre }));
 
-    this.paises = (res.Paises ?? []).map(p => ({ id: p.id, nombre: p.nombre }));
-  }),
-  shareReplay({ bufferSize: 1, refCount: false })
-);
+        this.paises = (res.Paises ?? []).map(p => ({ id: p.id, nombre: p.nombre }));
+        // Ámbito -> "Tipo de institución"
+        this.ambito = (res.Ambito ?? []).map(a => ({ id: a.id, nombre: a.descripcion }));
+
+        // Sexos
+        this.sexos = (res.Sexos ?? []).map(s => ({ id: s.id, nombre: s.descripcion }));
+
+        // Estados civiles
+        this.estadosCiviles = (res.EstadosCiviles ?? []).map(ec => ({ id: ec.id, nombre: ec.descripcion }));
+
+        // Nacionalidades (mostramos gentilicio)
+        this.nacionalidades = (res.Nacionalidades ?? []).map(n => ({
+          id: n.id,
+          nombre: n.descripcion,
+        }));
+        this.tiposUsuario = (res.TipoUsuario ?? []).map(t => ({
+          id: t.id,
+          nombre: t.tP_USUARIO
+        }));
+      }),
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
 
   }
 
@@ -103,7 +133,7 @@ this._entidadesRaw = raw;
     return this.allCatalogos$;
   }
 
-    getPaisNameById(id: number): string | null {
+  getPaisNameById(id: number): string | null {
     const hit = this.paises.find(p => p.id === id);
     return hit ? hit.nombre : null;
   }
@@ -220,7 +250,59 @@ this._entidadesRaw = raw;
     const muni = this._entidadesRaw.find(e => e.id === municipioId);
     return muni?.fK_PADRE ?? null;
   }
+  getAmbito$() {
+    return this.allCatalogos$.pipe(map(() => this.ambito));
+  }
+
+  // Alias legible si en el form lo llamas "tipoInstitucion"
+  getTiposInstitucion$() {
+    return this.getAmbito$();
+  }
+
+  getSexos$() {
+    return this.allCatalogos$.pipe(map(() => this.sexos));
+  }
+
+  getEstadosCiviles$() {
+    return this.allCatalogos$.pipe(map(() => this.estadosCiviles));
+  }
+
+  getNacionalidades$() {
+    return this.allCatalogos$.pipe(map(() => this.nacionalidades));
+  }
+
+  // (opcionales pero útiles para binds)
+  getEntidades$() {
+    return this.allCatalogos$.pipe(map(() => this.entidades));
+  }
+
+
   async ensureReady(): Promise<void> {
-  await firstValueFrom(this.allCatalogos$);
+    await firstValueFrom(this.allCatalogos$);
+  }
+  // en CatalogosService
+  private _depByInst = new Map<number, CatalogoItem[]>();
+  private _corpByDep = new Map<number, CatalogoItem[]>();
+private _areaByCorp = new Map<number, CatalogoItem[]>(); 
+
+  // … dentro del tap(res => { ... }) llena los mapas como te pasé antes …
+
+  getInstituciones$() {
+    return this.allCatalogos$.pipe(map(() => this.instituciones));
+  }
+  getDependencias$(institucionId: number) {
+    return this.allCatalogos$.pipe(map(() => this._depByInst.get(institucionId) ?? []));
+  }
+  getCorporaciones$(dependenciaId: number) {
+    return this.allCatalogos$.pipe(map(() => this._corpByDep.get(dependenciaId) ?? []));
+  }
+  getTiposUsuario$() {
+  return this.allCatalogos$.pipe(map(() => this.tiposUsuario));
+}
+getAreas$(corporacionId: number) {               // 👈 nuevo
+  return this.allCatalogos$.pipe(map(() => this._areaByCorp.get(corporacionId) ?? []));
+}
+getPaises$() {                                   // 👈 nuevo
+  return this.allCatalogos$.pipe(map(() => this.paises));
 }
 }

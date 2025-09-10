@@ -14,6 +14,12 @@ import { saveAs } from 'file-saver';
 import { mapExcelRowToCedula, mapExcelRowToSolicitudBody, pdfFileName } from '../../models/cedula.mapper.model';
 import { catchError, concatMap, finalize, tap } from 'rxjs/operators';
 import { UsuarioService } from '../../services/usuario.service';
+import {
+    isRfcValid,
+    isCurpValid,
+    emailBasicValidator,
+    phoneMxValidator,
+} from '../../shared/validators';
 
 type RowVM = ExcelUsuarioRow & {
     __sending?: boolean;
@@ -310,23 +316,21 @@ export class CargaMasivaUsuariosComponent implements OnInit {
                 rec.errores.push('RFC es obligatorio');
             } else if (rec.rfc.length > 13) {
                 rec.errores.push('RFC: máximo 13 caracteres');
-            } else if (!/^[A-ZÑ&]{4}\d{6}[A-Z0-9]{3}$/i.test(rec.rfc)) {
-                rec.errores.push('Formato inválido (SAT)');
+            } else if (!isRfcValid(rec.rfc, true)) {
+                rec.errores.push('Formato inválido (SAT) o DV incorrecto');
             }
 
             // Correo
+            const emailOk = emailBasicValidator()({ value: rec.correoElectronico } as any) === null;
             if (!rec.correoElectronico) {
                 rec.errores.push('Correo requerido');
-            } else {
-                // valida formato básico
-                const emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-                if (!emailPattern.test(rec.correoElectronico)) {
-                    rec.errores.push('No es un correo válido');
-                }
+            } else if (!emailOk) {
+                rec.errores.push('No es un correo válido');
             }
 
             // Teléfono (opcional)
-            if (rec.telefono && !/^\d{7,10}$/.test(rec.telefono)) {
+            const telOk = phoneMxValidator()({ value: rec.telefono } as any) === null;
+            if (rec.telefono && !telOk) {
                 rec.errores.push('Teléfono debe tener 7–10 dígitos');
             }
 

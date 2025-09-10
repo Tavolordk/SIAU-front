@@ -79,6 +79,9 @@
         <a routerLink="/cargamasiva" class="fab-button secondary group" title="Múltiples usuarios">
           <img src="assets/images/users_ico.png" alt="Usuarios múltiples" style="width:60%; border-radius:40%;" />
         </a>
+        <a class="fab-button secondary stepform" title="Formulario por pasos" (click)="irAStepForm()">
+          <fa-icon [icon]="faClipboardList" class="text-dark"></fa-icon>
+        </a>
       </div>
       <button class="fab-button main" title="Agregar" (click)="irAUsuario()">＋</button>
     </div>

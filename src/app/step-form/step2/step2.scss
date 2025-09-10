@@ -5,6 +5,32 @@ body {
   font-family: 'Montserrat', Arial, sans-serif;
 }
 
+:root { --app-font: "Poppins","Montserrat","Segoe UI",system-ui,sans-serif; }
+
+.cdindi-ngselect,
+.cdindi-ngselect .ng-select-container,
+.cdindi-ngselect .ng-option,
+.cdindi-ngselect .ng-value,
+.cdindi-ngselect .ng-input input {
+  font-family: var(--app-font) !important;
+  font-size: .95rem !important;
+}
+
+.cdindi-ngselect .ng-select-container {
+  min-height: 40px;
+  border: 1px solid #d8dbe2;
+  border-radius: 8px;
+  background: #fff;             /* evita transparencia */
+}
+
+/* El panel se monta sobre el footer/otros overlays */
+.ng-dropdown-panel {
+  z-index: 2000 !important;
+  font-family: var(--app-font) !important;
+}
+
+
+
 .main-container {
   background: #fff;
   border-radius: 6px;

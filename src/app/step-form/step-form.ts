@@ -10,22 +10,23 @@ import { CommonModule } from '@angular/common';
 import { StepFormModel } from '../services/personas.service';
 import { PersonasService } from '../services/personas.service';
 import { CatPerfilDto } from '../services/catalogos.service';
+import { emailBasicValidator, phoneMxValidator } from '../shared/validators';
 @Component({
   selector: 'app-step-form',
   templateUrl: './step-form.html',
   styleUrls: ['./step-form.scss'],
-  standalone:true,
-  imports:[Step1Component, Step2Component, Step3Component,Step4Component, Step5Component,Step6Component, CommonModule, ReactiveFormsModule]
+  standalone: true,
+  imports: [Step1Component, Step2Component, Step3Component, Step4Component, Step5Component, Step6Component, CommonModule, ReactiveFormsModule]
 })
 export class StepFormComponent implements OnInit {
-    private personas = inject(PersonasService);
+  private personas = inject(PersonasService);
 
   // Supón que ya tienes armado el modelo consolidado de los pasos:
   model!: StepFormModel;
   form!: FormGroup;
   currentStep = 1;
   maxSteps = 6;
-  tipos = ['FEDERAL', 'ESTATAL', 'MUNICIPAL'];
+  tipos = [];
   perfiles: CatPerfilDto[] = [];       // 👈 catálogo completo
   documentos = [
     { label: 'Comprobante de Identificación' },
@@ -34,16 +35,17 @@ export class StepFormComponent implements OnInit {
   ];
   uploadedDocs: any[] = [];
   folio = 'RNPSP 2025-05-783456';
+  currentStepIndex: any;
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder) { }
 
   ngOnInit() {
     this.form = this.fb.group({
       tipoUsuario: ['', Validators.required],
       esSeguridad: ['', Validators.required],
       perfil: [''],
-      correo: ['', [Validators.required, Validators.email]],
-      celular: ['', Validators.required],
+      correo: ['', [Validators.required, Validators.email, emailBasicValidator()]],
+      celular: ['', [Validators.required, phoneMxValidator()]],
       celularConfirm: [''],
       telefonoOficina: [''],
       extension: [''],
@@ -86,4 +88,9 @@ export class StepFormComponent implements OnInit {
       }
     });
   }
+  goNextFromStep1(): void {
+  // Aquí ya sabes que Step1 es válido
+  this.currentStepIndex++; // o navega al siguiente contenedor/página
+}
+
 }

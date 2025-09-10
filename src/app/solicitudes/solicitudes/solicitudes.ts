@@ -5,15 +5,17 @@ import { SolicitudesService, Solicitud, PageResult } from '../../services/solici
 import { UsuarioService } from '../../services/usuario.service';
 import { CedulaModel, PdfService } from '../../services/pdf.service';
 import { CatalogosService } from '../../services/catalogos.service';
-
+import { faClipboardList } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 @Component({
   selector: 'app-solicitudes',
   standalone: true,
-  imports: [CommonModule, RouterModule, DatePipe],
+  imports: [CommonModule, RouterModule, DatePipe, FontAwesomeModule],
   templateUrl: './solicitudes.html',
   styleUrls: ['./solicitudes.scss']
 })
 export class SolicitudesComponent implements OnInit {
+  faClipboardList = faClipboardList;
   lista: Solicitud[] = [];
   currentPage = 1;
   totalPages = 1;
@@ -31,6 +33,7 @@ export class SolicitudesComponent implements OnInit {
   entidades2Map = new Map<number, string>();
   municipios2Map = new Map<number, string>();
   corporaciones2Map = new Map<number, string>();
+  ambitoMap = new Map<number,string>()
   constructor(
     private svc: SolicitudesService,
     private usuarioSvc: UsuarioService,
@@ -68,6 +71,11 @@ export class SolicitudesComponent implements OnInit {
             this.areasMap.set(x.id, x.nombre); break;
         }
       });
+      res.Ambito.forEach(x=>{
+         const id=x.id;
+         const descripcion=x.descripcion;
+         this.ambitoMap.set(Number(id),descripcion)
+      });
       // Para el bloque 2 (si es mismo catálogo de Entidades/Municipios)
       // reutilizamos los mismos maps:
       this.entidades2Map = this.entidadesMap;
@@ -83,86 +91,86 @@ export class SolicitudesComponent implements OnInit {
    */
 
   /** Helper para normalizar y construir el modelo que usa PdfService */
-private async buildPdfCedulaModelAsync(item: Solicitud): Promise<CedulaModel> {
-  await this.catalogos.ensureReady(); // <- clave para evitar carreras
+  private async buildPdfCedulaModelAsync(item: Solicitud): Promise<CedulaModel> {
+    await this.catalogos.ensureReady(); // <- clave para evitar carreras
 
-  const n = this.toNumberOrNull;
-  const entidadId     = n(item.entidad);
-  const municipioId   = n(item.municipio);
-  const institucionId = n(item.institucion);
-  const corporacionId = n(item.corporacion);
-  const areaId        = n(item.area);
-  const entidad2Id    = n((item as any).entidad2);
-  const municipio2Id  = n((item as any).municipio2);
-  const corporacion2Id= n((item as any).corporacion2);
+    const n = this.toNumberOrNull;
+    const entidadId = n(item.entidad);
+    const municipioId = n(item.municipio);
+    const institucionId = n(item.institucion);
+    const corporacionId = n(item.corporacion);
+    const areaId = n(item.area);
+    const entidad2Id = n((item as any).entidad2);
+    const municipio2Id = n((item as any).municipio2);
+    const corporacion2Id = n((item as any).corporacion2);
 
-  return {
-    // ---- crudos / ids ----
-    fill1: String(item.fill1 ?? null),
-    folio: String(item.folio ?? null),
-    cuentaUsuario: String(item.cuentaUsuario ?? null),
-    correoElectronico: String(item.correoElectronico ?? null),
-    telefono: String(item.telefono ?? null),
-    apellidoPaterno: String(item.apellidoPaterno ?? null),
-    apellidoMaterno: String(item.apellidoMaterno ?? null),
-    nombre: String(item.nombre ?? null),
-    nombre2: String((item as any).nombre2 ?? null),
-    rfc: String((item as any).rfc ?? null),
-    cuip: String((item as any).cuip ?? null),
-    curp: String((item as any).curp ?? null),
-    tipoUsuario: n(item.tipoUsuario),
-    entidad: entidadId,
-    municipio: municipioId,
-    institucion: institucionId,
-    corporacion: corporacionId,
-    area: areaId,
-    cargo: String(item.cargo ?? null),
-    funciones: String(item.funciones ?? null),
-    funciones2: String((item as any).funciones2 ?? null),
-    pais: String(item.pais ?? null),
-    entidad2: entidad2Id,
-    municipio2: municipio2Id,
-    corporacion2: corporacion2Id,
-    consultaTextos: (item as any).consultaTextos || {},
-    modulosOperacion: (item as any).modulosOperacion || {},
-    checkBox1: (item as any).checkBox1 ?? false,
-    checkBox2: (item as any).checkBox2 ?? false,
-    checkBox3: (item as any).checkBox3 ?? false,
-    checkBox4: (item as any).checkBox4 ?? false,
-    checkBox5: (item as any).checkBox5 ?? false,
+    return {
+      // ---- crudos / ids ----
+      fill1: String(item.fill1 ?? null),
+      folio: String(item.folio ?? null),
+      cuentaUsuario: String(item.cuentaUsuario ?? null),
+      correoElectronico: String(item.correoElectronico ?? null),
+      telefono: String(item.telefono ?? null),
+      apellidoPaterno: String(item.apellidoPaterno ?? null),
+      apellidoMaterno: String(item.apellidoMaterno ?? null),
+      nombre: String(item.nombre ?? null),
+      nombre2: String((item as any).nombre2 ?? null),
+      rfc: String((item as any).rfc ?? null),
+      cuip: String((item as any).cuip ?? null),
+      curp: String((item as any).curp ?? null),
+      tipoUsuario: n(item.tipoUsuario),
+      entidad: entidadId,
+      municipio: municipioId,
+      institucion: institucionId,
+      corporacion: corporacionId,
+      area: areaId,
+      cargo: String(item.cargo ?? null),
+      funciones: String(item.funciones ?? null),
+      funciones2: String((item as any).funciones2 ?? null),
+      pais: String(item.pais ?? null),
+      entidad2: entidad2Id,
+      municipio2: municipio2Id,
+      corporacion2: corporacion2Id,
+      consultaTextos: (item as any).consultaTextos || {},
+      modulosOperacion: (item as any).modulosOperacion || {},
+      checkBox1: (item as any).checkBox1 ?? false,
+      checkBox2: (item as any).checkBox2 ?? false,
+      checkBox3: (item as any).checkBox3 ?? false,
+      checkBox4: (item as any).checkBox4 ?? false,
+      checkBox5: (item as any).checkBox5 ?? false,
 
-    // ---- nombres vía CatalogosService ----
-    entidadNombre:     entidadId     != null ? (this.catalogos.getEntidadNameById(entidadId)     ?? '') : '',
-    municipioNombre:   municipioId   != null ? (this.catalogos.getMunicipioNameById(municipioId) ?? '') : '',
-    institucionNombre: institucionId != null ? (this.catalogos.getInstitucionNameById(institucionId) ?? '') : '',
-    dependenciaNombre: ((): string => {
-      const depId = this.toNumberOrNull((item as any).dependencia);
-      return depId != null ? (this.catalogos.getDependenciaNameById(depId) ?? '') : '';
-    })(),
-    corporacionNombre: corporacionId != null ? (this.catalogos.getCorporacionNameById(corporacionId) ?? '') : '',
-    areaNombre:        areaId        != null ? (this.catalogos.getAreaNameById(areaId) ?? '') : '',
-    entidad2Nombre:    entidad2Id    != null ? (this.catalogos.getEntidadNameById(entidad2Id) ?? '') : '',
-    municipio2Nombre:  municipio2Id  != null ? (this.catalogos.getMunicipioNameById(municipio2Id) ?? '') : '',
-    corporacion2Nombre: corporacion2Id != null ? (this.catalogos.getCorporacionNameById(corporacion2Id) ?? '') : '',
+      // ---- nombres vía CatalogosService ----
+      entidadNombre: entidadId != null ? (this.catalogos.getEntidadNameById(entidadId) ?? '') : '',
+      municipioNombre: municipioId != null ? (this.catalogos.getMunicipioNameById(municipioId) ?? '') : '',
+      institucionNombre: institucionId != null ? (this.catalogos.getInstitucionNameById(institucionId) ?? '') : '',
+      dependenciaNombre: ((): string => {
+        const depId = this.toNumberOrNull((item as any).dependencia);
+        return depId != null ? (this.catalogos.getDependenciaNameById(depId) ?? '') : '';
+      })(),
+      corporacionNombre: corporacionId != null ? (this.catalogos.getCorporacionNameById(corporacionId) ?? '') : '',
+      areaNombre: areaId != null ? (this.catalogos.getAreaNameById(areaId) ?? '') : '',
+      entidad2Nombre: entidad2Id != null ? (this.catalogos.getEntidadNameById(entidad2Id) ?? '') : '',
+      municipio2Nombre: municipio2Id != null ? (this.catalogos.getMunicipioNameById(municipio2Id) ?? '') : '',
+      corporacion2Nombre: corporacion2Id != null ? (this.catalogos.getCorporacionNameById(corporacion2Id) ?? '') : '',
 
-    nombreFirmaUsuario:       (item as any).nombreFirmaUsuario ?? null,
-    nombreFirmaResponsable:   (item as any).nombreFirmaResponsable ?? null,
-    nombreFirmaEnlace:        (item as any).nombreFirmaEnlace ?? null,
-  };
-}
-
-
-async descargarPdf(item: Solicitud): Promise<void> {
-  this.isLoadingPdf = true;
-  try {
-    const datos = await this.buildPdfCedulaModelAsync(item);
-    await this.pdfSvc.generarYDescargar(datos);
-  } catch (err) {
-    console.error('Error generando PDF:', err);
-  } finally {
-    this.isLoadingPdf = false;
+      nombreFirmaUsuario: (item as any).nombreFirmaUsuario ?? null,
+      nombreFirmaResponsable: (item as any).nombreFirmaResponsable ?? null,
+      nombreFirmaEnlace: (item as any).nombreFirmaEnlace ?? null,
+    };
   }
-}
+
+
+  async descargarPdf(item: Solicitud): Promise<void> {
+    this.isLoadingPdf = true;
+    try {
+      const datos = await this.buildPdfCedulaModelAsync(item);
+      await this.pdfSvc.generarYDescargar(datos);
+    } catch (err) {
+      console.error('Error generando PDF:', err);
+    } finally {
+      this.isLoadingPdf = false;
+    }
+  }
 
 
   formatDate(item: Solicitud): Date {
@@ -300,9 +308,12 @@ async descargarPdf(item: Solicitud): Promise<void> {
     return this.municipios2Map.get(n) ?? '';
   }
   getCorporacion2Name(id: number | string | null | undefined): string {
-        if (id == null) return '';
+    if (id == null) return '';
     const n = Number(id);
     if (!Number.isFinite(n)) return '';
     return this.corporaciones2Map.get(n) ?? '';
+  }
+  irAStepForm() {
+    this.router.navigate(['/stepform']); // ajusta la ruta real de tu wizard
   }
 }

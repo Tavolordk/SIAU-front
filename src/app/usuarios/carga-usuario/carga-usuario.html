@@ -75,12 +75,18 @@
         <div *ngIf="userForm.get('rfc')?.touched && userForm.get('rfc')?.errors as rfcErrors">
           <div *ngIf="rfcErrors['required']" class="validation-message">RFC es obligatorio</div>
           <div *ngIf="rfcErrors['maxlength']" class="validation-message">Máximo 13 caracteres</div>
-          <div *ngIf="rfcErrors['pattern']" class="validation-message">Formato inválido (SAT)</div>
+          <div *ngIf="rfcErrors['rfcFormat']" class="validation-message">Formato inválido (SAT)</div>
+          <div *ngIf="rfcErrors['rfcDV']" class="validation-message">Dígito verificador inválido</div>
         </div>
       </div>
       <div>
-        <label>CURP</label>
+        <label class="label-obligatorio">CURP</label>
         <input formControlName="curp" maxlength="18" />
+        <div *ngIf="userForm.get('curp')?.touched && userForm.get('curp')?.errors as curpErrors">
+          <div *ngIf="curpErrors['curpFormat']" class="validation-message">Formato CURP inválido</div>
+          <div *ngIf="curpErrors['curpDate']" class="validation-message">Fecha no válida en la CURP</div>
+          <div *ngIf="curpErrors['curpDV']" class="validation-message">Dígito verificador inválido</div>
+        </div>
       </div>
     </div>
   </div>
@@ -96,14 +102,14 @@
           *ngIf="userForm.get('correoElectronico')?.touched && userForm.get('correoElectronico')?.errors as mailErrors">
           <div *ngIf="mailErrors['required']" class="validation-message">Correo requerido</div>
           <div *ngIf="mailErrors['email']" class="validation-message">No es un correo válido</div>
-          <div *ngIf="mailErrors['pattern']" class="validation-message">Formato inválido</div>
+          <div *ngIf="mailErrors['emailBasic']" class="validation-message">Formato inválido</div>
         </div>
       </div>
       <div>
         <label>Teléfono</label>
         <input formControlName="telefono" maxlength="10" class="cdindi-input" />
         <div *ngIf="userForm.get('telefono')?.touched && userForm.get('telefono')?.errors as telErrors">
-          <div *ngIf="telErrors['pattern']" class="validation-message">Solo números (7 a 10 dígitos)</div>
+          <div *ngIf="telErrors['phoneMx']" class="validation-message">Solo números (7 a 10 dígitos)</div>
         </div>
       </div>
       <div>
@@ -121,7 +127,7 @@
         <label for="tipoUsuario">Tipo de Usuario:</label>
         <select id="tipoUsuario" formControlName="tipoUsuario">
           <option [ngValue]="null">--Selecciona Tipo Usuario--</option>
-          <option *ngFor="let t of tiposUsuario" [ngValue]="t.id">{{ t.nombre }}</option>
+          <option *ngFor="let t of tiposUsuario" [ngValue]="t.id">{{ t.descripcion }}</option>
         </select>
       </div>
       <div>

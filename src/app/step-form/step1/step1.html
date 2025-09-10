@@ -1,462 +1,444 @@
 <!-- src/app/step-form/step1/step1.component.html -->
 <div class="container-fluid bg-white h-100 p-0 mt-0">
-  <form [formGroup]="form" class="container mt-2" (ngSubmit)="next.emit()">
-  <!-- Título y Progress -->
-  <h2 class="text-center registro-title m-0">Registro</h2>
-  <div class="progress-container">
-    <div class="progress-bar-custom-wrap">
-      <div class="progress-bar-custom">
-        <div class="progress-bar-inner"
-             [style.width.%]="(currentStep/maxSteps)*100"></div>
-      </div>
-    </div>
-    <p class="progress-text">Paso {{currentStep}} de {{maxSteps}}</p>
-  </div>
-  <div class="text-end"><span class="required">* Campos Obligatorios</span></div>
-
-  <!-- Registro de datos de usuario -->
-  <div class="section-title">Registro de datos de usuario</div>
-  <div class="row mb-3">
-    <div class="col-md-8"></div>
-    <div class="col-md-4">
-      <label for="tipoUsuario" class="form-label">
-        Tipo de Usuario<span class="required">*</span>
-      </label>
-      <select id="tipoUsuario"
-              formControlName="tipoUsuario"
-              class="form-select"
-              required>
-        <option value="" disabled>Seleccione un tipo</option>
-        <option *ngFor="let t of tipos" [value]="t">{{ t }}</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- Información personal -->
-  <div class="section-title">Información personal</div>
-  <div class="mb-3">
-    <label class="form-label">
-      ¿Eres Personal de Seguridad Pública?<span class="required">*</span>
-    </label>
-    <div>
-      <div class="form-check form-check-inline">
-        <input formControlName="esSeguridad"
-               id="seguridadSi"
-               type="radio"
-               value="Si"
-               class="form-check-input">
-        <label for="seguridadSi" class="form-check-label">Sí</label>
-      </div>
-      <div class="form-check form-check-inline">
-        <input formControlName="esSeguridad"
-               id="seguridadNo"
-               type="radio"
-               value="No"
-               class="form-check-input">
-        <label for="seguridadNo" class="form-check-label">No</label>
-      </div>
-    </div>
-  </div>
-
-  <!-- CURP y CAPTCHA -->
-  <div class="row mb-3">
-    <div class="col-md-6">
-      <label for="curp" class="form-label">
-        CURP<span class="required">*</span>
-      </label>
-      <input id="curp"
-             type="text"
-             formControlName="curp"
-             class="form-control"
-             required>
-      <a href="#" class="link-red">¿No sabes tu CURP?</a>
-    </div>
-    <div class="col-md-6">
-      <label class="form-label">Código de verificación</label>
-      <div class="row">
-        <div class="col-md-6 text-center">
-          <div class="captcha-img">
-            <span>VXBGZL</span>
-          </div>
-          <a href="#" class="link-blue mt-1 d-block">¿Otro código?</a>
+  <form [formGroup]="form" class="container mt-2" novalidate (keydown.enter)="$event.preventDefault()">
+    <!-- Título y Progress -->
+    <h2 class="text-center registro-title m-0">Registro</h2>
+    <div class="progress-container">
+      <div class="progress-bar-custom-wrap">
+        <div class="progress-bar-custom">
+          <div class="progress-bar-inner" [style.width.%]="(currentStep/maxSteps)*100"></div>
         </div>
-        <div class="col-md-6">
-          <div class="mb-1" style="font-size:14px;">*Ingresar código</div>
-          <input id="captchaInput"
-                 type="text"
-                 formControlName="captcha"
-                 class="form-control"
-                 placeholder="ESCRIBE EL CÓDIGO"
-                 required>
-          <div class="mt-2 d-flex justify-content-center">
-            <div class="g-recaptcha" data-sitekey="TU_SITE_KEY"></div>
+      </div>
+      <p class="progress-text">Paso {{currentStep}} de {{maxSteps}}</p>
+    </div>
+    <div class="text-end"><span class="required">* Campos Obligatorios</span></div>
+
+    <!-- Registro de datos de usuario -->
+    <div class="section-title">Registro de datos de usuario</div>
+    <div class="row mb-3">
+      <div class="col-md-8"></div>
+      <div class="col-md-4">
+        <label for="tipoUsuario" class="form-label label-obligatorio">Tipo de Usuario</label>
+        <select id="tipoUsuario" formControlName="tipoUsuario" class="form-select" required>
+          <option [ngValue]="null" disabled>Seleccione un tipo</option>
+          <option *ngFor="let t of tipoDeUsuario; trackBy: trackById" [ngValue]="t.id">
+            {{ t.nombre }}
+          </option>
+        </select>
+
+        <div *ngIf="form.get('tipoUsuario')?.touched && form.get('tipoUsuario')?.errors?.['required']"
+          class="validation text-danger">Selecciona un tipo de usuario</div>
+      </div>
+    </div>
+
+    <!-- Información personal -->
+    <div class="section-title">Información personal</div>
+    <div class="mb-3">
+      <label class="form-label label-obligatorio">¿Eres Personal de Seguridad Pública?</label>
+      <div>
+        <div class="form-check form-check-inline">
+          <input formControlName="esSeguridad" id="seguridadSi" type="radio" value="Si" class="form-check-input">
+          <label for="seguridadSi" class="form-check-label">Sí</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input formControlName="esSeguridad" id="seguridadNo" type="radio" value="No" class="form-check-input">
+          <label for="seguridadNo" class="form-check-label">No</label>
+        </div>
+        <div *ngIf="form.get('esSeguridad')?.touched && form.get('esSeguridad')?.errors?.['required']"
+          class="validation text-danger">Selecciona una opción</div>
+      </div>
+    </div>
+
+    <!-- CURP y CAPTCHA -->
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="curp" class="form-label label-obligatorio">CURP</label>
+        <input formControlName="curp" type="text" class="form-control" />
+        <div *ngIf="form.get('curp')?.touched && form.get('curp')?.errors as e" class="validation text-danger">
+          <div *ngIf="e['required']">La CURP es obligatoria</div>
+          <div *ngIf="e['maxlength']">Máximo 18 caracteres</div>
+          <div *ngIf="e['curpFormat']">Formato CURP inválido</div>
+          <div *ngIf="e['curpDate']">Fecha inválida dentro de la CURP</div>
+          <div *ngIf="e['curpDV']">Dígito verificador inválido</div>
+        </div>
+        <a href="#" class="link-red">¿No sabes tu CURP?</a>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Código de verificación</label>
+        <div class="row">
+          <div class="col-md-6 text-center">
+            <div class="captcha-img"><span>VXBGZL</span></div>
+            <a href="#" class="link-blue mt-1 d-block">¿Otro código?</a>
           </div>
-          <button type="button" class="btn btn-verify mt-2">
-            Verificar CURP
-          </button>
+          <div class="col-md-6">
+            <div class="mb-1 label-obligatorio" style="font-size:14px;">Ingresar código</div>
+            <input id="captchaInput" type="text" formControlName="captcha" class="form-control"
+              placeholder="ESCRIBE EL CÓDIGO" required>
+            <div *ngIf="form.get('captcha')?.touched && form.get('captcha')?.errors as e"
+              class="validation text-danger">
+              <div *ngIf="e['required']">El captcha es obligatorio</div>
+            </div>
+            <div class="mt-2 d-flex justify-content-center">
+              <div class="g-recaptcha" data-sitekey="TU_SITE_KEY"></div>
+            </div>
+            <button type="button" class="btn btn-verify mt-2">Verificar CURP</button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Datos personales extendidos -->
-  <div class="row mb-3">
-    <div class="col-md-4">
-      <label for="nombre" class="form-label">Nombre(s)*</label>
-      <input id="nombre"
-             type="text"
-             formControlName="nombre"
-             class="form-control"
-             required>
-    </div>
-    <div class="col-md-4">
-      <label for="primerApellido" class="form-label">
-        Primer Apellido*
-      </label>
-      <input id="primerApellido"
-             type="text"
-             formControlName="primerApellido"
-             class="form-control"
-             required>
-    </div>
-    <div class="col-md-4">
-      <label for="segundoApellido" class="form-label">
-        Segundo Apellido
-      </label>
-      <input id="segundoApellido"
-             type="text"
-             formControlName="segundoApellido"
-             class="form-control">
-    </div>
-  </div>
-
-  <div class="row mb-3">
-    <div class="col-md-4">
-      <label for="sexo" class="form-label">Sexo*</label>
-      <select id="sexo"
-              formControlName="sexo"
-              class="form-select"
-              required>
-        <option value="" disabled>Selecciona</option>
-        <option value="1">MASCULINO</option>
-        <option value="2">FEMENINO</option>
-        <option value="2">OTROS</option>
-      </select>
-    </div>
-    <div class="col-md-4">
-      <label for="fechaNacimiento" class="form-label">
-        Fecha de nacimiento*
-      </label>
-      <input id="fechaNacimiento"
-             type="text"
-             formControlName="fechaNacimiento"
-             class="form-control"
-             placeholder="dd/mm/aaaa"
-             required>
-    </div>
-    <div class="col-md-4">
-      <label for="nacionalidad" class="form-label">
-        Nacionalidad*
-      </label>
-      <input id="nacionalidad"
-             type="text"
-             formControlName="nacionalidad"
-             class="form-control"
-             required>
-    </div>
-  </div>
-
-  <div class="row mb-3">
-    <div class="col-md-4">
-      <label for="paisNacimiento" class="form-label">
-        País de nacimiento*
-      </label>
-      <input id="paisNacimiento"
-             type="text"
-             formControlName="paisNacimiento"
-             class="form-control"
-             required>
-    </div>
-    <div class="col-md-4">
-      <label for="entidadNacimiento" class="form-label">
-        Entidad de Nacimiento*
-      </label>
-      <input id="entidadNacimiento"
-             type="text"
-             formControlName="entidadNacimiento"
-             class="form-control"
-             required>
-    </div>
-    <div class="col-md-4">
-      <label for="municipioAlcaldia" class="form-label">
-        Municipio/Alcaldía*
-      </label>
-      <select id="municipioAlcaldia"
-              formControlName="municipioAlcaldia"
-              class="form-select"
-              required>
-        <option value="" disabled>Selecciona tu Municipio/Alcaldía</option>
-        <option value="1" disabled>IZTACALCO</option>
-        <option value="2" disabled>COYOACAN</option>
-        <option value="2" disabled>ÁLVARO OBREGÓN</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="row mb-3">
-    <div class="col-md-4">
-      <label for="estadoCivil" class="form-label">Estado Civil</label>
-      <select id="estadoCivil"
-              formControlName="estadoCivil"
-              class="form-select">
-        <option value="" disabled>Selecciona tu Estado Civil</option>
-        <option value="1" disabled>SOLTERO</option>
-        <option value="2" disabled>CASADO</option>
-        <option value="2" disabled>DIVORCIADO</option>
-        <option value="2" disabled>VIUDO</option>
-      </select>
-    </div>
-    <div class="col-md-4">
-      <label for="rfc" class="form-label">RFC*</label>
-      <input id="rfc"
-             type="text"
-             formControlName="rfc"
-             class="form-control"
-             required>
-    </div>
-    <div class="col-md-4">
-      <label for="cuip" class="form-label">CUIP</label>
-      <input id="cuip"
-             type="text"
-             formControlName="cuip"
-             class="form-control">
-    </div>
-  </div>
-
-  <!-- Adscripción actual -->
-  <div class="section-title">Información de adscripción actual</div>
-  <div class="row mb-3">
-    <div class="col-md-3">
-      <label for="tipoInstitucion" class="form-label">
-        Tipo de Institución*
-      </label>
-      <select id="tipoInstitucion"
-              formControlName="tipoInstitucion"
-              class="form-select"
-              required>
-        <option value="" disabled>Seleccionar</option>
-      </select>
-    </div>
-    <div class="col-md-3">
-      <label for="entidad" class="form-label">Entidad*</label>
-      <select id="entidad"
-              formControlName="entidad"
-              class="form-select"
-              required>
-        <option value="" disabled>Seleccionar</option>
-      </select>
-    </div>
-    <div class="col-md-3">
-      <label for="municipioAlcaldia2" class="form-label">
-        Municipio/Alcaldía*
-      </label>
-      <select id="municipioAlcaldia2"
-              formControlName="municipioAlcaldia2"
-              class="form-select"
-              required>
-        <option value="" disabled>Selecciona tu Municipio/Alcaldía</option>
-      </select>
-    </div>
-    <div class="col-md-3">
-      <label for="institucion" class="form-label">Institución*</label>
-      <select id="institucion"
-              formControlName="institucion"
-              class="form-select"
-              required>
-        <option value="" disabled>Seleccionar</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="row mb-3">
-    <div class="col-md-3">
-      <label for="dependencia" class="form-label">Dependencia</label>
-      <select id="dependencia"
-              formControlName="dependencia"
-              class="form-select">
-        <option value="" disabled>Seleccionar</option>
-      </select>
-    </div>
-    <div class="col-md-3">
-      <label for="corporacion" class="form-label">Corporación</label>
-      <select id="corporacion"
-              formControlName="corporacion"
-              class="form-select">
-        <option value="" disabled>Seleccionar</option>
-      </select>
-    </div>
-    <div class="col-md-3">
-      <label for="area" class="form-label">Área</label>
-      <input id="area"
-             type="text"
-             formControlName="area"
-             class="form-control">
-    </div>
-    <div class="col-md-3">
-      <label for="fechaIngreso" class="form-label">
-        Fecha de Ingreso*
-      </label>
-      <input id="fechaIngreso"
-             type="text"
-             formControlName="fechaIngreso"
-             class="form-control"
-             placeholder="dd/mm/aaaa"
-             required>
-    </div>
-  </div>
-
-  <div class="row mb-3">
-    <div class="col-md-4">
-      <label for="cargo" class="form-label">Cargo</label>
-      <input id="cargo"
-             type="text"
-             formControlName="cargo"
-             class="form-control">
-    </div>
-    <div class="col-md-4">
-      <label for="funciones" class="form-label">Funciones</label>
-      <input id="funciones"
-             type="text"
-             formControlName="funciones"
-             class="form-control">
-    </div>
-    <div class="col-md-4">
-      <label for="numeroEmpleado" class="form-label">
-        Número de Empleado*
-      </label>
-      <input id="numeroEmpleado"
-             type="text"
-             formControlName="numeroEmpleado"
-             class="form-control"
-             required>
-    </div>
-  </div>
-
-  <!-- Información de comisión -->
-  <div class="section-title">Información de comisión</div>
-  <div class="mb-3">
-    <label class="form-label">
-      ¿Está comisionado?<span class="required">*</span>
-    </label>
-    <div>
-      <div class="form-check form-check-inline">
-        <input formControlName="comisionado"
-               id="comisionadoSi"
-               type="radio"
-               value="Si"
-               class="form-check-input">
-        <label for="comisionadoSi" class="form-check-label">Sí</label>
+    <!-- Datos personales extendidos -->
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <label for="nombre" class="form-label label-obligatorio">Nombre(s)</label>
+        <input formControlName="nombre" type="text" class="form-control" />
+        <div *ngIf="form.get('nombre')?.touched && form.get('nombre')?.errors as e" class="validation">
+          <div *ngIf="e['required']" class="text-danger">El nombre es obligatorio</div>
+          <div *ngIf="e['maxlength']" class="text-danger">Máximo 100 caracteres</div>
+          <div *ngIf="e['onlyWhitespace']" class="text-danger">No se permiten solo espacios</div>
+        </div>
       </div>
-      <div class="form-check form-check-inline">
-        <input formControlName="comisionado"
-               id="comisionadoNo"
-               type="radio"
-               value="No"
-               class="form-check-input">
-        <label for="comisionadoNo" class="form-check-label">No</label>
+      <div class="col-md-4">
+        <label for="primerApellido" class="form-label label-obligatorio">Primer Apellido</label>
+        <input id="primerApellido" type="text" formControlName="primerApellido" class="form-control">
+        <div *ngIf="form.get('primerApellido')?.touched && form.get('primerApellido')?.errors as e" class="validation">
+          <div *ngIf="e['required']" class="text-danger">El primer apellido es obligatorio</div>
+          <div *ngIf="e['maxlength']" class="text-danger">Máximo 100 caracteres</div>
+          <div *ngIf="e['onlyWhitespace']" class="text-danger">No se permiten solo espacios</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <label for="segundoApellido" class="form-label">Segundo Apellido</label>
+        <input id="segundoApellido" type="text" formControlName="segundoApellido" class="form-control">
       </div>
     </div>
-  </div>
 
-  <div class="row mb-3">
-    <div class="col-md-3">
-      <label for="tipoInstitucion2" class="form-label">
-        Tipo de Institución*
-      </label>
-      <select id="tipoInstitucion2"
-              formControlName="tipoInstitucion2"
-              class="form-select"
-              required>
-        <option value="" disabled>Seleccionar</option>
-      </select>
-    </div>
-    <div class="col-md-3">
-      <label for="entidad2" class="form-label">Entidad*</label>
-      <select id="entidad2"
-              formControlName="entidad2"
-              class="form-select"
-              required>
-        <option value="" disabled>Seleccionar</option>
-      </select>
-    </div>
-    <div class="col-md-3">
-      <label for="municipioAlcaldia3" class="form-label">
-        Municipio/Alcaldía*
-      </label>
-      <select id="municipioAlcaldia3"
-              formControlName="municipioAlcaldia3"
-              class="form-select"
-              required>
-        <option value="" disabled>Selecciona tu Municipio/Alcaldía</option>
-      </select>
-    </div>
-    <div class="col-md-3">
-      <label for="institucion2" class="form-label">Institución*</label>
-      <select id="institucion2"
-              formControlName="institucion2"
-              class="form-select"
-              required>
-        <option value="" disabled>Seleccionar</option>
-      </select>
-    </div>
-  </div>
+    <div class="row mb-3">
+      <!-- Sexo -->
+      <div class="col-md-4">
+        <label for="sexo" class="form-label label-obligatorio">Sexo</label>
+        <select id="sexo" formControlName="sexo" class="form-select" required>
+          <option [ngValue]="null" disabled>Selecciona</option>
+          <option *ngFor="let s of sexos; trackBy: trackById" [ngValue]="s.id">{{ s.nombre }}</option>
+        </select>
+        <div *ngIf="form.get('sexo')?.touched && form.get('sexo')?.errors?.['required']" class="validation text-danger">
+          Selecciona tu sexo
+        </div>
+      </div>
 
-  <div class="row mb-3">
-    <div class="col-md-6">
-      <label for="dependencia2" class="form-label">Dependencia</label>
-      <select id="dependencia2"
-              formControlName="dependencia2"
-              class="form-select">
-        <option value="" disabled>Seleccionar</option>
-      </select>
-    </div>
-    <div class="col-md-6">
-      <label for="corporacion2" class="form-label">Corporación</label>
-      <select id="corporacion2"
-              formControlName="corporacion2"
-              class="form-select">
-        <option value="" disabled>Seleccionar</option>
-      </select>
-    </div>
-  </div>
+      <!-- Fecha de nacimiento -->
+      <div class="col-md-4">
+        <label for="fechaNacimiento" class="form-label label-obligatorio">Fecha de nacimiento</label>
+        <input id="fechaNacimiento" type="text" formControlName="fechaNacimiento" class="form-control"
+          placeholder="dd/mm/aaaa" required>
+        <div *ngIf="form.get('fechaNacimiento')?.touched && form.get('fechaNacimiento')?.errors as e"
+          class="validation text-danger">
+          <div *ngIf="e['required']">La fecha es obligatoria</div>
+          <div *ngIf="e['dateFormat']">Usa el formato dd/mm/aaaa</div>
+          <div *ngIf="e['dateInvalid']">La fecha no es válida</div>
+        </div>
+      </div>
 
-  <!-- Términos y navegación final -->
-  <div class="mb-4 mt-4 custom-checkbox">
-    <div class="form-check">
-      <input formControlName="aceptaTerminos"
-             id="terminos"
-             type="checkbox"
-             class="form-check-input">
-      <label for="terminos" class="form-check-label">
-        Acepto los
-        <a href="#" class="link-red">
-          términos y condiciones
-        </a>
-        de uso del SIAU.
-      </label>
+      <!-- Nacionalidad -->
+      <div class="col-md-4">
+        <label for="nacionalidad" class="form-label label-obligatorio">Nacionalidad</label>
+        <select id="nacionalidad" formControlName="nacionalidad" class="form-select" required>
+          <option [ngValue]="null" disabled>Selecciona tu nacionalidad</option>
+          <option *ngFor="let n of nacionalidades; trackBy: trackById" [ngValue]="n.id">{{ n.nombre }}</option>
+        </select>
+        <div *ngIf="form.get('nacionalidad')?.touched && form.get('nacionalidad')?.errors?.['required']"
+          class="validation text-danger">La nacionalidad es obligatoria</div>
+      </div>
     </div>
-  </div>
 
-  <div class="d-flex justify-content-between mt-5 mb-5">
-    <button type="button"
-            class="btn btn-back"
-            (click)="prev.emit()">
-      Regresar
-    </button>
-    <button type="submit"
-            class="btn btn-next">
-      Siguiente
-    </button>
-  </div>
-</form>
+    <div class="row mb-3">
+      <!-- País nacimiento (sigues usando input libre) -->
+      <div class="col-md-4">
+        <label for="paisNacimiento" class="form-label label-obligatorio">País de nacimiento</label>
+        <select id="paisNacimiento" formControlName="paisNacimiento" class="form-select" required>
+          <option [ngValue]="null" disabled>Selecciona país</option>
+          <option *ngFor="let p of paises; trackBy: trackById" [ngValue]="p.id">{{ p.nombre }}</option>
+        </select>
+        <div *ngIf="form.get('paisNacimiento')?.touched && form.get('paisNacimiento')?.errors as e"
+          class="validation text-danger">
+          <div *ngIf="e['required']">El país de nacimiento es obligatorio</div>
+          <div *ngIf="e['invalidOption']">La opción seleccionada no es válida</div>
+        </div>
+      </div>
+
+      <!-- Entidad nacimiento -->
+      <div class="col-md-4">
+        <label for="entidadNacimiento" class="form-label label-obligatorio">Entidad de Nacimiento</label>
+        <select id="entidadNacimiento" formControlName="entidadNacimiento" class="form-select" required>
+          <option [ngValue]="null" disabled>Selecciona la entidad</option>
+          <option *ngFor="let e of entidades; trackBy: trackById" [ngValue]="e.id">{{ e.nombre }}</option>
+        </select>
+        <div *ngIf="form.get('entidadNacimiento')?.touched && form.get('entidadNacimiento')?.errors?.['required']"
+          class="validation text-danger">La entidad de nacimiento es obligatoria</div>
+      </div>
+
+      <!-- Municipio nacimiento -->
+      <div class="col-md-4">
+        <label for="municipioAlcaldia" class="form-label label-obligatorio">Municipio/Alcaldía</label>
+        <select id="municipioAlcaldia" formControlName="municipioAlcaldia" class="form-select" required>
+          <option [ngValue]="null" disabled>Selecciona tu Municipio/Alcaldía</option>
+          <option *ngFor="let m of municipiosNacimiento; trackBy: trackById" [ngValue]="m.id">{{ m.nombre }}</option>
+        </select>
+        <div *ngIf="form.get('municipioAlcaldia')?.touched && form.get('municipioAlcaldia')?.errors as e"
+          class="validation text-danger">
+          <div *ngIf="e['required']">Selecciona tu municipio/alcaldía</div>
+          <div *ngIf="e['invalidOption']">La opción seleccionada no es válida</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <!-- Estado civil -->
+      <div class="col-md-4">
+        <label for="estadoCivil" class="form-label">Estado Civil</label>
+        <select id="estadoCivil" formControlName="estadoCivil" class="form-select">
+          <option [ngValue]="null" disabled>Selecciona tu Estado Civil</option>
+          <option *ngFor="let ec of estadosCiviles; trackBy: trackById" [ngValue]="ec.id">{{ ec.nombre }}</option>
+        </select>
+      </div>
+
+      <!-- RFC -->
+      <div class="col-md-4">
+        <label for="rfc" class="form-label label-obligatorio">RFC</label>
+        <input formControlName="rfc" type="text" class="form-control" />
+        <div *ngIf="form.get('rfc')?.touched && form.get('rfc')?.errors as e" class="validation">
+          <div *ngIf="e['required']">El RFC es obligatorio</div>
+          <div *ngIf="e['maxlength']">Máximo 13 caracteres</div>
+          <div *ngIf="e['rfcFormat']">Formato RFC inválido (SAT)</div>
+          <div *ngIf="e['rfcDV']">Dígito verificador inválido</div>
+        </div>
+      </div>
+
+      <!-- CUIP -->
+      <div class="col-md-4">
+        <label for="cuip" class="form-label">CUIP</label>
+        <input id="cuip" type="text" formControlName="cuip" class="form-control">
+      </div>
+    </div>
+
+    <!-- Adscripción actual -->
+    <div class="section-title">Información de adscripción actual</div>
+    <div class="row mb-3">
+      <div class="col-md-3">
+        <label for="tipoInstitucion" class="form-label label-obligatorio">Tipo de Institución</label>
+        <select id="tipoInstitucion" formControlName="tipoInstitucion" class="form-select" required>
+          <option [ngValue]="null" disabled>Seleccionar</option>
+          <option *ngFor="let a of ambitos; trackBy: trackById" [ngValue]="a.id">{{ a.nombre }}</option>
+        </select>
+        <div *ngIf="form.get('tipoInstitucion')?.touched && form.get('tipoInstitucion')?.errors as e"
+          class="validation text-danger">
+          <div *ngIf="e['required']">Selecciona el tipo de institución</div>
+          <div *ngIf="e['invalidOption']">La opción seleccionada no es válida</div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <label for="entidad" class="form-label label-obligatorio">Entidad</label>
+        <select id="entidad" formControlName="entidad" class="form-select" required>
+          <option [ngValue]="null" disabled>Seleccionar</option>
+          <option *ngFor="let e of entidades; trackBy: trackById" [ngValue]="e.id">{{ e.nombre }}</option>
+        </select>
+        <div *ngIf="form.get('entidad')?.touched && form.get('entidad')?.errors as e" class="validation text-danger">
+          <div *ngIf="e['required']">Selecciona la entidad</div>
+          <div *ngIf="e['invalidOption']">La opción seleccionada no es válida</div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <label for="municipioAlcaldia2" class="form-label label-obligatorio">Municipio/Alcaldía</label>
+        <select id="municipioAlcaldia2" formControlName="municipioAlcaldia2" class="form-select" required>
+          <option [ngValue]="null" disabled>Selecciona tu Municipio/Alcaldía</option>
+          <option *ngFor="let m of municipiosAdscripcion; trackBy: trackById" [ngValue]="m.id">{{ m.nombre }}</option>
+        </select>
+        <div *ngIf="form.get('municipioAlcaldia2')?.touched && form.get('municipioAlcaldia2')?.errors as e"
+          class="validation text-danger">
+          <div *ngIf="e['required']">Selecciona tu municipio/alcaldía</div>
+          <div *ngIf="e['invalidOption']">La opción seleccionada no es válida</div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <label for="institucion" class="form-label label-obligatorio">Institución</label>
+        <select id="institucion" formControlName="institucion" class="form-select" required>
+          <option [ngValue]="null" disabled>Seleccionar</option>
+          <option *ngFor="let i of instituciones; trackBy: trackById" [ngValue]="i.id">{{ i.nombre }}</option>
+        </select>
+        <div *ngIf="form.get('institucion')?.touched && form.get('institucion')?.errors as e"
+          class="validation text-danger">
+          <div *ngIf="e['required']">Selecciona la institución</div>
+          <div *ngIf="e['invalidOption']">La opción seleccionada no es válida</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-3">
+        <label for="dependencia" class="form-label">Dependencia</label>
+        <select id="dependencia" formControlName="dependencia" class="form-select">
+          <option [ngValue]="null" disabled>Seleccionar</option>
+          <option *ngFor="let d of dependencias; trackBy: trackById" [ngValue]="d.id">{{ d.nombre }}</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label for="corporacion" class="form-label">Corporación</label>
+        <select id="corporacion" formControlName="corporacion" class="form-select">
+          <option [ngValue]="null" disabled>Seleccionar</option>
+          <option *ngFor="let c of corporaciones; trackBy: trackById" [ngValue]="c.id">{{ c.nombre }}</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label for="area" class="form-label">Área</label>
+        <select id="area" formControlName="area" class="form-select">
+          <option [ngValue]="null" disabled>Seleccionar</option>
+          <option *ngFor="let a of areas; trackBy: trackById" [ngValue]="a.id">{{ a.nombre }}</option>
+        </select>
+        <div *ngIf="form.get('area')?.touched && form.get('area')?.errors as e" class="validation text-danger">
+          <div *ngIf="e['invalidOption']">La opción seleccionada no es válida</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <label for="fechaIngreso" class="form-label label-obligatorio">Fecha de Ingreso</label>
+        <input id="fechaIngreso" type="text" formControlName="fechaIngreso" class="form-control"
+          placeholder="dd/mm/aaaa" required>
+        <div *ngIf="form.get('fechaIngreso')?.touched && form.get('fechaIngreso')?.errors as e"
+          class="validation text-danger">
+          <div *ngIf="e['required']">La fecha de ingreso es obligatoria</div>
+          <div *ngIf="e['dateFormat']">Usa el formato dd/mm/aaaa</div>
+          <div *ngIf="e['dateInvalid']">La fecha no es válida</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <label for="cargo" class="form-label">Cargo</label>
+        <input id="cargo" type="text" formControlName="cargo" class="form-control">
+      </div>
+      <div class="col-md-4">
+        <label for="funciones" class="form-label">Funciones</label>
+        <input id="funciones" type="text" formControlName="funciones" class="form-control">
+      </div>
+      <div class="col-md-4">
+        <label for="numeroEmpleado" class="form-label label-obligatorio">Número de Empleado</label>
+        <input id="numeroEmpleado" type="text" formControlName="numeroEmpleado" class="form-control" required>
+        <div *ngIf="form.get('numeroEmpleado')?.touched && form.get('numeroEmpleado')?.errors as e"
+          class="validation text-danger">
+          <div *ngIf="e['required']">El número de empleado es obligatorio</div>
+          <div *ngIf="e['pattern']">Solo números</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información de comisión -->
+    <div class="section-title">Información de comisión</div>
+    <div class="mb-3">
+      <label class="form-label label-obligatorio">¿Está comisionado?</label>
+      <div>
+        <div class="form-check form-check-inline">
+          <input formControlName="comisionado" id="comisionadoSi" type="radio" value="Si" class="form-check-input">
+          <label for="comisionadoSi" class="form-check-label">Sí</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input formControlName="comisionado" id="comisionadoNo" type="radio" value="No" class="form-check-input">
+          <label for="comisionadoNo" class="form-check-label">No</label>
+        </div>
+        <div *ngIf="form.get('comisionado')?.touched && form.get('comisionado')?.errors?.['required']"
+          class="validation text-danger">Selecciona si está comisionado</div>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-3">
+        <label for="tipoInstitucion2" class="form-label label-obligatorio">Tipo de Institución</label>
+        <select id="tipoInstitucion2" formControlName="tipoInstitucion2" class="form-select" required>
+          <option [ngValue]="null" disabled>Seleccionar</option>
+          <option *ngFor="let a of ambitos; trackBy: trackById" [ngValue]="a.id">{{ a.nombre }}</option>
+        </select>
+        <div *ngIf="form.get('tipoInstitucion2')?.touched && form.get('tipoInstitucion2')?.errors as e"
+          class="validation text-danger">
+          <div *ngIf="e['required']">Selecciona el tipo de institución</div>
+          <div *ngIf="e['invalidOption']">La opción seleccionada no es válida</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <label for="entidad2" class="form-label label-obligatorio">Entidad</label>
+        <select id="entidad2" formControlName="entidad2" class="form-select" required>
+          <option [ngValue]="null" disabled>Seleccionar</option>
+          <option *ngFor="let e of entidades; trackBy: trackById" [ngValue]="e.id">{{ e.nombre }}</option>
+        </select>
+        <div *ngIf="form.get('entidad2')?.touched && form.get('entidad2')?.errors as e" class="validation text-danger">
+          <div *ngIf="e['required']">Selecciona la entidad</div>
+          <div *ngIf="e['invalidOption']">La opción seleccionada no es válida</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <label for="municipioAlcaldia3" class="form-label label-obligatorio">Municipio/Alcaldía</label>
+        <select id="municipioAlcaldia3" formControlName="municipioAlcaldia3" class="form-select" required>
+          <option [ngValue]="null" disabled>Selecciona tu Municipio/Alcaldía</option>
+          <option *ngFor="let m of municipiosComision; trackBy: trackById" [ngValue]="m.id">{{ m.nombre }}</option>
+        </select>
+        <div *ngIf="form.get('municipioAlcaldia3')?.touched && form.get('municipioAlcaldia3')?.errors as e"
+          class="validation text-danger">
+          <div *ngIf="e['required']">Selecciona tu municipio/alcaldía</div>
+          <div *ngIf="e['invalidOption']">La opción seleccionada no es válida</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <label for="institucion2" class="form-label label-obligatorio">Institución</label>
+        <select id="institucion2" formControlName="institucion2" class="form-select" required>
+          <option [ngValue]="null" disabled>Seleccionar</option>
+          <option *ngFor="let i of instituciones2; trackBy: trackById" [ngValue]="i.id">{{ i.nombre }}</option>
+        </select>
+        <div *ngIf="form.get('institucion2')?.touched && form.get('institucion2')?.errors as e"
+          class="validation text-danger">
+          <div *ngIf="e['required']">Selecciona la institución</div>
+          <div *ngIf="e['invalidOption']">La opción seleccionada no es válida</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="dependencia2" class="form-label">Dependencia</label>
+        <select id="dependencia2" formControlName="dependencia2" class="form-select">
+          <option [ngValue]="null" disabled>Seleccionar</option>
+          <option *ngFor="let d of dependencias2; trackBy: trackById" [ngValue]="d.id">{{ d.nombre }}</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label for="corporacion2" class="form-label">Corporación</label>
+        <select id="corporacion2" formControlName="corporacion2" class="form-select">
+          <option [ngValue]="null" disabled>Seleccionar</option>
+          <option *ngFor="let c of corporaciones2; trackBy: trackById" [ngValue]="c.id">{{ c.nombre }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Términos y navegación final -->
+    <div class="mb-4 mt-4 custom-checkbox">
+      <div class="form-check">
+        <input formControlName="aceptaTerminos" id="terminos" type="checkbox" class="form-check-input">
+        <label for="terminos" class="form-check-label">
+          Acepto los <a href="#" class="link-red">términos y condiciones</a> de uso del SIAU.
+        </label>
+        <div *ngIf="form.get('aceptaTerminos')?.touched && form.get('aceptaTerminos')?.errors?.['required']"
+          class="validation text-danger">Debes aceptar los términos y condiciones</div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between mt-5 mb-5">
+      <div *ngIf="form.invalid && (form.touched || triedSubmit)" class="error-summary text-danger" role="alert"
+        tabindex="-1">
+        Corrige los campos marcados con * para continuar.
+      </div>
+      <button type="button" class="btn btn-next" (click)="tryProceed($event)" [disabled]="form.invalid || form.pending">
+        Siguiente
+      </button>
+    </div>
+  </form>
 </div>
