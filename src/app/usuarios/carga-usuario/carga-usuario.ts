@@ -552,6 +552,7 @@ export class CargaUsuarioComponent implements OnInit {
     const paisId: number | null =
       typeof f.pais === 'number' ? f.pais : (this.catalogos.getPaisIdByName(String(f.pais ?? '')) ?? null);
     const paisNombre = paisId ? this.catalogos.getPaisNameById(paisId) : null;
+    const pais2Id: number | null = paisId;
     // --- 1) Construir modelo para la API (POST) ---
     const estructura2Id = this.getAreaJerarquica2(f);
     const apiCedula: CedulaModel = {
@@ -582,6 +583,7 @@ export class CargaUsuarioComponent implements OnInit {
       funciones: f.funciones,
       funciones2: f.funciones2 || null,
       pais: paisId || null || undefined,
+      pais2: pais2Id,              
       entidad2: f.entidad2 || null,
       municipio2: f.municipio2 || null,
       // manda el ID final de estructura de comisión aquí:

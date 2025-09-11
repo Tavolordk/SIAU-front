@@ -37,6 +37,7 @@ export interface CedulaModel {
   funciones: string;
   funciones2?: string;
   pais?: number;
+  pais2?: number | null;
   entidad2?: number;
   municipio2?: number;
   corporacion2?: number;

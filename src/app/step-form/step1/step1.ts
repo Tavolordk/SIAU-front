@@ -220,8 +220,6 @@ this.form.get('corporacion')!.valueChanges
   .pipe(startWith(this.form.get('corporacion')!.value), takeUntil(this.destroy$))
   .subscribe(v => this.cargarAreasLocal(v));
 
-
-
     // Comisión: entidad2 -> municipioAlcaldia3
     this.form.get('entidad2')!.valueChanges
       .pipe(

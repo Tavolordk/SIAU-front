@@ -2,8 +2,7 @@
   <!-- Título y progreso -->
   <div class="header-title">Registro</div>
   <div class="progress-bar-bg">
-    <div class="progress-bar-fill" [style.width.%]="(currentStep/maxSteps)*100">
-    </div>
+    <div class="progress-bar-fill" [style.width.%]="(currentStep/maxSteps)*100"></div>
   </div>
   <p class="progress-step">Paso {{ currentStep }} de {{ maxSteps }}</p>
 
@@ -16,10 +15,20 @@
       <form [formGroup]="form" (ngSubmit)="agregarPerfil()">
         <div class="form-inline mb-0">
           <label for="perfilInput" class="form-label">*Perfil:</label>
-          <!-- input con datalist -->
-          <ng-select id="perfilInput" class="cdindi-ngselect form-control" [items]="perfilesDisponibles" bindLabel="funcion"
-            [searchable]="true" [clearable]="true" [dropdownPosition]="'auto'" [appendTo]="'body'"
-            [searchFn]="searchPerfil" [placeholder]="perfilPlaceholder" (change)="onPerfilSelected($event)"
+
+          <ng-select
+            id="perfilInput"
+            class="cdindi-ngselect form-control"
+            [items]="perfilesDisponibles"
+            bindLabel="funcion"
+            [searchable]="true"
+            [clearable]="true"
+            [dropdownPosition]="'auto'"
+            [appendTo]="'body'"
+            [searchFn]="searchPerfil"
+            [hideSelected]="true" 
+            [placeholder]="perfilPlaceholder"
+            (change)="onPerfilSelected($event)"
             formControlName="perfil">
             <ng-template ng-option-tmp let-item="item">
               {{ item.clave }} - {{ item.funcion }}
@@ -28,26 +37,37 @@
               {{ item.clave }} - {{ item.funcion }}
             </ng-template>
           </ng-select>
-          <button type="button" class="btn btn-agregar" (click)="agregarPerfil()">
-            Agregar
-          </button>
+    <button
+      type="button"
+      class="btn btn-quitar"
+      (click)="eliminarPerfilSeleccionado()"
+      [disabled]="!form.get('perfil')?.value || !seleccionYaAgregada()">
+      Quitar
+    </button>
+
+          <button type="button" class="btn btn-agregar" (click)="agregarPerfil()">Agregar</button>
         </div>
       </form>
 
       <!-- LISTA -->
       <div class="perfil-list mt-3">
         @for (perfil of perfilesAgregados; track $index) {
-        <div class="perfil-item">
-          <span class="perfil-id">{{ perfil.clave }}</span>
-          <span class="perfil-remove" (click)="eliminarPerfil($index)">
-            <i class="fas fa-times"></i>
-          </span>
-          <span class="perfil-desc">{{ perfil.funcion }}</span>
-        </div>
+          <div class="perfil-item">
+            <span class="perfil-id">{{ perfil.clave }}</span>
+            <span class="perfil-remove" (click)="eliminarPerfil($index)">
+              <i class="fas fa-times"></i>
+            </span>
+            <span class="perfil-desc">{{ perfil.funcion }}</span>
+          </div>
         }
         @empty {
-        <div class="text-muted">No hay perfiles agregados.</div>
+          <div class="text-muted">No hay perfiles agregados.</div>
         }
+      </div>
+
+      <!-- ⚠️ error de validación (al menos 1 perfil) -->
+      <div class="validation-message" *ngIf="hasError('perfiles','minLengthArray')">
+        Debes agregar al menos un perfil.
       </div>
     </div>
 
@@ -56,7 +76,14 @@
     <!-- Botones de pie -->
     <div class="footer-actions">
       <button class="btn btn-regresar" (click)="prev.emit()">Regresar</button>
-      <button class="btn btn-siguiente" (click)="next.emit()">Siguiente</button>
+<button
+  class="btn btn-siguiente"
+  (click)="tryProceed()"
+  [disabled]="triedSubmit && perfilesFA.invalid"
+>
+  Siguiente
+</button>      <!-- opcional: deshabilitar cuando ya intentó y sigue inválido -->
+      <!-- [disabled]="triedSubmit && form.invalid" -->
     </div>
   </div>
 </div>

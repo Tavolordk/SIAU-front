@@ -114,10 +114,6 @@
             (click)="prev.emit(currentStep - 1)">
       Regresar
     </a>
-    <button type="button"
-            class="btn btn-success"
-            (click)="next.emit(currentStep + 1)">
-      Siguiente
-    </button>
+<button type="button" class="btn btn-success" (click)="onGuardar()" [disabled]="loading">Guardar</button>
   </div>
 </div>

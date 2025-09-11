@@ -166,6 +166,7 @@ export class CargaMasivaUsuariosComponent implements OnInit {
                 .map(e => ({ id: e.id, nombre: e.nombre }));
             this.catalogoService.perfiles = res.Perfiles
                 .map(p => ({ id: p.id, clave: p.clave, nombre: p.funcion }));
+                this.catalogoService.paises = (res.Paises || []).map((p: any) => ({ id: p.id, nombre: p.nombre }));
         });
         const hydrated = this.ensureHydrated(this.allPreviewData);
         this.store.setDatosCargados(hydrated);

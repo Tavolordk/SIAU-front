@@ -2,6 +2,8 @@ import { Injectable, Inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { REQUEST_API_BASE_URL } from '../core/token'; // asegúrate que el token exista y esté proveído
+import { FinalizarRegistroDto, GuardarStep4Response } from '../models/solicitudes-step-form.models';
+import { DocMeta } from '../step-form/state/step-form-state.service';
 
 // ===== Tipos que tu componente está importando =====
 export interface PageResult<T> {
@@ -102,4 +104,20 @@ export class SolicitudesService {
   subirAdjunto(id: number, adjunto: { nombre: string; mime: string; base64: string }) {
     return this.http.post(`${this.baseUrl}/solicitudes/${id}/adjuntos`, adjunto, { observe: 'response' });
   }
+    guardarStep4(payload: FinalizarRegistroDto): Observable<GuardarStep4Response> {
+    return this.http.post<GuardarStep4Response>(`${this.baseUrl}/guardar-step4`, payload);
+  }
+  // src/app/solicitudes/services/solicitudes.service.ts
+uploadTempDoc(tipoDocumentoId: number, file: File, fechaDocumento?: string) {
+  const fd = new FormData();
+  fd.append('tipoDocumentoId', String(tipoDocumentoId));
+  if (fechaDocumento) fd.append('fechaDocumento', fechaDocumento);
+  fd.append('file', file, file.name);
+  return this.http.post<DocMeta>(`${this.baseUrl}/solicitudes/docs/temp`, fd);
+}
+
+deleteTempDoc(idTemp: number) {
+  return this.http.delete<void>(`${this.baseUrl}/solicitudes/docs/temp/${idTemp}`);
+}
+
 }
