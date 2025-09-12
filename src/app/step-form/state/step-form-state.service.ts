@@ -4,26 +4,28 @@ import { CatPerfilDto } from '../../services/catalogos.service';
 
 /* ==== Tipos por paso (ajústalos a tus forms si hace falta) ==== */
 export interface Step1State {
-  rfc?: string|null; nombre?: string|null; nombre2?: string|null;
-  apellidoPaterno?: string|null; apellidoMaterno?: string|null;
-  curp?: string|null; cuip?: string|null;
-  telefono?: string|null; correo?: string|null;
+  rfc?: string | null; nombre?: string | null; nombre2?: string | null;
+  apellidoPaterno?: string | null; apellidoMaterno?: string | null;
+  curp?: string | null; cuip?: string | null;
+  telefono?: string | null; correo?: string | null;
   tipoUsuario?: number;
-  cuentaUsuario?: string|null; password?: string|null;
-  numeroOficio?: string|null; folio?: string|null;
+  cuentaUsuario?: string | null; password?: string | null;
+  numeroOficio?: string | null; folio?: string | null;
 }
 export interface Step2State {
-  cargo?: string|null; funciones?: string|null; funciones2?: string|null;
-  entidad?: number; municipio?: number; area?: number;
-  entidad2?: number; municipio2?: number; corporacion2?: number;
+  cargo?: string | null; funciones?: string | null; funciones2?: string | null;
+  entidad?: number | null; municipio?: number | null; area?: number | null;
+  entidad2?: number | null; municipio2?: number | null; corporacion2?: number | null;
   chkModifica?: boolean; chkAmplia?: boolean; chkReactiva?: boolean; chkCambioAdscripcion?: boolean;
-    perfiles?: CatPerfilDto[];         // lista que persistes en el form (control 'perfiles')
+  perfiles?: CatPerfilDto[];         // lista que persistes en el form (control 'perfiles')
 
 }
 /** ¡Ojo! File no se puede persistir en localStorage; ver nota abajo. */
 export interface Step3State {
   perfiles?: string[];
-  docs?: Array<{ file: File; tipoDocumentoId: number; storageRuta?: string; storageProveedor?: string }>;
+  docs?: Array<{
+    fechaDocumento: string | undefined; file: File; tipoDocumentoId: number; storageRuta?: string; storageProveedor?: string
+  }>;
 }
 // src/app/step-form/state/step-form-state.service.ts
 export interface DocMeta {
@@ -40,17 +42,17 @@ export interface DocMeta {
   urlPublica?: string;        // opcional, para botón Ver
 }
 export interface StepData {
-  step1: Step1State|null;
-  step2: Step2State|null;
-  step3: Step3State|null;   // 👈 asegura que exista
-  step4: Step4State|null;
-  step5: any|null;
+  step1: Step1State | null;
+  step2: Step2State | null;
+  step3: Step3State | null;   // 👈 asegura que exista
+  step4: Step4State | null;
+  step5: any | null;
 }
 
 export interface Step4State {
-  correoContacto?: string|null; celularContacto?: string|null;
-  telOficinaContacto?: string|null; extensionOficina?: string|null;
-  medioValidacion?: string|null;
+  correoContacto?: string | null; celularContacto?: string | null;
+  telOficinaContacto?: string | null; extensionOficina?: string | null;
+  medioValidacion?: string | null;
 }
 export type Step5State = any;
 
@@ -66,6 +68,11 @@ const LS_KEY = 'siau.wizard.stepdata';
 
 @Injectable({ providedIn: 'root' })
 export class StepFormStateService {
+  private _step1: any | undefined;
+  private _step2: Step2State | undefined;
+  private _step3: any | undefined;
+  private _step4: any | undefined;
+  private _step5: any | undefined;
   private _state = new BehaviorSubject<StepData>(this.loadFromLS());
   state$ = this._state.asObservable();
 
@@ -85,33 +92,65 @@ export class StepFormStateService {
   }
 
   /* ----- API genérica que ya tenías ----- */
-  save<K extends keyof StepData>(key: K, value: StepData[K], persist = true) {
-    const next = { ...this._state.value, [key]: value };
-    this._state.next(next);
-    if (persist) this.saveToLS(next);
+  get step1() { return this._step1; }
+  set step1(v) { this._step1 = v; }            // ❌ NO llames save() aquí
+
+  get step2() { return this._step2; }
+  set step2(v) { this._step2 = v ?? undefined; } // idem
+
+  get step3() { return this._step3; }
+  set step3(v) { this._step3 = v; }
+
+  get step4() { return this._step4; }
+  set step4(v) { this._step4 = v; }
+
+  get step5() { return this._step5; }
+  set step5(v) { this._step5 = v; }
+
+  /** Guarda clave/valor sin tocar setters (evita recursión) */
+  save(key: 'step1'|'step2'|'step3'|'step4'|'step5', value: any, persist = false) {
+    switch (key) {
+      case 'step1':
+        this._step1 = value;
+        break;
+      case 'step2':
+        // merge/patchea, no reemplaces (para no borrar entidad/municipio/area, etc.)
+        this._step2 = { ...(this._step2 ?? {}), ...(value ?? {}) };
+        break;
+      case 'step3':
+        this._step3 = value; break;
+      case 'step4':
+        this._step4 = value; break;
+      case 'step5':
+        this._step5 = value; break;
+    }
+
+    if (persist) {
+      const toPersist =
+        key === 'step1' ? this._step1 :
+        key === 'step2' ? this._step2 :
+        key === 'step3' ? this._step3 :
+        key === 'step4' ? this._step4 : this._step5;
+
+      try { localStorage.setItem(key, JSON.stringify(toPersist)); } catch {}
+    }
   }
-  get<K extends keyof StepData>(key: K) { return this._state.value[key]; }
-  getAll(): StepData { return this._state.value; }
-  clear() {
-    const empty: StepData = { step1: null, step2: null, step3: null, step4: null, step5: null };
-    this._state.next(empty);
-    localStorage.removeItem(LS_KEY);
+
+  /** Atajo explícito para step2 */
+  patchStep2(patch: Partial<Step2State>, persist = false) {
+    this._step2 = { ...(this._step2 ?? {}), ...(patch ?? {}) };
+    if (persist) {
+      try { localStorage.setItem('step2', JSON.stringify(this._step2)); } catch {}
+    }
   }
 
-  /* ----- Accessors cómodos (lo nuevo) ----- */
-  get step1() { return this._state.value.step1 as Step1State | null; }
-  set step1(v: Step1State | null) { this.save('step1', v); }
-
-  get step2() { return this._state.value.step2 as Step2State | null; }
-  set step2(v: Step2State | null) { this.save('step2', v); }
-
-  get step3() { return this._state.value.step3 as Step3State | null; }
-  /** No persistimos step3 por contener File (no serializable) */
-  set step3(v: Step3State | null) { this.save('step3', v, /*persist*/ false); }
-
-  get step4() { return this._state.value.step4 as Step4State | null; }
-  set step4(v: Step4State | null) { this.save('step4', v); }
-
-  get step5() { return this._state.value.step5 as Step5State | null; }
-  set step5(v: Step5State | null) { this.save('step5', v); }
+  get(key: 'step1'|'step2'|'step3'|'step4'|'step5') {
+    switch (key) {
+      case 'step1': return this._step1;
+      case 'step2': return this._step2;
+      case 'step3': return this._step3;
+      case 'step4': return this._step4;
+      case 'step5': return this._step5;
+    }
+  }
 }

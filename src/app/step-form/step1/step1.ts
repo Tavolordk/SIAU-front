@@ -8,7 +8,7 @@ import {
   rfcValidator,
   notOnlyWhitespaceValidator,
 } from '../../shared/validators';
-import { StepFormStateService } from '../state/step-form-state.service';
+import { Step2State, StepFormStateService } from '../state/step-form-state.service';
 import { CatalogosService, CatalogoItem } from '../../services/catalogos.service';
 type NodoEstructura = { id: number; nombre: string; tipo: string; fK_PADRE: number | null };
 
@@ -120,17 +120,31 @@ export class Step1Component implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(v => {
         const req = v === 'Si' ? [Validators.required] : [];
+
+        // Aplica/retira required
         ['tipoInstitucion2', 'entidad2', 'municipioAlcaldia3', 'institucion2'].forEach(cn => {
           const c = this.form.get(cn)!;
           c.setValidators(req);
           c.updateValueAndValidity({ emitEvent: false });
         });
+
+        // Si NO está comisionado, limpia valores y errores del bloque
+        if (v !== 'Si') {
+          ['tipoInstitucion2', 'entidad2', 'municipioAlcaldia3', 'institucion2', 'dependencia2', 'corporacion2']
+            .forEach(cn => {
+              const c = this.form.get(cn)!;
+              c.reset(null, { emitEvent: false });
+              c.setErrors(null);
+            });
+        }
       });
 
-    // Persistencia
     this.form.valueChanges
-      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
-      .subscribe(v => this.state.save('step1', v, /*persist*/ false));
+      .pipe(debounceTime(200), takeUntil(this.destroy$))
+      .subscribe(v => {
+        this.state.save('step1', this.mapFormToStep1(v), false);
+        this.state.patchStep2(this.buildStep2Snapshot(), true);
+      });
 
     const prev = this.state.get('step1');
     if (prev) this.form.patchValue(prev, { emitEvent: false });
@@ -143,24 +157,24 @@ export class Step1Component implements OnInit, OnDestroy {
     this.catalogos.getAmbito$().pipe(takeUntil(this.destroy$)).subscribe(v => this.ambitos = v);
     this.catalogos.getTiposUsuario$().subscribe(v => this.tipoDeUsuario = v);
 
-this.catalogos.getAll().pipe(takeUntil(this.destroy$)).subscribe(res => {
-  this.estructura = (res?.Estructura || []).map((e: any) => ({
-    id: Number(e.id ?? e.ID),
-    nombre: String(e.nombre ?? e.NOMBRE).trim(),
-    tipo: String(e.tipo ?? e.TIPO).toLowerCase().trim(),
-    fK_PADRE: (e.fK_PADRE ?? e.FK_PADRE) == null ? null : Number(e.fK_PADRE ?? e.FK_PADRE),
-  }));
+    this.catalogos.getAll().pipe(takeUntil(this.destroy$)).subscribe(res => {
+      this.estructura = (res?.Estructura || []).map((e: any) => ({
+        id: Number(e.id ?? e.ID),
+        nombre: String(e.nombre ?? e.NOMBRE).trim(),
+        tipo: String(e.tipo ?? e.TIPO).toLowerCase().trim(),
+        fK_PADRE: (e.fK_PADRE ?? e.FK_PADRE) == null ? null : Number(e.fK_PADRE ?? e.FK_PADRE),
+      }));
 
-  // instituciones raíz (padre null)
-  this.instituciones = this.estructura
-    .filter(n => n.tipo === 'institucion' && n.fK_PADRE == null)
-    .map(n => ({ id: n.id, nombre: n.nombre }));
+      // instituciones raíz (padre null)
+      this.instituciones = this.estructura
+        .filter(n => n.tipo === 'institucion' && n.fK_PADRE == null)
+        .map(n => ({ id: n.id, nombre: n.nombre }));
 
-  // Entidades (si las traes en ese payload)
-  this.entidades = (res?.Entidades || [])
-    .filter((e: any) => (e.tipo ?? '').toString().toUpperCase() === 'ESTADO')
-    .map((e: any) => ({ id: Number(e.id), nombre: String(e.nombre) }));
-});
+      // Entidades (si las traes en ese payload)
+      this.entidades = (res?.Entidades || [])
+        .filter((e: any) => (e.tipo ?? '').toString().toUpperCase() === 'ESTADO')
+        .map((e: any) => ({ id: Number(e.id), nombre: String(e.nombre) }));
+    });
 
 
     // ----- encadenamientos -----
@@ -207,18 +221,18 @@ this.catalogos.getAll().pipe(takeUntil(this.destroy$)).subscribe(res => {
       .subscribe(list => this.instituciones = list);
 
     // institucion -> dependencias (con reset de corporación y área)
-this.form.get('institucion')!.valueChanges
-  .pipe(startWith(this.form.get('institucion')!.value), takeUntil(this.destroy$))
-  .subscribe(v => this.cargarDependenciasLocal(v));
+    this.form.get('institucion')!.valueChanges
+      .pipe(startWith(this.form.get('institucion')!.value), takeUntil(this.destroy$))
+      .subscribe(v => this.cargarDependenciasLocal(v));
     // dependencia -> corporaciones
     // dependencia -> corporaciones (con fallback y manejo de 0)
-this.form.get('dependencia')!.valueChanges
-  .pipe(startWith(this.form.get('dependencia')!.value), takeUntil(this.destroy$))
-  .subscribe(v => this.cargarCorporacionesLocal(v));
+    this.form.get('dependencia')!.valueChanges
+      .pipe(startWith(this.form.get('dependencia')!.value), takeUntil(this.destroy$))
+      .subscribe(v => this.cargarCorporacionesLocal(v));
     // Corporación -> Áreas (con fallback y manejo de 0)
-this.form.get('corporacion')!.valueChanges
-  .pipe(startWith(this.form.get('corporacion')!.value), takeUntil(this.destroy$))
-  .subscribe(v => this.cargarAreasLocal(v));
+    this.form.get('corporacion')!.valueChanges
+      .pipe(startWith(this.form.get('corporacion')!.value), takeUntil(this.destroy$))
+      .subscribe(v => this.cargarAreasLocal(v));
 
     // Comisión: entidad2 -> municipioAlcaldia3
     this.form.get('entidad2')!.valueChanges
@@ -304,23 +318,6 @@ this.form.get('corporacion')!.valueChanges
     return !!c && c.hasError(code) && (c.touched || c.dirty || this.triedSubmit);
   }
 
-  tryProceed(ev?: Event) {
-    ev?.preventDefault();
-    ev?.stopPropagation();
-
-    this.triedSubmit = true;
-    this.form.markAllAsTouched();
-    this.form.updateValueAndValidity({ onlySelf: false, emitEvent: false });
-
-    if (this.form.invalid) {
-      this.scrollToFirstError();
-      return;
-    }
-
-    this.state.save('step1', this.form.getRawValue());
-    this.next.emit();
-  }
-
   private scrollToFirstError() {
     const first = this.el.nativeElement.querySelector(
       '.ng-invalid[formcontrolname], .ng-invalid [formControlName]'
@@ -363,70 +360,205 @@ this.form.get('corporacion')!.valueChanges
   trackById = (_: number, it: CatalogoItem) => it.id;
 
   private cargarDependenciasLocal(parentId: number | null) {
-  const pid = parentId == null ? null : Number(parentId);
+    const pid = parentId == null ? null : Number(parentId);
 
-  if (pid == null) {
-    this.dependencias = [];
-    this.form.get('dependencia')!.setValue(null, { emitEvent: false });
-    this.corporaciones = [];
-    this.form.get('corporacion')!.setValue(null, { emitEvent: false });
-    this.areas = [];
-    this.form.get('area')!.setValue(null, { emitEvent: false });
-    return;
+    if (pid == null) {
+      this.dependencias = [];
+      this.form.get('dependencia')!.setValue(null, { emitEvent: false });
+      this.corporaciones = [];
+      this.form.get('corporacion')!.setValue(null, { emitEvent: false });
+      this.areas = [];
+      this.form.get('area')!.setValue(null, { emitEvent: false });
+      return;
+    }
+
+    const items = this.estructura
+      .filter(x => x.tipo === 'dependencia' && x.fK_PADRE === pid)
+      .map(x => ({ id: x.id, nombre: x.nombre }));
+
+    this.dependencias = items.length ? items : [this.NO_APLICA];
+    this.form.get('dependencia')!.setValue(this.dependencias[0].id, { emitEvent: true });
   }
 
-  const items = this.estructura
-    .filter(x => x.tipo === 'dependencia' && x.fK_PADRE === pid)
-    .map(x => ({ id: x.id, nombre: x.nombre }));
+  private cargarCorporacionesLocal(parentId: number | null) {
+    const pid = parentId == null ? null : Number(parentId);
 
-  this.dependencias = items.length ? items : [this.NO_APLICA];
-  this.form.get('dependencia')!.setValue(this.dependencias[0].id, { emitEvent: true });
+    if (pid == null) {
+      this.corporaciones = [];
+      this.form.get('corporacion')!.setValue(null, { emitEvent: false });
+      this.areas = [];
+      this.form.get('area')!.setValue(null, { emitEvent: false });
+      return;
+    }
+    if (pid === 0) { // NO APLICA → propaga
+      this.corporaciones = [this.NO_APLICA];
+      this.form.get('corporacion')!.setValue(0, { emitEvent: true });
+      return;
+    }
+
+    const items = this.estructura
+      .filter(x => x.tipo === 'corporacion' && x.fK_PADRE === pid)
+      .map(x => ({ id: x.id, nombre: x.nombre }));
+
+    this.corporaciones = items.length ? items : [this.NO_APLICA];
+    this.form.get('corporacion')!.setValue(this.corporaciones[0].id, { emitEvent: true });
+  }
+
+  private cargarAreasLocal(parentId: number | null) {
+    const pid = parentId == null ? null : Number(parentId);
+
+    if (pid == null) {
+      this.areas = [];
+      this.form.get('area')!.setValue(null, { emitEvent: false });
+      return;
+    }
+    if (pid === 0) { // NO APLICA → propaga
+      this.areas = [this.NO_APLICA];
+      this.form.get('area')!.setValue(0, { emitEvent: false });
+      return;
+    }
+
+    const items = this.estructura
+      .filter(x => x.tipo === 'area' && x.fK_PADRE === pid)
+      .map(x => ({ id: x.id, nombre: x.nombre }));
+
+    this.areas = items.length ? items : [this.NO_APLICA];
+    this.form.get('area')!.setValue(this.areas[0].id, { emitEvent: false });
+  }
+  /** Convierte 0, '0', '', null, undefined -> null; si trae número válido lo regresa como number */
+  private toNullableId(v: any): number | null {
+    if (v === null || v === undefined) return null;
+    const n = Number(v);
+    return !Number.isFinite(n) || n === 0 ? null : n;
+  }
+
+  /** Convierte a número o null */
+  private toId = (v: any): number | null => {
+    if (v === null || v === undefined) return null;
+    const n = Number(v);
+    return !Number.isFinite(n) || n === 0 ? null : n;
+  };
+
+  /** Mapea el form a la forma que **sí** espera Step4 / backend */
+  private mapFormToStep1(v: any) {
+    return {
+      // personales
+      rfc: v.rfc ?? null,
+      curp: v.curp ?? null,
+      cuip: v.cuip ?? null,
+      nombre: v.nombre ?? null,
+      nombre2: null,
+      apellidoPaterno: v.primerApellido ?? null,
+      apellidoMaterno: v.segundoApellido ?? null,
+      tipoUsuario: this.toId(v.tipoUsuario) ?? undefined,
+      // (tel/correo no existen en Step1; se capturan en Step4)
+    };
+  }
+
+  /** Actualiza step2 con lo que el SP necesita SIEMPRE que cambie el form
+   *  y aplica fallback: si los campos de comisión vienen vacíos -> copia de adscripción.
+   */
+private syncStep2FromForm(): void {
+  const v = this.form.getRawValue();
+
+  // Adscripción (principal)
+  const entidad   = this.toOptId(v.entidad);
+  const municipio = this.toOptId(v.municipioAlcaldia2);
+  const estructura1 = this.getEstructuraSeleccionadaId() ?? undefined; // area>corp>dep>inst
+
+  // Comisión con fallback a adscripción
+  const entidad2   = this.toOptId(v.entidad2) ?? entidad ?? undefined;
+  const municipio2 = this.toOptId(v.municipioAlcaldia3) ?? municipio ?? undefined;
+  const estructura2 = this.getEstructuraComisionId() ?? estructura1 ?? undefined;
+
+  const next: Partial<Step2State> = {
+    entidad, municipio,
+    area: estructura1,                   // para p_area_estructura_id
+    entidad2, municipio2,
+    corporacion2: estructura2,           // 👈 este va a p_estructura2_id en el SP
+  };
+
+  this.state.save('step2', { ...(this.state.step2 ?? {}), ...next } as Step2State, /*persist*/ true);
 }
 
-private cargarCorporacionesLocal(parentId: number | null) {
-  const pid = parentId == null ? null : Number(parentId);
 
-  if (pid == null) {
-    this.corporaciones = [];
-    this.form.get('corporacion')!.setValue(null, { emitEvent: false });
-    this.areas = [];
-    this.form.get('area')!.setValue(null, { emitEvent: false });
-    return;
+  /** number válido distinto de 0 -> number; de lo contrario -> undefined */
+  private toOptId(v: any): number | undefined {
+    const n = Number(v);
+    return Number.isFinite(n) && n !== 0 ? n : undefined;
   }
-  if (pid === 0) { // NO APLICA → propaga
-    this.corporaciones = [this.NO_APLICA];
-    this.form.get('corporacion')!.setValue(0, { emitEvent: true });
-    return;
+  /** number válido (>0) -> number; si no, null */
+  private toNumOrNull(v: any): number | null {
+    const n = Number(v);
+    return Number.isFinite(n) && n > 0 ? n : null;
   }
 
-  const items = this.estructura
-    .filter(x => x.tipo === 'corporacion' && x.fK_PADRE === pid)
-    .map(x => ({ id: x.id, nombre: x.nombre }));
-
-  this.corporaciones = items.length ? items : [this.NO_APLICA];
-  this.form.get('corporacion')!.setValue(this.corporaciones[0].id, { emitEvent: true });
-}
-
-private cargarAreasLocal(parentId: number | null) {
-  const pid = parentId == null ? null : Number(parentId);
-
-  if (pid == null) {
-    this.areas = [];
-    this.form.get('area')!.setValue(null, { emitEvent: false });
-    return;
+  /** Devuelve el id más profundo: area > corporación > dependencia > institución (o null) */
+  private getEstructuraSeleccionadaId(): number | null {
+    const ids = [
+      this.toNumOrNull(this.form.get('area')?.value),
+      this.toNumOrNull(this.form.get('corporacion')?.value),
+      this.toNumOrNull(this.form.get('dependencia')?.value),
+      this.toNumOrNull(this.form.get('institucion')?.value),
+    ];
+    return ids.find(x => x != null) ?? null;
   }
-  if (pid === 0) { // NO APLICA → propaga
-    this.areas = [this.NO_APLICA];
-    this.form.get('area')!.setValue(0, { emitEvent: false });
-    return;
+  /** Devuelve el id más profundo de la sección *Comisión*:
+   *  (area2 si existe) > corporación2 > dependencia2 > institución2
+   *  Nota: hoy no tienes area2, así que cae en corp2/dep2/inst2.
+   */
+  private getEstructuraComisionId(): number | null {
+    const ids = [
+      // this.toNumOrNull(this.form.get('area2')?.value), // si algún día agregas área2
+      this.toNumOrNull(this.form.get('corporacion2')?.value),
+      this.toNumOrNull(this.form.get('dependencia2')?.value),
+      this.toNumOrNull(this.form.get('institucion2')?.value),
+    ];
+    return ids.find(x => x != null) ?? null;
   }
 
-  const items = this.estructura
-    .filter(x => x.tipo === 'area' && x.fK_PADRE === pid)
-    .map(x => ({ id: x.id, nombre: x.nombre }));
+  /** Construye un snapshot consistente para step2 con fallback primario→secundario */
+  private buildStep2Snapshot(): Step2State {
+    const v = this.form.getRawValue();
 
-  this.areas = items.length ? items : [this.NO_APLICA];
-  this.form.get('area')!.setValue(this.areas[0].id, { emitEvent: false });
-}
+    const ent = this.toNumOrNull(v.entidad);
+    const mun = this.toNumOrNull(v.municipioAlcaldia2);
+    const area = this.getEstructuraSeleccionadaId();
 
+    // secundarios con fallback al primario cuando vengan vacíos
+    const ent2 = this.toNumOrNull(v.entidad2) ?? ent;
+    const mun2 = this.toNumOrNull(v.municipioAlcaldia3) ?? mun;
+    const corp2 = this.getEstructuraComisionId() ?? area;
+
+    const snap: Step2State = {
+      entidad: ent ?? null,
+      municipio: mun ?? null,
+      area: area ?? null,
+
+      entidad2: ent2 ?? null,
+      municipio2: mun2 ?? null,
+      corporacion2: corp2 ?? null,
+    };
+
+    // 🔎 Debug opcional
+    console.debug('[Step1] Step2 snapshot', snap);
+
+    return snap;
+  }
+  tryProceed(ev?: Event) {
+    ev?.preventDefault();
+    ev?.stopPropagation();
+    this.triedSubmit = true;
+    this.form.markAllAsTouched();
+    this.form.updateValueAndValidity({ onlySelf: false, emitEvent: false });
+    if (this.form.invalid) { this.scrollToFirstError(); return; }
+
+    const v = this.form.getRawValue();
+    this.state.save('step1', this.mapFormToStep1(v), /*persist*/ false);
+
+    // 👇 Refresco final garantizado
+    this.state.save('step2', this.buildStep2Snapshot(), /*persist*/ true);
+
+    this.next.emit();
+  }
 }

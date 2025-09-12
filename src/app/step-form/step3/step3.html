@@ -3,163 +3,6 @@
   <div class="mb-2">
     <div class="step-title">Registro</div>
     <div class="progress-bar-custom">
-      <div class="progress-bar-inner" [style.width.%]="(currentStep/maxSteps)*100">
-      </div>
-    </div>
-    <div class="step-desc">Paso {{ currentStep }} de {{ maxSteps }}</div>
-  </div>
-
-  <div class="card card-custom">
-    <div class="card-header card-header-custom">
-      DOCUMENTACION
-    </div>
-    <div class="card-body px-4 pt-4 pb-3">
-      <div class="obligatorio-label">
-        <span class="required">*</span> Campos Obligatorios
-      </div>
-
-      <form [formGroup]="form">
-        <!-- Tipo de documento -->
-        <div class="form-section row align-items-center mb-3">
-          <div class="col-md-4 col-12 mb-2 mb-md-0">
-            <label class="form-label mb-0">
-              TIPO DOCUMENTO:<span class="required">*</span>
-            </label>
-          </div>
-          <div class="col-md-8 col-12">
-            <select formControlName="tipoDocumento" class="form-select" required>
-              <option value="" disabled selected>
-                --- SELECCIONE ---
-              </option>
-              <option value="identificacion">COMPROBANTE DE IDENTIFICACIÓN</option>
-              <option value="domicilio">COMPROBANTE DE DOMICILIO</option>
-              <option value="laboral">COMPROBANTE LABORAL</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Selección y carga de archivo -->
-        <div class="form-section row align-items-center mb-2">
-          <div class="col-md-4 col-12 mb-2 mb-md-0">
-            <label class="form-label mb-0">
-              SELECCIONE EL DOCUMENTO:<span class="required">*</span>
-            </label>
-          </div>
-
-          <div class="col-md-8 col-12">
-            <div class="file-upload-section d-flex align-items-center gap-2 flex-wrap">
-              <!-- input real oculto -->
-              <input type="file" id="fileInput" class="form-control d-none" formControlName="archivo"
-                accept=".jpg,.jpeg,application/pdf" (change)="onFileSelected($event)">
-
-              <!-- botón que dispara el input -->
-              <label for="fileInput" class="btn btn-outline-secondary mb-0">
-                Seleccionar archivo
-              </label>
-
-              <!-- nombre del archivo -->
-              <span class="form-text">
-                {{ (form.get('archivo')?.value?.name) || 'Sin archivos seleccionados' }}
-              </span>
-
-              <!-- botón subir -->
-              <button type="button" class="btn btn-secondary" [disabled]="loading || !form.valid" (click)="onUpload()">
-                Subir Archivo
-              </button>
-            </div>
-
-            <!-- ayudas y errores -->
-            <div class="small mt-1 text-muted">
-              Solo se permiten archivos <strong>PDF</strong> o <strong>JPG</strong>. Tamaño máximo: <strong>10
-                MB</strong>.
-            </div>
-
-            <div *ngIf="form.get('archivo')?.touched && form.get('archivo')?.invalid" class="text-danger small mt-1">
-              <div *ngIf="form.get('archivo')?.errors?.['fileType']">
-                Solo se permiten archivos PDF o JPG.
-              </div>
-              <div *ngIf="form.get('archivo')?.errors?.['fileSize']">
-                El archivo no debe superar 10 MB.
-              </div>
-              <div *ngIf="form.get('archivo')?.errors?.['required']">
-                Este campo es obligatorio.
-              </div>
-            </div>
-          </div>
-        </div>
-      </form>
-
-      <!-- Tabla estática de ejemplo -->
-      <div class="table-responsive">
-        <table class="table table-bordered mt-3 mb-2">
-          <thead>
-            <tr>
-              <th style="width:18%">ID DOCUMENTO</th>
-              <th style="width:32%">TIPO DE DOCUMENTO</th>
-              <th style="width:25%">FECHA DEL DOCUMENTO</th>
-              <th style="width:25%">ACCIÓN</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><a href="#">26274407</a></td>
-              <td>COMPROBANTE DE IDENTIFICACIÓN</td>
-              <td>2025-12-05</td>
-              <td>
-                <button class="btn btn-danger me-2">
-                  <i class="fas fa-trash-alt"></i>Eliminar
-                </button>
-                <button class="btn btn-primary">
-                  <i class="fas fa-eye"></i>Ver
-                </button>
-              </td>
-            </tr>
-            <tr>
-              <td><a href="#">26274390</a></td>
-              <td>COMPROBANTE DE DOMICILIO</td>
-              <td>2025-12-05</td>
-              <td>
-                <button class="btn btn-danger me-2">
-                  <i class="fas fa-trash-alt"></i>Eliminar
-                </button>
-                <button class="btn btn-primary">
-                  <i class="fas fa-eye"></i>Ver
-                </button>
-              </td>
-            </tr>
-            <tr>
-              <td><a href="#">26274390</a></td>
-              <td>COMPROBANTE LABORAL</td>
-              <td>2025-12-05</td>
-              <td>
-                <button class="btn btn-danger me-2">
-                  <i class="fas fa-trash-alt"></i>Eliminar
-                </button>
-                <button class="btn btn-primary">
-                  <i class="fas fa-eye"></i>Ver
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Navegación -->
-      <div class="d-flex justify-content-between mt-4">
-        <button class="btn btn-outline-secondary" (click)="prev.emit(currentStep - 1)">
-          Regresar
-        </button>
-        <button class="btn btn-success" (click)="next.emit(currentStep + 1)">
-          Siguiente
-        </button>
-      </div>
-    </div>
-  </div>
-</div><!-- src/app/step-form/step3/step3.component.html -->
-<div class="main-container">
-  <div class="mb-2">
-    <div class="step-title">Registro</div>
-    <div class="progress-bar-custom">
       <div class="progress-bar-inner" [style.width.%]="(currentStep/maxSteps)*100"></div>
     </div>
     <div class="step-desc">Paso {{ currentStep }} de {{ maxSteps }}</div>
@@ -184,13 +27,14 @@
           </div>
         </div>
 
-        <!-- Fecha (opcional para UI) -->
+        <!-- Fecha (autogenerada, no editable) -->
         <div class="form-section row align-items-center mb-3">
           <div class="col-md-4 col-12 mb-2 mb-md-0">
             <label class="form-label mb-0">FECHA DEL DOCUMENTO:</label>
           </div>
           <div class="col-md-8 col-12">
-            <input type="date" formControlName="fechaDocumento" class="form-control" />
+            <input class="form-control" [value]="hoy" readonly tabindex="-1" [placeholder]="hoy" disabled/>
+            <small class="text-muted">La fecha se asigna automáticamente.</small>
           </div>
         </div>
 
@@ -202,11 +46,16 @@
           <div class="col-md-8 col-12">
             <div class="file-upload-section d-flex align-items-center gap-2 flex-wrap">
               <input type="file" id="fileInput" class="form-control d-none" formControlName="archivo"
-                accept=".jpg,.jpeg,application/pdf" (change)="onFileSelected($event)">
+                accept=".jpg,.jpeg,application/pdf" (change)="onFileSelected($event)" />
               <label for="fileInput" class="btn btn-outline-secondary mb-0">Seleccionar archivo</label>
-              <span class="form-text">{{ form.get('archivo')?.value?.name || 'Sin archivos seleccionados' }}</span>
-              <button type="button" class="btn btn-secondary" [disabled]="loading || !form.valid"
-                (click)="onUpload()">Subir Archivo</button>
+              <span class="form-text">
+                {{ form.get('archivo')?.value?.name || 'Sin archivos seleccionados' }}
+              </span>
+              <button type="button" class="btn btn-secondary"
+                [disabled]="loading || !form.get('tipoDocumento')?.value || !archivoCtrl?.value" (click)="onUpload()">
+                Subir Archivo
+              </button>
+
             </div>
 
             <div *ngIf="form.get('archivo')?.touched && form.get('archivo')?.invalid" class="text-danger small mt-1">
@@ -214,12 +63,17 @@
               <div *ngIf="form.get('archivo')?.errors?.['fileSize']">El archivo no debe superar 10 MB.</div>
               <div *ngIf="form.get('archivo')?.errors?.['required']">Este campo es obligatorio.</div>
             </div>
+
+            <div class="small mt-1 text-muted">
+              Solo se permiten archivos <strong>PDF</strong> o <strong>JPG</strong>. Tamaño máximo: <strong>10
+                MB</strong>.
+            </div>
           </div>
         </div>
       </form>
 
-      <!-- Tabla dinámica -->
-      <div class="table-responsive" *ngIf="docs.length; else empty">
+      <!-- Tabla dinámica desde el FormArray -->
+      <div class="table-responsive" *ngIf="documentosFA.length; else empty">
         <table class="table table-bordered mt-3 mb-2">
           <thead>
             <tr>
@@ -230,15 +84,15 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let d of docs; let i = index">
-              <td><a (click)="onView(d)" style="cursor:pointer">{{ i + 1 }}</a></td>
-              <td>{{ nombreTipo(d.tipoDocumentoId) }}</td>
-              <td>{{ d.fechaDocumento || '-' }}</td>
+            <tr *ngFor="let g of documentosFA.controls; let i = index">
+              <td><a style="cursor:pointer" (click)="onViewAt(i)">{{ i + 1 }}</a></td>
+              <td>{{ nombreTipo(g.value.tipoDocumentoId) }}</td>
+              <td>{{ g.value.fechaDocumento }}</td>
               <td>
-                <button class="btn btn-danger me-2" (click)="onRemove(d, i)">
+                <button class="btn btn-danger me-2" (click)="onRemoveAt(i)">
                   <i class="fas fa-trash-alt"></i>Eliminar
                 </button>
-                <button class="btn btn-primary" (click)="onView(d)">
+                <button class="btn btn-primary" (click)="onViewAt(i)">
                   <i class="fas fa-eye"></i>Ver
                 </button>
               </td>
@@ -246,9 +100,6 @@
           </tbody>
         </table>
       </div>
-      <ng-template #empty>
-        <div class="text-muted mt-3">Aún no hay documentos cargados.</div>
-      </ng-template>
       <ng-template #empty>
         <div class="text-muted mt-3">Aún no hay documentos cargados.</div>
       </ng-template>

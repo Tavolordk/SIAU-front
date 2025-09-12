@@ -25,13 +25,13 @@ export interface FinalizarRegistroDto {
   Funciones?: string | null;
   Funciones2?: string | null;
   TipoUsuario: number;
-  Entidad: number;
-  Municipio: number;
-  Area: number;                   // p_area_estructura_id
-  Entidad2: number;
-  Municipio2: number;
+  Entidad: number | null;
+  Municipio: number | null;
+  Area: number | null;                   // p_area_estructura_id
+  Entidad2: number | null;
+  Municipio2: number | null;
   Pais2Id: number;                // default 143
-  Corporacion2: number;           // p_estructura2_id
+  Corporacion2: number | null;           // p_estructura2_id
 
   CheckBox1_NuevaCuenta: boolean; // true
   CheckBox2_ModificaPerfiles: boolean;

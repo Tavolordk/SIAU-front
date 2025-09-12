@@ -105,7 +105,7 @@ export class SolicitudesService {
     return this.http.post(`${this.baseUrl}/solicitudes/${id}/adjuntos`, adjunto, { observe: 'response' });
   }
     guardarStep4(payload: FinalizarRegistroDto): Observable<GuardarStep4Response> {
-    return this.http.post<GuardarStep4Response>(`${this.baseUrl}/guardar-step4`, payload);
+    return this.http.post<GuardarStep4Response>(`${this.baseUrl}/api/solicitudes/guardar-step4`, payload);
   }
   // src/app/solicitudes/services/solicitudes.service.ts
 uploadTempDoc(tipoDocumentoId: number, file: File, fechaDocumento?: string) {

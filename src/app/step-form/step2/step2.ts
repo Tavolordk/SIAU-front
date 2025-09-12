@@ -64,9 +64,14 @@ ngOnInit(): void {
   }
 
   // Persistencia mientras escribe (opcional)
-  this.form.valueChanges
-    .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
-    .subscribe(v => this.state.save(this.stepKey, v, /*persist*/ false));
+ // Step2Component.ngOnInit()
+this.form.valueChanges
+  .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+  .subscribe(() => {
+    const perfiles = this.perfilesFA.getRawValue(); // array de CatPerfilDto
+    this.state.patchStep2({ perfiles }, /*persist*/ false);
+  });
+
 
   // Restaurar si había guardado algo
   const prev = this.state.get(this.stepKey) as any;
