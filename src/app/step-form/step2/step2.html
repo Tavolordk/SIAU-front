@@ -16,52 +16,40 @@
         <div class="form-inline mb-0">
           <label for="perfilInput" class="form-label">*Perfil:</label>
 
-          <ng-select
-            id="perfilInput"
-            class="cdindi-ngselect form-control"
-            [items]="perfilesDisponibles"
-            bindLabel="funcion"
-            [searchable]="true"
-            [clearable]="true"
-            [dropdownPosition]="'auto'"
-            [appendTo]="'body'"
-            [searchFn]="searchPerfil"
-            [hideSelected]="true" 
-            [placeholder]="perfilPlaceholder"
-            (change)="onPerfilSelected($event)"
-            formControlName="perfil">
+          <ng-select [items]="perfilesDisponibles" bindLabel="funcion" bindValue="id" [searchable]="true"
+            [clearable]="false" [dropdownPosition]="'auto'" [appendTo]="'body'" [hideSelected]="true"
+            class="form-control" formControlName="perfil"
+            (change)="onNgSelectChange($event)">
             <ng-template ng-option-tmp let-item="item">
               {{ item.clave }} - {{ item.funcion }}
             </ng-template>
-            <ng-template ng-label-tmp let-item="item">
-              {{ item.clave }} - {{ item.funcion }}
-            </ng-template>
           </ng-select>
-    <button
-      type="button"
-      class="btn btn-quitar"
-      (click)="eliminarPerfilSeleccionado()"
-      [disabled]="!form.get('perfil')?.value || !seleccionYaAgregada()">
-      Quitar
-    </button>
 
-          <button type="button" class="btn btn-agregar" (click)="agregarPerfil()">Agregar</button>
+          <button type="button" class="btn btn-quitar" (click)="onQuitarClick($event)"
+            [disabled]="perfilesAgregados.length === 0">
+            Quitar
+          </button>
+
+          <button type="button" class="btn btn-agregar" (click)="agregarPerfil()" [disabled]="!canAgregar">
+            Agregar
+          </button>
+
         </div>
       </form>
 
       <!-- LISTA -->
       <div class="perfil-list mt-3">
         @for (perfil of perfilesAgregados; track $index) {
-          <div class="perfil-item">
-            <span class="perfil-id">{{ perfil.clave }}</span>
-            <span class="perfil-remove" (click)="eliminarPerfil($index)">
-              <i class="fas fa-times"></i>
-            </span>
-            <span class="perfil-desc">{{ perfil.funcion }}</span>
-          </div>
+        <div class="perfil-item">
+          <span class="perfil-id">{{ perfil.clave }}</span>
+          <span class="perfil-remove" (click)="eliminarPerfil($index)">
+            <i class="fas fa-times"></i>
+          </span>
+          <span class="perfil-desc">{{ perfil.funcion }}</span>
+        </div>
         }
         @empty {
-          <div class="text-muted">No hay perfiles agregados.</div>
+        <div class="text-muted">No hay perfiles agregados.</div>
         }
       </div>
 
@@ -76,13 +64,9 @@
     <!-- Botones de pie -->
     <div class="footer-actions">
       <button class="btn btn-regresar" (click)="prev.emit()">Regresar</button>
-<button
-  class="btn btn-siguiente"
-  (click)="tryProceed()"
-  [disabled]="triedSubmit && perfilesFA.invalid"
->
-  Siguiente
-</button>      <!-- opcional: deshabilitar cuando ya intentó y sigue inválido -->
+      <button class="btn btn-siguiente" (click)="tryProceed()" [disabled]="triedSubmit && perfilesFA.invalid">
+        Siguiente
+      </button> <!-- opcional: deshabilitar cuando ya intentó y sigue inválido -->
       <!-- [disabled]="triedSubmit && form.invalid" -->
     </div>
   </div>
