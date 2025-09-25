@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnInit, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, AsyncValidatorFn, ValidationErrors } from '@angular/forms';
 import { Observable, Subject, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, startWith, switchMap, takeUntil, tap } from 'rxjs/operators';
 import {
@@ -16,8 +16,11 @@ import { CaptchaApi } from '../../core/captcha/captcha.api';
 import { HttpClient } from '@angular/common/http';
 import { Inject } from '@angular/core';
 import { REQUEST_API_BASE_URL } from '../../core/token'; // ajusta la ruta si tu token está en otra carpeta
+import { catchError, map } from 'rxjs/operators';
+
 type NodoEstructura = { id: number; nombre: string; tipo: string; fK_PADRE: number | null };
-type CurpStatus = 'idle' | 'checking' | 'ok' | 'invalid' | 'error';
+type CurpStatus = 'idle' | 'checking' | 'ok' | 'invalid' | 'captchaInvalid' | 'error';
+
 @Component({
   selector: 'app-step1',
   standalone: true,
@@ -87,6 +90,11 @@ export class Step1Component implements OnInit, OnDestroy {
       nombre: ['', [Validators.required, Validators.maxLength(100), notOnlyWhitespaceValidator]],
       primerApellido: ['', [Validators.required, Validators.maxLength(100), notOnlyWhitespaceValidator]],
       segundoApellido: [''],
+      captchaCode: ['', {
+        validators: [Validators.required, Validators.pattern(/^\d{6}$/)],
+        asyncValidators: [this.captchaCorrectAsyncValidator()],
+        updateOn: 'change'   // valida en caliente conforme se escribe
+      }],
 
       sexo: [null, Validators.required],
       fechaNacimiento: ['', [Validators.required, dateISOValidator(), minDate('1900-01-01'),
@@ -561,90 +569,120 @@ export class Step1Component implements OnInit, OnDestroy {
 
     return snap;
   }
-tryProceed(ev?: Event) {
-  ev?.preventDefault();
-  ev?.stopPropagation();
+  tryProceed(ev?: Event) {
+    ev?.preventDefault();
+    ev?.stopPropagation();
 
-  this.triedSubmit = true;
-  this.form.markAllAsTouched();
-  this.form.updateValueAndValidity({ onlySelf: false, emitEvent: false });
+    this.triedSubmit = true;
+    this.form.markAllAsTouched();
+    this.form.updateValueAndValidity({ onlySelf: false, emitEvent: false });
 
-  if (this.form.value.hp) return;        // honeypot
-  if (this.form.invalid) { this.scrollToFirstError(); return; }
+    if (this.form.value.hp) return;        // honeypot
+    if (this.form.invalid) { this.scrollToFirstError(); return; }
 
-  // Si ya hay token (p.ej. porque diste "Verificar CURP"), avanza directo
-  const existing = this.captcha.getToken();
-  if (existing) {
-    const v = this.form.getRawValue();
-    this.state.save('step1', this.mapFormToStep1(v), false);
-    this.state.save('step2', this.buildStep2Snapshot(), true);
-    this.next.emit();
-    return;
-  }
-
-  // Si no hay token aún, verifica aquí el captcha antes de avanzar
-  if (!this.captchaId || !this.captchaAnswer) {
-    alert('Resuelve el captcha antes de continuar.');
-    this.scrollToFirstError();
-    return;
-  }
-
-  this.captcha.verify(this.captchaId, this.captchaAnswer).subscribe({
-    next: res => {
-      if (!res.ok || !res.token) {
-        this.captchaBox?.refresh();
-        alert('Código de verificación incorrecto o expirado. Intenta de nuevo.');
-        return;
-      }
+    // Si ya hay token (p.ej. porque diste "Verificar CURP"), avanza directo
+    const existing = this.captcha.getToken();
+    if (existing) {
       const v = this.form.getRawValue();
       this.state.save('step1', this.mapFormToStep1(v), false);
       this.state.save('step2', this.buildStep2Snapshot(), true);
       this.next.emit();
-    },
-    error: _ => {
-      this.captchaBox?.refresh();
-      alert('No se pudo verificar el captcha. Intenta de nuevo.');
+      return;
     }
-  });
-}
 
-onCaptchaChange(e: { id?: string; answer: string }) {
-  this.captchaId = e.id;
-  this.captchaAnswer = e.answer;
-}
+    // Si no hay token aún, verifica aquí el captcha antes de avanzar
+    if (!this.captchaId || !this.captchaAnswer) {
+      alert('Resuelve el captcha antes de continuar.');
+      this.scrollToFirstError();
+      return;
+    }
 
-onVerifyCurp() {
-  // Honeypot
-  if (this.form.value.hp) return;
-
-  // Valida CURP solo con tus validadores locales (ya tienes curpValidator)
-  const curpCtrl = this.form.get('curp');
-  if (!curpCtrl) return;
-  curpCtrl.markAsTouched();
-  if (curpCtrl.invalid) return;
-
-  // Debe existir id/answer del captcha
-  if (!this.captchaId || !this.captchaAnswer) {
-    alert('Resuelve el captcha antes de verificar la CURP.');
-    return;
+    this.captcha.verify(this.captchaId, this.captchaAnswer).subscribe({
+      next: res => {
+        if (!res.ok || !res.token) {
+          this.captchaBox?.refresh();
+          alert('Código de verificación incorrecto o expirado. Intenta de nuevo.');
+          return;
+        }
+        const v = this.form.getRawValue();
+        this.state.save('step1', this.mapFormToStep1(v), false);
+        this.state.save('step2', this.buildStep2Snapshot(), true);
+        this.next.emit();
+      },
+      error: _ => {
+        this.captchaBox?.refresh();
+        alert('No se pudo verificar el captcha. Intenta de nuevo.');
+      }
+    });
   }
 
-  // 1) Verifica CAPTCHA → guarda token (lo hace CaptchaApi internamente)
-  this.captcha.verify(this.captchaId, this.captchaAnswer).subscribe({
-    next: res => {
-      if (!res.ok || !res.token) {
-        this.curpStatus = 'invalid';
+  onCaptchaChange(e: { id?: string; answer: string }) {
+    this.captchaId = e.id;
+    this.captchaAnswer = e.answer;
+    // Actualiza el control oculto => disparará el validador asíncrono
+    this.form.get('captchaCode')?.setValue(this.captchaAnswer);
+    this.form.get('captchaCode')?.markAsTouched();
+  }
+
+  onVerifyCurp() {
+    // Honeypot
+    if (this.form.value.hp) return;
+
+    // Valida CURP solo con tus validadores locales (ya tienes curpValidator)
+    const curpCtrl = this.form.get('curp');
+    if (!curpCtrl) return;
+    curpCtrl.markAsTouched();
+    if (curpCtrl.invalid) return;
+
+    // Debe existir id/answer del captcha
+    if (!this.captchaId || !this.captchaAnswer) {
+      alert('Resuelve el captcha antes de verificar la CURP.');
+      return;
+    }
+
+    // 1) Verifica CAPTCHA → guarda token (lo hace CaptchaApi internamente)
+    this.captcha.verify(this.captchaId, this.captchaAnswer).subscribe({
+      next: res => {
+        if (!res.ok || !res.token) {
+          this.curpStatus = 'invalid';
+          this.captchaBox?.refresh();
+          return;
+        }
+
+        // 2) SIN RENAPO: damos por válida la CURP si pasó validación local + captcha
+        this.curpStatus = 'ok';
+      },
+      error: _ => {
+        this.curpStatus = 'error';
         this.captchaBox?.refresh();
-        return;
+      }
+    });
+  }
+  /** Valida contra el backend si el captcha es correcto (requiere captchaId y 6 dígitos) */
+  private captchaCorrectAsyncValidator(): AsyncValidatorFn {
+    return (ctrl: AbstractControl) => {
+      const answer = (ctrl.value ?? '').toString().trim();
+      const id = this.captchaId;
+
+      // No dispares verificación si no hay id o el formato aún no es 6 dígitos
+      if (!id || !/^\d{6}$/.test(answer)) {
+        return of(null);
       }
 
-      // 2) SIN RENAPO: damos por válida la CURP si pasó validación local + captcha
-      this.curpStatus = 'ok';
-    },
-    error: _ => {
-      this.curpStatus = 'error';
-      this.captchaBox?.refresh();
-    }
-  });
+      // Marca el control como "pending" mientras valida
+      return this.captcha.verify(id, answer).pipe(
+        map(res => {
+          // Si es válido, CaptchaApi ya guarda token internamente (como haces en tu código)
+          return (res?.ok && !!res?.token) ? null : { captchaInvalid: true };
+        }),
+        catchError(() => of<ValidationErrors>({ captchaError: true }))
+      );
+    };
+  }
+// Ejemplo si tu CaptchaBox emite un evento 'refreshed'
+onCaptchaRefreshed(newId: string) {
+  this.captchaId = newId;
+  this.form.get('captchaCode')?.reset('', { emitEvent: true }); // borra respuesta y revalida
 }
+
 }

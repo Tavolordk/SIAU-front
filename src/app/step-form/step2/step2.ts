@@ -89,15 +89,10 @@ export class Step2Component implements OnInit, OnDestroy {
       }
     }
     // Cargar catálogo
-    if (!this.perfiles?.length) {
-      this.catalogosService.getAll().subscribe(res => {
-        this.perfiles = res.Perfiles ?? [];  // <- sin map a string
-        this.rebuildDisponibles();
-      });
+    // Cargar catálogo (filtrado por el id más específico ≠ 0)
+    this.loadPerfilesPorEstructura();
 
-    } else {
-      this.rebuildDisponibles();
-    }
+
   }
 
   private setPerfilesFA(items: CatPerfilDto[]) {
@@ -192,10 +187,10 @@ export class Step2Component implements OnInit, OnDestroy {
 
   // 5) Si antes filtrabas "disponibles", ya no hace falta.
   // Si te queda algún llamado, déjalo idempotente:
-private rebuildDisponibles(): void {
-  const usados = new Set(this.perfilesAgregados.map(p => String(p.id)));
-  this.perfilesDisponibles = (this.perfiles || []).filter(p => !usados.has(String(p.id)));
-}
+  private rebuildDisponibles(): void {
+    const usados = new Set(this.perfilesAgregados.map(p => String(p.id)));
+    this.perfilesDisponibles = (this.perfiles || []).filter(p => !usados.has(String(p.id)));
+  }
 
   eliminarPerfilSeleccionado(): void {
     const idSel = this.selectedPerfilId;
@@ -209,116 +204,162 @@ private rebuildDisponibles(): void {
   // normaliza para evitar '12' vs 12
   private sameId = (a: number | string, b: number | string) => String(a) === String(b);
 
-eliminarPerfil(index: number): void {
-  const victima = this.perfilesAgregados[index];
-  console.log('[EliminarPerfil] index=', index, 'victima=', victima);
+  eliminarPerfil(index: number): void {
+    const victima = this.perfilesAgregados[index];
+    console.log('[EliminarPerfil] index=', index, 'victima=', victima);
 
-  // Puedes usar splice para mutar y luego “forzar” CD si lo prefieres:
-  // this.perfilesAgregados.splice(index, 1);
-  // this.perfilesAgregados = [...this.perfilesAgregados];
+    // Puedes usar splice para mutar y luego “forzar” CD si lo prefieres:
+    // this.perfilesAgregados.splice(index, 1);
+    // this.perfilesAgregados = [...this.perfilesAgregados];
 
-  this.perfilesAgregados = this.perfilesAgregados.filter((_, i) => i !== index);
+    this.perfilesAgregados = this.perfilesAgregados.filter((_, i) => i !== index);
 
-  // FormArray
-  this.perfilesFA.removeAt(index);
-  this.perfilesFA.markAsDirty();
-  this.perfilesFA.markAsTouched();
-  this.perfilesFA.updateValueAndValidity({ emitEvent: true });
+    // FormArray
+    this.perfilesFA.removeAt(index);
+    this.perfilesFA.markAsDirty();
+    this.perfilesFA.markAsTouched();
+    this.perfilesFA.updateValueAndValidity({ emitEvent: true });
 
-  console.log('[EliminarPerfil] restantes.ids=', this.perfilesAgregados.map(p => p.id),
-              'FA.length=', this.perfilesFA.length);
+    console.log('[EliminarPerfil] restantes.ids=', this.perfilesAgregados.map(p => p.id),
+      'FA.length=', this.perfilesFA.length);
 
-  this.rebuildDisponibles();
-  this.removePerfil.emit(index);
-}
-
-lastSelectedId: number | null = null;
-
-ngAfterViewInit() {
-  this.form.get('perfil')?.valueChanges
-    .pipe(takeUntil(this.destroy$))
-    .subscribe(v => {
-      const n = this.toIdOrNull(v);
-      if (n != null) this.lastSelectedId = n;
-    });
-}
-
-/** Convierte a número válido (>0) o null si viene '', null, undefined o NaN */
-private toIdOrNull(v: any): number | null {
-  if (v === null || v === undefined || v === '') return null;
-  const n = typeof v === 'number' ? v : parseInt(String(v), 10);
-  return Number.isFinite(n) && n > 0 ? n : null;
-}
-
-/** Usa el valor del control; si está vacío, recurre al último válido */
-get selectedPerfilId(): number | null {
-  const v = this.form.get('perfil')?.value;
-  return this.toIdOrNull(v) ?? this.lastSelectedId ?? null;
-}
-
-onNgSelectChange(val: any) {
-  const id = this.toIdOrNull(typeof val === 'object' ? val?.id : val);
-  this.form.get('perfil')!.setValue(id, { emitEvent: true });
-}
-
-estaAgregadoId = (id: number | null) =>
-  id != null && this.perfilesAgregados.some(p => Number(p.id) === id);
-get canQuitar(): boolean {
-  const id = this.selectedPerfilId;
-  return id != null && this.estaAgregadoId(id);
-}
-
-get canAgregar(): boolean {
-  // con items filtrados, es suficiente con que haya selección
-  return this.selectedPerfilId != null;
-}
-onQuitarClick(ev: Event) {
-  ev.preventDefault();
-  ev.stopPropagation();
-
-  if (this.perfilesAgregados.length === 0) return;
-
-  const idSel = this.selectedPerfilId;
-
-  // si hay seleccionado, quitamos ese; si no, hacemos pop (último)
-  let idx = -1;
-  if (idSel != null) {
-    idx = this.perfilesAgregados.findIndex(p => Number(p.id) === idSel);
+    this.rebuildDisponibles();
+    this.removePerfil.emit(index);
   }
-  if (idx === -1) idx = this.perfilesAgregados.length - 1;
 
-  this.eliminarPerfil(idx);
+  lastSelectedId: number | null = null;
 
-  // limpia selección porque ese id ya no estará en items
-  this.form.get('perfil')?.reset();
+  ngAfterViewInit() {
+    this.form.get('perfil')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(v => {
+        const n = this.toIdOrNull(v);
+        if (n != null) this.lastSelectedId = n;
+      });
+  }
 
-  // reconstruye items para que el perfil regresado reaparezca
-  this.rebuildDisponibles();
-}
+  /** Convierte a número válido (>0) o null si viene '', null, undefined o NaN */
+  private toIdOrNull(v: any): number | null {
+    if (v === null || v === undefined || v === '') return null;
+    const n = typeof v === 'number' ? v : parseInt(String(v), 10);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }
 
-agregarPerfil(): void {
-  const idSel = this.selectedPerfilId;
-  if (idSel == null) return;
+  /** Usa el valor del control; si está vacío, recurre al último válido */
+  get selectedPerfilId(): number | null {
+    const v = this.form.get('perfil')?.value;
+    return this.toIdOrNull(v) ?? this.lastSelectedId ?? null;
+  }
 
-  // ya no hace falta checar estaAgregadoId porque la lista viene filtrada,
-  // pero lo dejamos por seguridad:
-  if (this.estaAgregadoId(idSel)) { this.form.get('perfil')?.reset(); return; }
+  onNgSelectChange(val: any) {
+    const id = this.toIdOrNull(typeof val === 'object' ? val?.id : val);
+    this.form.get('perfil')!.setValue(id, { emitEvent: true });
+  }
 
-  const p = this.perfiles.find(x => Number(x.id) === idSel);
-  if (!p) return;
+  estaAgregadoId = (id: number | null) =>
+    id != null && this.perfilesAgregados.some(p => Number(p.id) === id);
+  get canQuitar(): boolean {
+    const id = this.selectedPerfilId;
+    return id != null && this.estaAgregadoId(id);
+  }
 
-  this.perfilesAgregados = [...this.perfilesAgregados, p];
-  this.perfilesFA.push(this.fb.control(p, { nonNullable: true }));
-  this.perfilesFA.markAsDirty();
-  this.perfilesFA.markAsTouched();
-  this.perfilesFA.updateValueAndValidity({ emitEvent: true });
+  get canAgregar(): boolean {
+    // con items filtrados, es suficiente con que haya selección
+    return this.selectedPerfilId != null;
+  }
+  onQuitarClick(ev: Event) {
+    ev.preventDefault();
+    ev.stopPropagation();
 
-  this.addPerfil.emit();
+    if (this.perfilesAgregados.length === 0) return;
 
-  // Limpia selección y actualiza items del select
-  this.form.get('perfil')?.reset();
-  this.rebuildDisponibles();
-}
+    const idSel = this.selectedPerfilId;
 
+    // si hay seleccionado, quitamos ese; si no, hacemos pop (último)
+    let idx = -1;
+    if (idSel != null) {
+      idx = this.perfilesAgregados.findIndex(p => Number(p.id) === idSel);
+    }
+    if (idx === -1) idx = this.perfilesAgregados.length - 1;
+
+    this.eliminarPerfil(idx);
+
+    // limpia selección porque ese id ya no estará en items
+    this.form.get('perfil')?.reset();
+
+    // reconstruye items para que el perfil regresado reaparezca
+    this.rebuildDisponibles();
+  }
+
+  agregarPerfil(): void {
+    const idSel = this.selectedPerfilId;
+    if (idSel == null) return;
+
+    // ya no hace falta checar estaAgregadoId porque la lista viene filtrada,
+    // pero lo dejamos por seguridad:
+    if (this.estaAgregadoId(idSel)) { this.form.get('perfil')?.reset(); return; }
+
+    const p = this.perfiles.find(x => Number(x.id) === idSel);
+    if (!p) return;
+
+    this.perfilesAgregados = [...this.perfilesAgregados, p];
+    this.perfilesFA.push(this.fb.control(p, { nonNullable: true }));
+    this.perfilesFA.markAsDirty();
+    this.perfilesFA.markAsTouched();
+    this.perfilesFA.updateValueAndValidity({ emitEvent: true });
+
+    this.addPerfil.emit();
+
+    // Limpia selección y actualiza items del select
+    this.form.get('perfil')?.reset();
+    this.rebuildDisponibles();
+  }
+  /** Carga perfiles desde el MS de Solicitudes escogiendo el id más específico ≠ 0 */
+  private loadPerfilesPorEstructura(): void {
+    // 1) Tomamos IDs desde el estado de Step2; si no están, caemos a Step1
+    const s2: any = this.state.get(this.stepKey);
+    const s1: any = this.state.get('step1');
+
+    // elegimos la fuente que tenga algo
+    const hasIds = (x: any) =>
+      this.toIdOrNull(x?.areaId ?? x?.area) ||
+      this.toIdOrNull(x?.corporacionId ?? x?.corporacion ?? x?.corporacion2) ||
+      this.toIdOrNull(x?.dependenciaId ?? x?.dependencia) ||
+      this.toIdOrNull(x?.institucionId ?? x?.institucion);
+
+    const src = hasIds(s2) ? s2 : s1;
+
+    // 2) Normalizamos posibles nombres de campos entre steps
+    const ids = {
+      institucionId: this.toIdOrNull(src?.institucionId ?? src?.institucion),
+      dependenciaId: this.toIdOrNull(src?.dependenciaId ?? src?.dependencia),
+      corporacionId: this.toIdOrNull(src?.corporacionId ?? src?.corporacion ?? src?.corporacion2),
+      areaId: this.toIdOrNull(src?.areaId ?? src?.area),
+    };
+
+    // 3) Llamada al service: él decide cuál ID enviar (area>corp>dep>inst), o ninguno → todos
+    this.catalogosService.getPerfilesPorEstructuraAuto$(ids).subscribe({
+      next: (list) => {
+        this.perfiles = list;
+        this.rebuildDisponibles();
+
+        // Si restauraste perfiles guardados, asegúrate de que sigan existiendo en el nuevo catálogo
+        if (this.perfilesAgregados?.length) {
+          const set = new Set(this.perfiles.map(p => String(p.id)));
+          const filtrados = this.perfilesAgregados.filter(p => set.has(String(p.id)));
+          if (filtrados.length !== this.perfilesAgregados.length) {
+            this.perfilesAgregados = filtrados;
+            this.setPerfilesFA(filtrados);
+            this.rebuildDisponibles();
+          }
+        }
+      },
+      error: (err) => {
+        console.error('Perfiles por estructura:', err);
+        this.perfiles = [];
+        this.rebuildDisponibles();
+      }
+    });
+  }
 
 }

@@ -52,38 +52,53 @@
       </div>
     </div>
 
-<!-- CURP y CAPTCHA -->
-<div class="row mb-3">
-  <!-- IZQUIERDA: CURP (SIN CAMBIOS) -->
-  <div class="col-md-6">
-    <label for="curp" class="form-label label-obligatorio">CURP</label>
-    <input formControlName="curp" type="text" class="form-control"  maxlength="18"/>
-    <div *ngIf="form.get('curp')?.touched && form.get('curp')?.errors as e" class="validation text-danger">
-      <div *ngIf="e['required']">La CURP es obligatoria</div>
-      <div *ngIf="e['maxlength']">Máximo 18 caracteres</div>
-      <div *ngIf="e['curpFormat']">Formato CURP inválido</div>
-      <div *ngIf="e['curpDate']">Fecha inválida dentro de la CURP</div>
-      <div *ngIf="e['curpDV']">Dígito verificador inválido</div>
+    <!-- CURP y CAPTCHA -->
+    <div class="row mb-3">
+      <!-- IZQUIERDA: CURP (SIN CAMBIOS) -->
+      <div class="col-md-6">
+        <label for="curp" class="form-label label-obligatorio">CURP</label>
+        <input formControlName="curp" type="text" class="form-control" maxlength="18" />
+        <div *ngIf="form.get('curp')?.touched && form.get('curp')?.errors as e" class="validation text-danger">
+          <div *ngIf="e['required']">La CURP es obligatoria</div>
+          <div *ngIf="e['maxlength']">Máximo 18 caracteres</div>
+          <div *ngIf="e['curpFormat']">Formato CURP inválido</div>
+          <div *ngIf="e['curpDate']">Fecha inválida dentro de la CURP</div>
+          <div *ngIf="e['curpDV']">Dígito verificador inválido</div>
+        </div>
+        <a href="#" class="link-red">¿No sabes tu CURP?</a>
+      </div>
+
+      <!-- DERECHA: CAPTCHA (SUSTITUIR LO QUE TENÍAS) -->
+      <div class="col-md-6">
+        <label class="form-label label-obligatorio">Código de verificación</label>
+
+        <!-- componente del captcha -->
+        <!-- componente del captcha -->
+        <app-captcha-box (changed)="onCaptchaChange($event)"></app-captcha-box>
+
+        <!-- feedback del captcha -->
+        <div *ngIf="form.get('captchaCode')?.pending" class="text-info mt-2">Verificando…</div>
+        <div *ngIf="form.get('captchaCode')?.touched && form.get('captchaCode')?.errors as e" class="text-danger mt-2">
+          <div *ngIf="e['required']">El código es obligatorio.</div>
+          <div *ngIf="e['pattern']">El código debe tener 6 dígitos.</div>
+          <div *ngIf="e['captchaInvalid']">Código incorrecto o expirado.</div>
+          <div *ngIf="e['captchaError']">No se pudo verificar el código. Intenta de nuevo.</div>
+        </div>
+
+        <!-- acciones para la CURP (usa el captcha) -->
+        <button type="button" class="btn btn-verify mt-2" (click)="onVerifyCurp()">Verificar CURP</button>
+
+        <!-- feedback opcional -->
+        <!-- feedback opcional -->
+        <div *ngIf="curpStatus === 'checking'" class="text-info mt-2">Verificando…</div>
+        <div *ngIf="curpStatus === 'ok'" class="text-success mt-2">CURP  y captcha válidos.</div>
+        <div *ngIf="curpStatus === 'invalid'" class="text-danger mt-2">CURP y/o captcha inválidos.</div>
+        <div *ngIf="curpStatus === 'captchaInvalid'" class="text-danger mt-2">
+          Código de verificación incorrecto o expirado.
+        </div>
+        <div *ngIf="curpStatus === 'error'" class="text-danger mt-2">No se pudo validar la CURP.</div>
+      </div>
     </div>
-    <a href="#" class="link-red">¿No sabes tu CURP?</a>
-  </div>
-
-  <!-- DERECHA: CAPTCHA (SUSTITUIR LO QUE TENÍAS) -->
-  <div class="col-md-6">
-    <label class="form-label label-obligatorio">Código de verificación</label>
-
-    <!-- componente del captcha -->
-    <app-captcha-box (changed)="onCaptchaChange($event)"></app-captcha-box>
-
-    <!-- acciones para la CURP (usa el captcha) -->
-    <button type="button" class="btn btn-verify mt-2" (click)="onVerifyCurp()">Verificar CURP</button>
-
-    <!-- feedback opcional -->
-    <div *ngIf="curpStatus === 'ok'" class="text-success mt-2">CURP válida.</div>
-    <div *ngIf="curpStatus === 'invalid'" class="text-danger mt-2">CURP no válida.</div>
-    <div *ngIf="curpStatus === 'error'" class="text-danger mt-2">No se pudo validar la CURP.</div>
-  </div>
-</div>
 
     <!-- Datos personales extendidos -->
     <div class="row mb-3">
@@ -205,7 +220,7 @@
       <!-- RFC -->
       <div class="col-md-4">
         <label for="rfc" class="form-label label-obligatorio">RFC</label>
-        <input formControlName="rfc" type="text" class="form-control" maxlength="13"/>
+        <input formControlName="rfc" type="text" class="form-control" maxlength="13" />
         <div *ngIf="form.get('rfc')?.touched && form.get('rfc')?.errors as e" class="validation">
           <div *ngIf="e['required']">El RFC es obligatorio</div>
           <div *ngIf="e['maxlength']">Máximo 13 caracteres</div>
