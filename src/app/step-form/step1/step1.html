@@ -2,6 +2,9 @@
 <div class="container-fluid bg-white h-100 p-0 mt-0">
   <form [formGroup]="form" class="container mt-2" novalidate (keydown.enter)="$event.preventDefault()">
     <!-- Título y Progress -->
+    <!-- Honeypot: debe quedar vacío -->
+    <input type="text" formControlName="hp" tabindex="-1" aria-hidden="true" style="position:absolute; left:-9999px;" />
+
     <h2 class="text-center registro-title m-0">Registro</h2>
     <div class="progress-container">
       <div class="progress-bar-custom-wrap">
@@ -49,43 +52,38 @@
       </div>
     </div>
 
-    <!-- CURP y CAPTCHA -->
-    <div class="row mb-3">
-      <div class="col-md-6">
-        <label for="curp" class="form-label label-obligatorio">CURP</label>
-        <input formControlName="curp" type="text" class="form-control" />
-        <div *ngIf="form.get('curp')?.touched && form.get('curp')?.errors as e" class="validation text-danger">
-          <div *ngIf="e['required']">La CURP es obligatoria</div>
-          <div *ngIf="e['maxlength']">Máximo 18 caracteres</div>
-          <div *ngIf="e['curpFormat']">Formato CURP inválido</div>
-          <div *ngIf="e['curpDate']">Fecha inválida dentro de la CURP</div>
-          <div *ngIf="e['curpDV']">Dígito verificador inválido</div>
-        </div>
-        <a href="#" class="link-red">¿No sabes tu CURP?</a>
-      </div>
-      <div class="col-md-6">
-        <label class="form-label">Código de verificación</label>
-        <div class="row">
-          <div class="col-md-6 text-center">
-            <div class="captcha-img"><span>VXBGZL</span></div>
-            <a href="#" class="link-blue mt-1 d-block">¿Otro código?</a>
-          </div>
-          <div class="col-md-6">
-            <div class="mb-1 label-obligatorio" style="font-size:14px;">Ingresar código</div>
-            <input id="captchaInput" type="text" formControlName="captcha" class="form-control"
-              placeholder="ESCRIBE EL CÓDIGO" required>
-            <div *ngIf="form.get('captcha')?.touched && form.get('captcha')?.errors as e"
-              class="validation text-danger">
-              <div *ngIf="e['required']">El captcha es obligatorio</div>
-            </div>
-            <div class="mt-2 d-flex justify-content-center">
-              <div class="g-recaptcha" data-sitekey="TU_SITE_KEY"></div>
-            </div>
-            <button type="button" class="btn btn-verify mt-2">Verificar CURP</button>
-          </div>
-        </div>
-      </div>
+<!-- CURP y CAPTCHA -->
+<div class="row mb-3">
+  <!-- IZQUIERDA: CURP (SIN CAMBIOS) -->
+  <div class="col-md-6">
+    <label for="curp" class="form-label label-obligatorio">CURP</label>
+    <input formControlName="curp" type="text" class="form-control"  maxlength="18"/>
+    <div *ngIf="form.get('curp')?.touched && form.get('curp')?.errors as e" class="validation text-danger">
+      <div *ngIf="e['required']">La CURP es obligatoria</div>
+      <div *ngIf="e['maxlength']">Máximo 18 caracteres</div>
+      <div *ngIf="e['curpFormat']">Formato CURP inválido</div>
+      <div *ngIf="e['curpDate']">Fecha inválida dentro de la CURP</div>
+      <div *ngIf="e['curpDV']">Dígito verificador inválido</div>
     </div>
+    <a href="#" class="link-red">¿No sabes tu CURP?</a>
+  </div>
+
+  <!-- DERECHA: CAPTCHA (SUSTITUIR LO QUE TENÍAS) -->
+  <div class="col-md-6">
+    <label class="form-label label-obligatorio">Código de verificación</label>
+
+    <!-- componente del captcha -->
+    <app-captcha-box (changed)="onCaptchaChange($event)"></app-captcha-box>
+
+    <!-- acciones para la CURP (usa el captcha) -->
+    <button type="button" class="btn btn-verify mt-2" (click)="onVerifyCurp()">Verificar CURP</button>
+
+    <!-- feedback opcional -->
+    <div *ngIf="curpStatus === 'ok'" class="text-success mt-2">CURP válida.</div>
+    <div *ngIf="curpStatus === 'invalid'" class="text-danger mt-2">CURP no válida.</div>
+    <div *ngIf="curpStatus === 'error'" class="text-danger mt-2">No se pudo validar la CURP.</div>
+  </div>
+</div>
 
     <!-- Datos personales extendidos -->
     <div class="row mb-3">
@@ -129,13 +127,15 @@
       <!-- Fecha de nacimiento -->
       <div class="col-md-4">
         <label for="fechaNacimiento" class="form-label label-obligatorio">Fecha de nacimiento</label>
-        <input id="fechaNacimiento" type="text" formControlName="fechaNacimiento" class="form-control"
-          placeholder="dd/mm/aaaa" required>
+        <input id="fechaNacimiento" type="date" formControlName="fechaNacimiento" class="form-control"
+          [min]="'1900-01-01'" [max]="todayISO" required>
+
         <div *ngIf="form.get('fechaNacimiento')?.touched && form.get('fechaNacimiento')?.errors as e"
           class="validation text-danger">
           <div *ngIf="e['required']">La fecha es obligatoria</div>
-          <div *ngIf="e['dateFormat']">Usa el formato dd/mm/aaaa</div>
-          <div *ngIf="e['dateInvalid']">La fecha no es válida</div>
+          <div *ngIf="e['dateInvalid']">Selecciona una fecha válida</div>
+          <div *ngIf="e['minDate']">La fecha es demasiado antigua</div>
+          <div *ngIf="e['maxDate']">La fecha no puede ser futura</div>
         </div>
       </div>
 
@@ -205,7 +205,7 @@
       <!-- RFC -->
       <div class="col-md-4">
         <label for="rfc" class="form-label label-obligatorio">RFC</label>
-        <input formControlName="rfc" type="text" class="form-control" />
+        <input formControlName="rfc" type="text" class="form-control" maxlength="13"/>
         <div *ngIf="form.get('rfc')?.touched && form.get('rfc')?.errors as e" class="validation">
           <div *ngIf="e['required']">El RFC es obligatorio</div>
           <div *ngIf="e['maxlength']">Máximo 13 caracteres</div>
@@ -303,13 +303,16 @@
       </div>
       <div class="col-md-3">
         <label for="fechaIngreso" class="form-label label-obligatorio">Fecha de Ingreso</label>
-        <input id="fechaIngreso" type="text" formControlName="fechaIngreso" class="form-control"
-          placeholder="dd/mm/aaaa" required>
+        <input id="fechaIngreso" type="date" formControlName="fechaIngreso" class="form-control"
+          [min]="form.get('fechaNacimiento')?.value || '1900-01-01'" [max]="todayISO" required>
+
         <div *ngIf="form.get('fechaIngreso')?.touched && form.get('fechaIngreso')?.errors as e"
           class="validation text-danger">
           <div *ngIf="e['required']">La fecha de ingreso es obligatoria</div>
-          <div *ngIf="e['dateFormat']">Usa el formato dd/mm/aaaa</div>
-          <div *ngIf="e['dateInvalid']">La fecha no es válida</div>
+          <div *ngIf="e['dateInvalid']">Selecciona una fecha válida</div>
+          <div *ngIf="e['minDate']">La fecha es demasiado antigua</div>
+          <div *ngIf="e['maxDate']">La fecha no puede ser futura</div>
+          <div *ngIf="e['after']">La fecha de ingreso no puede ser anterior a la de nacimiento</div>
         </div>
       </div>
     </div>

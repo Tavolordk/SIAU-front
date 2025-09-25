@@ -52,7 +52,7 @@
                 {{ form.get('archivo')?.value?.name || 'Sin archivos seleccionados' }}
               </span>
               <button type="button" class="btn btn-secondary"
-                [disabled]="loading || !form.get('tipoDocumento')?.value || !archivoCtrl?.value" (click)="onUpload()">
+                 (click)="onUpload()">
                 Subir Archivo
               </button>
 

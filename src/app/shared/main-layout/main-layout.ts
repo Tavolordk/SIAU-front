@@ -3,13 +3,12 @@ import { Component, OnInit }           from '@angular/core';
 import { CommonModule }                from '@angular/common';
 import { RouterModule, Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { NavMenuComponent } from '../nav-menu/nav-menu';
-import { FooterComponent } from '../../footer/footer';
 import { filter }                      from 'rxjs/operators';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, NavMenuComponent, FooterComponent],   // ← asegúrate de incluir RouterModule
+  imports: [CommonModule, RouterModule, NavMenuComponent],   // ← asegúrate de incluir RouterModule
   templateUrl: './main-layout.html',
   styleUrls: ['./main-layout.scss']
 })

@@ -5,7 +5,7 @@
       [form]="form"
       [tipos]="tipos"
       [currentStep]="currentStep"
-      [maxSteps]="5"
+      [maxSteps]="6"
       (next)="nextStep()"
       (prev)="prevStep()"
       (proceed)="goNextFromStep1()"
@@ -18,7 +18,7 @@
       [form]="form"
       [perfiles]="perfiles"
       [currentStep]="currentStep"
-      [maxSteps]="5"
+      [maxSteps]="6"
       (addPerfil)="addPerfil()"
       (removePerfil)="removePerfil($event)"
       (next)="nextStep()"
@@ -29,7 +29,7 @@
   @if (currentStep === 3) {
     <app-step3
       [currentStep]="currentStep"
-      [maxSteps]="5"
+      [maxSteps]="6"
       (removeUpload)="removeUpload($event)"
       (next)="nextStep()"
       (prev)="prevStep()">
@@ -40,7 +40,7 @@
     <app-step4
       [form]="form"
       [currentStep]="currentStep"
-      [maxSteps]="5"
+      [maxSteps]="6"
       (next)="nextStep()"
       (prev)="prevStep()">
     </app-step4>
@@ -50,7 +50,7 @@
     <app-step5
       [form]="form"
       [currentStep]="currentStep"
-      [maxSteps]="5"
+      [maxSteps]="6"
       (validate)="onValidateCode()"
       (prev)="prevStep()"
       (next)="nextStep()">
@@ -59,8 +59,8 @@
 
   @if (currentStep === 6) {
     <app-step6
-      [currentStep]="5"
-      [maxSteps]="5"
+      [currentStep]="6"
+      [maxSteps]="6"
       [folio]="folio">
     </app-step6>
   }

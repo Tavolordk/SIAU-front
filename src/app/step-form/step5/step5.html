@@ -1,66 +1,46 @@
-<!-- src/app/step-form/step5/step5.component.html -->
 <div class="container-fluid px-0">
   <div class="registro-title mt-2 mb-1">Registro</div>
 
   <div class="progress-bar-custom">
-    <div
-      class="progress-bar-inner"
-      [style.width.%]="(currentStep / maxSteps) * 100"
-    ></div>
+    <div class="progress-bar-inner" [style.width.%]="(currentStep / maxSteps) * 100"></div>
   </div>
 
   <div class="step-text mb-4">Paso {{ currentStep }} de {{ maxSteps }}</div>
 
   <div class="card-custom mt-2">
-    <div class="card-title-custom mb-3">
-      Validación de medios de contacto
-    </div>
+    <div class="card-title-custom mb-3">Validación de medios de contacto</div>
 
     <div class="info-box mb-4">
       La Validación de medios de contacto añade una capa de protección a tus
-      cuentas. Primero ingresas un código enviado a tu correo, teléfono o
-      Telegram.
+      cuentas. Primero ingresas un código enviado a tu correo, teléfono o Telegram.
     </div>
 
     <div class="select-method-label mb-3">
       Selecciona el método de contacto de tu preferencia
     </div>
 
-<button
-  class="btn-outline-custom mb-2"
-  type="button"
-  (click)="validate.emit('email')"
->
-  <fa-icon [icon]="faEnvelope"></fa-icon>
-  Código por Correo Electrónico
-</button>
+    <button
+      class="btn-outline-custom mb-2"
+      type="button"
+      (click)="onSelect('correo')"
+      [disabled]="loading"
+    >
+      <fa-icon [icon]="faEnvelope"></fa-icon>
+      Código por Correo Electrónico
+    </button>
 
-<button
-  class="btn-telegram"
-  type="button"
-  (click)="validate.emit('telegram')"
->
-  <fa-icon [icon]="faTelegramPlane"></fa-icon>
-  Código por Telegram
-</button>
+    <button
+      class="btn-telegram"
+      type="button"
+      (click)="onSelect('telegram')"
+      [disabled]="loading"
+    >
+      <fa-icon [icon]="faTelegramPlane"></fa-icon>
+      Código por Telegram
+    </button>
 
-    <div class="d-flex justify-content-between mt-4">
-      <button
-        type="button"
-        class="btn-back"
-        (click)="prev.emit(currentStep - 1)"
-      >
-        Regresar
-      </button>
-    </div>
-        <div class="d-flex justify-content-between mt-4">
-      <button
-        type="button"
-        class="btn-back"
-        (click)="next.emit(currentStep + 1)"
-      >
-        Siguiente
-      </button>
+    <div *ngIf="loading" class="mt-3 text-muted">
+      Enviando código…
     </div>
   </div>
 </div>

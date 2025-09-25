@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, ElementRef, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { Observable, Subject, of } from 'rxjs';
@@ -10,16 +10,23 @@ import {
 } from '../../shared/validators';
 import { Step2State, StepFormStateService } from '../state/step-form-state.service';
 import { CatalogosService, CatalogoItem } from '../../services/catalogos.service';
+import { afterOrEqualControl, dateISOValidator, maxDate, minDate } from '../../shared/validators/date';
+import { CaptchaBoxComponent } from "../../shared/captcha-box/captcha-box.component";
+import { CaptchaApi } from '../../core/captcha/captcha.api';
+import { HttpClient } from '@angular/common/http';
+import { Inject } from '@angular/core';
+import { REQUEST_API_BASE_URL } from '../../core/token'; // ajusta la ruta si tu token está en otra carpeta
 type NodoEstructura = { id: number; nombre: string; tipo: string; fK_PADRE: number | null };
-
+type CurpStatus = 'idle' | 'checking' | 'ok' | 'invalid' | 'error';
 @Component({
   selector: 'app-step1',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, CaptchaBoxComponent],
   templateUrl: './step1.html',
   styleUrls: ['./step1.scss']
 })
 export class Step1Component implements OnInit, OnDestroy {
+  @ViewChild(CaptchaBoxComponent) captchaBox?: CaptchaBoxComponent;
   @Input() currentStep!: number;
   @Input() maxSteps!: number;
   @Output() next = new EventEmitter<void>();
@@ -29,7 +36,7 @@ export class Step1Component implements OnInit, OnDestroy {
   @Input() form!: FormGroup;
   @Input() tipos: string[] = [];
   private estructura: NodoEstructura[] = [];
-
+  todayISO = new Date().toISOString().slice(0, 10);
   // Catálogos
   sexos: CatalogoItem[] = [];
   estadosCiviles: CatalogoItem[] = [];
@@ -55,12 +62,19 @@ export class Step1Component implements OnInit, OnDestroy {
 
   triedSubmit = false;
   private destroy$ = new Subject<void>();
+  // capturamos lo que emite <app-captcha-box>
+  captchaId?: string;
+  captchaAnswer = '';
 
+  curpStatus: CurpStatus = 'idle';
   constructor(
     private fb: FormBuilder,
     private el: ElementRef<HTMLElement>,
     private state: StepFormStateService,
-    private catalogos: CatalogosService
+    private catalogos: CatalogosService,
+    private captcha: CaptchaApi,
+    private http: HttpClient,
+    @Inject(REQUEST_API_BASE_URL) private requestApi: string
   ) { }
 
   ngOnInit(): void {
@@ -69,13 +83,14 @@ export class Step1Component implements OnInit, OnDestroy {
       tipoUsuario: [null, Validators.required],
       esSeguridad: [null, Validators.required],
       curp: ['', [Validators.required, Validators.maxLength(18), curpValidator()]],
-      captcha: ['', Validators.required],
+      hp: [''],
       nombre: ['', [Validators.required, Validators.maxLength(100), notOnlyWhitespaceValidator]],
       primerApellido: ['', [Validators.required, Validators.maxLength(100), notOnlyWhitespaceValidator]],
       segundoApellido: [''],
 
       sexo: [null, Validators.required],
-      fechaNacimiento: ['', [Validators.required, this.dateDMYValidator]],
+      fechaNacimiento: ['', [Validators.required, dateISOValidator(), minDate('1900-01-01'),
+      maxDate(this.todayISO)]],
 
       // 👇 ahora IDs de catálogo
       nacionalidad: [null, Validators.required],
@@ -98,7 +113,8 @@ export class Step1Component implements OnInit, OnDestroy {
       institucion: [null, Validators.required],
       dependencia: [null],
       corporacion: [null],
-      fechaIngreso: ['', [Validators.required, this.dateDMYValidator]],
+      fechaIngreso: ['', [Validators.required, dateISOValidator(), minDate('1900-01-01'),
+      maxDate(this.todayISO), afterOrEqualControl('fechaNacimiento')]],
       cargo: [''],
       funciones: [''],
       numeroEmpleado: ['', [Validators.required, Validators.pattern(/^\d+$/)]],
@@ -458,28 +474,28 @@ export class Step1Component implements OnInit, OnDestroy {
   /** Actualiza step2 con lo que el SP necesita SIEMPRE que cambie el form
    *  y aplica fallback: si los campos de comisión vienen vacíos -> copia de adscripción.
    */
-private syncStep2FromForm(): void {
-  const v = this.form.getRawValue();
+  private syncStep2FromForm(): void {
+    const v = this.form.getRawValue();
 
-  // Adscripción (principal)
-  const entidad   = this.toOptId(v.entidad);
-  const municipio = this.toOptId(v.municipioAlcaldia2);
-  const estructura1 = this.getEstructuraSeleccionadaId() ?? undefined; // area>corp>dep>inst
+    // Adscripción (principal)
+    const entidad = this.toOptId(v.entidad);
+    const municipio = this.toOptId(v.municipioAlcaldia2);
+    const estructura1 = this.getEstructuraSeleccionadaId() ?? undefined; // area>corp>dep>inst
 
-  // Comisión con fallback a adscripción
-  const entidad2   = this.toOptId(v.entidad2) ?? entidad ?? undefined;
-  const municipio2 = this.toOptId(v.municipioAlcaldia3) ?? municipio ?? undefined;
-  const estructura2 = this.getEstructuraComisionId() ?? estructura1 ?? undefined;
+    // Comisión con fallback a adscripción
+    const entidad2 = this.toOptId(v.entidad2) ?? entidad ?? undefined;
+    const municipio2 = this.toOptId(v.municipioAlcaldia3) ?? municipio ?? undefined;
+    const estructura2 = this.getEstructuraComisionId() ?? estructura1 ?? undefined;
 
-  const next: Partial<Step2State> = {
-    entidad, municipio,
-    area: estructura1,                   // para p_area_estructura_id
-    entidad2, municipio2,
-    corporacion2: estructura2,           // 👈 este va a p_estructura2_id en el SP
-  };
+    const next: Partial<Step2State> = {
+      entidad, municipio,
+      area: estructura1,                   // para p_area_estructura_id
+      entidad2, municipio2,
+      corporacion2: estructura2,           // 👈 este va a p_estructura2_id en el SP
+    };
 
-  this.state.save('step2', { ...(this.state.step2 ?? {}), ...next } as Step2State, /*persist*/ true);
-}
+    this.state.save('step2', { ...(this.state.step2 ?? {}), ...next } as Step2State, /*persist*/ true);
+  }
 
 
   /** number válido distinto de 0 -> number; de lo contrario -> undefined */
@@ -545,20 +561,90 @@ private syncStep2FromForm(): void {
 
     return snap;
   }
-  tryProceed(ev?: Event) {
-    ev?.preventDefault();
-    ev?.stopPropagation();
-    this.triedSubmit = true;
-    this.form.markAllAsTouched();
-    this.form.updateValueAndValidity({ onlySelf: false, emitEvent: false });
-    if (this.form.invalid) { this.scrollToFirstError(); return; }
+tryProceed(ev?: Event) {
+  ev?.preventDefault();
+  ev?.stopPropagation();
 
+  this.triedSubmit = true;
+  this.form.markAllAsTouched();
+  this.form.updateValueAndValidity({ onlySelf: false, emitEvent: false });
+
+  if (this.form.value.hp) return;        // honeypot
+  if (this.form.invalid) { this.scrollToFirstError(); return; }
+
+  // Si ya hay token (p.ej. porque diste "Verificar CURP"), avanza directo
+  const existing = this.captcha.getToken();
+  if (existing) {
     const v = this.form.getRawValue();
-    this.state.save('step1', this.mapFormToStep1(v), /*persist*/ false);
-
-    // 👇 Refresco final garantizado
-    this.state.save('step2', this.buildStep2Snapshot(), /*persist*/ true);
-
+    this.state.save('step1', this.mapFormToStep1(v), false);
+    this.state.save('step2', this.buildStep2Snapshot(), true);
     this.next.emit();
+    return;
   }
+
+  // Si no hay token aún, verifica aquí el captcha antes de avanzar
+  if (!this.captchaId || !this.captchaAnswer) {
+    alert('Resuelve el captcha antes de continuar.');
+    this.scrollToFirstError();
+    return;
+  }
+
+  this.captcha.verify(this.captchaId, this.captchaAnswer).subscribe({
+    next: res => {
+      if (!res.ok || !res.token) {
+        this.captchaBox?.refresh();
+        alert('Código de verificación incorrecto o expirado. Intenta de nuevo.');
+        return;
+      }
+      const v = this.form.getRawValue();
+      this.state.save('step1', this.mapFormToStep1(v), false);
+      this.state.save('step2', this.buildStep2Snapshot(), true);
+      this.next.emit();
+    },
+    error: _ => {
+      this.captchaBox?.refresh();
+      alert('No se pudo verificar el captcha. Intenta de nuevo.');
+    }
+  });
+}
+
+onCaptchaChange(e: { id?: string; answer: string }) {
+  this.captchaId = e.id;
+  this.captchaAnswer = e.answer;
+}
+
+onVerifyCurp() {
+  // Honeypot
+  if (this.form.value.hp) return;
+
+  // Valida CURP solo con tus validadores locales (ya tienes curpValidator)
+  const curpCtrl = this.form.get('curp');
+  if (!curpCtrl) return;
+  curpCtrl.markAsTouched();
+  if (curpCtrl.invalid) return;
+
+  // Debe existir id/answer del captcha
+  if (!this.captchaId || !this.captchaAnswer) {
+    alert('Resuelve el captcha antes de verificar la CURP.');
+    return;
+  }
+
+  // 1) Verifica CAPTCHA → guarda token (lo hace CaptchaApi internamente)
+  this.captcha.verify(this.captchaId, this.captchaAnswer).subscribe({
+    next: res => {
+      if (!res.ok || !res.token) {
+        this.curpStatus = 'invalid';
+        this.captchaBox?.refresh();
+        return;
+      }
+
+      // 2) SIN RENAPO: damos por válida la CURP si pasó validación local + captcha
+      this.curpStatus = 'ok';
+    },
+    error: _ => {
+      this.curpStatus = 'error';
+      this.captchaBox?.refresh();
+    }
+  });
+}
 }

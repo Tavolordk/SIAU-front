@@ -1,74 +1,51 @@
 <ng-container>
-  <!-- Contenedor principal -->
   <div class="container-fluid px-0" style="background:#f5f8fa;">
     <div class="registro-title">Registro</div>
 
     <!-- Barra de progreso -->
     <div class="registro-bar-container">
-      <div
-        class="registro-bar"
-        [style.width.%]="(currentStep / maxSteps) * 30">
-      </div>
+      <div class="registro-bar" [style.width.%]="(currentStep / maxSteps) * 100"></div>
     </div>
 
-    <!-- Texto de paso -->
-    <div class="paso-text">
-      Paso {{ currentStep }} de {{ maxSteps }}
-    </div>
+    <div class="paso-text">Paso {{ currentStep }} de {{ maxSteps }}</div>
 
-    <!-- Tarjeta principal -->
     <div class="main-card mt-2 mb-5">
       <h2>Validación de medios de contacto</h2>
 
       <div class="info-box mb-3">
-        La Validación de medios de contacto añade una capa de protección a tus
-        cuentas. Primero ingresas un código enviado a tu correo, teléfono o
-        Telegram.
+        Ingresa el código que enviamos a tu
+        <strong *ngIf="ctx?.canal==='correo'">correo</strong>
+        <strong *ngIf="ctx?.canal==='sms'">teléfono (SMS)</strong>
+        <strong *ngIf="ctx?.canal==='telegram'">Telegram</strong>.
       </div>
 
-      <div class="email-instruction mb-1">
-        <i class="far fa-envelope"></i>
-        Ingresa el código enviado a tu correo
-      </div>
 
-      <div class="simulado">
-        (Simulado: <span>{{ simulatedCode }}</span>)
-      </div>
+<!-- Sin <form>; solo un contenedor con [formGroup] -->
+<div class="main-card mt-2 mb-5" [formGroup]="form">
+  <!-- … resto igual … -->
+  <div class="mb-2">
+    <label for="codigo" class="form-label">Código recibido</label>
+    <input id="codigo" type="text" formControlName="codigo"
+           class="form-control" autocomplete="one-time-code"
+           [disabled]="loadingVerify || loadingResend" />
+  </div>
 
-      <form [formGroup]="form" (ngSubmit)="onVerify()">
-        <div class="mb-2">
-          <label for="codigo" class="form-label">Código recibido</label>
-          <input
-            id="codigo"
-            type="text"
-            formControlName="codigo"
-            class="form-control"
-            autocomplete="off"
-          />
-          <div class="form-text">
-            El código solo será válido por 15 minutos.
-          </div>
-        </div>
+  <div class="d-flex row">
+<div class="col-6 col-xl-6 col-md-6 col-sm-6">
+      <button class="btn btn-success btn-verificar" type="button"
+            (click)="onVerify()" [disabled]="loadingVerify || loadingResend">
+      {{ loadingVerify ? 'Verificando…' : 'Verificar' }}
+    </button>
+</div>
+<div class="col-6 col-xl-6 col-md-6 col-sm-6">
+    <button class="btn btn-link reenviar-link" type="button"
+            (click)="onResend()" [disabled]="loadingVerify || loadingResend">
+      {{ loadingResend ? 'Reenviando…' : '¿No recibiste el código? Reenviar' }}
+    </button>
+</div>
+  </div>
+</div>
 
-        <button class="btn btn-verificar mb-2" type="submit">
-          Verificar
-        </button>
-        <button
-          class="btn btn-regresar mb-2"
-          type="button"
-          (click)="prev.emit(currentStep - 1)"
-        >
-          Regresar
-        </button>
-      </form>
-
-      <a
-        class="reenviar-link"
-        href="#"
-        (click)="resend.emit()"
-      >
-        ¿No recibiste el código? Reenviar
-      </a>
     </div>
   </div>
 </ng-container>

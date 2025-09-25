@@ -3,8 +3,7 @@
   <!-- Título y progreso -->
   <div class="registro-title">Registro</div>
   <div class="progress-bar-bg">
-    <div class="progress-bar-fill"
-         [style.width.%]="(currentStep/maxSteps)*100">
+    <div class="progress-bar-fill" [style.width.%]="(currentStep/maxSteps)*100">
     </div>
   </div>
   <div class="step-label">
@@ -29,21 +28,15 @@
         <label for="correo" class="form-label">
           Correo electrónico<span class="text-danger">*</span>
         </label>
-        <input id="correo"
-               type="email"
-               formControlName="correo"
-               class="form-control"
-               placeholder="Ingresa tu correo electrónico">
+        <input id="correo" type="email" formControlName="correo" class="form-control"
+          placeholder="Ingresa tu correo electrónico">
       </div>
       <div class="col-md-6">
         <label for="confirmaCorreo" class="form-label">
           Confirma tu correo electrónico<span class="text-danger">*</span>
         </label>
-        <input id="confirmaCorreo"
-               type="email"
-               formControlName="confirmaCorreo"
-               class="form-control"
-               placeholder="Confirma tu correo electrónico">
+        <input id="confirmaCorreo" type="email" formControlName="confirmaCorreo" class="form-control"
+          placeholder="Confirma tu correo electrónico">
       </div>
     </div>
 
@@ -52,21 +45,15 @@
         <label for="celular" class="form-label">
           Número de celular<span class="text-danger">*</span>
         </label>
-        <input id="celular"
-               type="text"
-               formControlName="celular"
-               class="form-control"
-               placeholder="Ingresa tu teléfono móvil">
+        <input id="celular" type="text" formControlName="celular" class="form-control"
+          placeholder="Ingresa tu teléfono móvil">
       </div>
       <div class="col-md-6">
         <label for="confirmaCelular" class="form-label">
           Confirma tu número de celular<span class="text-danger">*</span>
         </label>
-        <input id="confirmaCelular"
-               type="text"
-               formControlName="confirmaCelular"
-               class="form-control"
-               placeholder="Confirma tu teléfono móvil">
+        <input id="confirmaCelular" type="text" formControlName="confirmaCelular" class="form-control"
+          placeholder="Confirma tu teléfono móvil">
       </div>
     </div>
 
@@ -75,21 +62,15 @@
         <label for="oficina" class="form-label">
           Número telefónico de oficina
         </label>
-        <input id="oficina"
-               type="text"
-               formControlName="oficina"
-               class="form-control"
-               placeholder="Ingresa tu teléfono de oficina">
+        <input id="oficina" type="text" formControlName="oficina" class="form-control"
+          placeholder="Ingresa tu teléfono de oficina">
       </div>
       <div class="col-md-6">
         <label for="extension" class="form-label">
           Extensión
         </label>
-        <input id="extension"
-               type="text"
-               formControlName="extension"
-               class="form-control"
-               placeholder="Ingresa tu extensión">
+        <input id="extension" type="text" formControlName="extension" class="form-control"
+          placeholder="Ingresa tu extensión">
       </div>
     </div>
 
@@ -97,10 +78,7 @@
       Cuenta con Aplicativo de:
     </div>
     <div class="form-check mb-3">
-      <input formControlName="usaTelegram"
-             class="form-check-input"
-             type="checkbox"
-             id="telegram">
+      <input formControlName="usaTelegram" class="form-check-input" type="checkbox" id="telegram">
       <label class="form-check-label" for="telegram">
         Telegram
       </label>
@@ -109,11 +87,12 @@
 
   <!-- Navegación -->
   <div class="d-flex justify-content-between align-items-center">
-    <a
-            class="regresar-link cursor-pointer"
-            (click)="prev.emit(currentStep - 1)">
+    <a class="regresar-link cursor-pointer" (click)="prev.emit(currentStep - 1)">
       Regresar
     </a>
-<button type="button" class="btn btn-success" (click)="onGuardar()" [disabled]="loading">Guardar</button>
+    <button type="button" class="btn btn-next" (click)="onNext()" [disabled]="form.invalid">
+      Siguiente
+    </button>
+
   </div>
 </div>

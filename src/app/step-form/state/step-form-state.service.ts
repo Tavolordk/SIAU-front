@@ -41,13 +41,6 @@ export interface DocMeta {
   fechaDocumento?: string;    // opcional, para UI
   urlPublica?: string;        // opcional, para botón Ver
 }
-export interface StepData {
-  step1: Step1State | null;
-  step2: Step2State | null;
-  step3: Step3State | null;   // 👈 asegura que exista
-  step4: Step4State | null;
-  step5: any | null;
-}
 
 export interface Step4State {
   correoContacto?: string | null; celularContacto?: string | null;
@@ -63,6 +56,14 @@ export interface StepData {
   step4: Step4State | null;
   step5: Step5State | null;
 }
+// añade un tipo y una clave ‘otpCtx’
+export interface OtpCtx {
+  canal: 'correo' | 'telegram' | 'sms';
+  contacto: string;
+  proposito: 'signup' | 'change_contact' | 'login' | '2fa';
+  lastCode?: string | null;        // <- nuevo
+  lastIssuedAt?: string | null;    // <- opcional
+}// ... ya tienes métodos save/patch; solo úsalo como en el Step4.
 
 const LS_KEY = 'siau.wizard.stepdata';
 
@@ -75,6 +76,9 @@ export class StepFormStateService {
   private _step5: any | undefined;
   private _state = new BehaviorSubject<StepData>(this.loadFromLS());
   state$ = this._state.asObservable();
+  // dentro de la clase StepFormStateService (arriba de los métodos)
+  private _otpCtx: OtpCtx | null = null;   // canal/contacto/propósito
+  private _otpSim: string | null = null;   // código simulado para QA
 
   /* ----- storage helpers (ignora File al serializar) ----- */
   private serializeForLS(s: StepData) {
@@ -108,7 +112,7 @@ export class StepFormStateService {
   set step5(v) { this._step5 = v; }
 
   /** Guarda clave/valor sin tocar setters (evita recursión) */
-  save(key: 'step1'|'step2'|'step3'|'step4'|'step5', value: any, persist = false) {
+  save(key: 'step1' | 'step2' | 'step3' | 'step4' | 'step5' | 'otpCtx', value: any, persist = false) {
     switch (key) {
       case 'step1':
         this._step1 = value;
@@ -123,16 +127,18 @@ export class StepFormStateService {
         this._step4 = value; break;
       case 'step5':
         this._step5 = value; break;
+      case 'otpCtx': this._otpCtx = value as OtpCtx; break;
     }
 
     if (persist) {
       const toPersist =
         key === 'step1' ? this._step1 :
-        key === 'step2' ? this._step2 :
-        key === 'step3' ? this._step3 :
-        key === 'step4' ? this._step4 : this._step5;
-
-      try { localStorage.setItem(key, JSON.stringify(toPersist)); } catch {}
+          key === 'step2' ? this._step2 :
+            key === 'step3' ? this._step3 :
+              key === 'step4' ? this._step4 :
+                key === 'step5' ? this._step5 :
+                  this._otpCtx;                                         // 👈 nuevo
+      try { localStorage.setItem(key, JSON.stringify(toPersist)); } catch { }
     }
   }
 
@@ -140,17 +146,81 @@ export class StepFormStateService {
   patchStep2(patch: Partial<Step2State>, persist = false) {
     this._step2 = { ...(this._step2 ?? {}), ...(patch ?? {}) };
     if (persist) {
-      try { localStorage.setItem('step2', JSON.stringify(this._step2)); } catch {}
+      try { localStorage.setItem('step2', JSON.stringify(this._step2)); } catch { }
     }
   }
 
-  get(key: 'step1'|'step2'|'step3'|'step4'|'step5') {
+  get(key: 'step1' | 'step2' | 'step3' | 'step4' | 'step5' | 'otpCtx') {
     switch (key) {
       case 'step1': return this._step1;
       case 'step2': return this._step2;
       case 'step3': return this._step3;
       case 'step4': return this._step4;
       case 'step5': return this._step5;
+      case 'otpCtx': return this._otpCtx;
     }
   }
+  clearAll(alsoStorage: boolean = true) {
+    this._step1 = this._step2 = this._step3 = this._step4 = this._step5 = undefined;
+    this._otpCtx = null;
+    this._otpSim = null;                  // 👈 nuevo
+
+    if (alsoStorage) {
+      try {
+        ['step1', 'step2', 'step3', 'step4', 'step5', 'otpCtx', 'otpSim']  // 👈 agrega otpSim
+          .forEach(k => localStorage.removeItem(k));
+      } catch { }
+    }
+  }
+
+  private readLS<T>(k: string): T | undefined {
+    try { const raw = localStorage.getItem(k); return raw ? JSON.parse(raw) as T : undefined; }
+    catch { return undefined; }
+  }
+  // ===== OTP context =====
+  setOtpCtx(v: OtpCtx) {
+    this._otpCtx = v;
+    try { localStorage.setItem('otpCtx', JSON.stringify(v)); } catch { }
+  }
+  getOtpCtx(): OtpCtx | null {
+    if (this._otpCtx) return this._otpCtx;
+    try {
+      const raw = localStorage.getItem('otpCtx');
+      if (raw) this._otpCtx = JSON.parse(raw) as OtpCtx;
+    } catch { }
+    return this._otpCtx;
+  }
+
+  // ===== OTP simulado =====
+  setOtpSim(code: string | null) {
+    this._otpSim = code;
+    try {
+      if (!code) localStorage.removeItem('otpSim');
+      else localStorage.setItem('otpSim', code);
+    } catch { }
+  }
+  getOtpSim(): string | null {
+    if (this._otpSim !== null) return this._otpSim;
+    try { this._otpSim = localStorage.getItem('otpSim'); } catch { }
+    return this._otpSim;
+  }
+// Dentro de StepFormStateService
+
+// Guarda el último OTP emitido en el ctx y lo persiste en localStorage
+setLastOtp(code: string | null) {
+  const ctx = this.getOtpCtx() ?? ({} as OtpCtx); // lee el ctx desde LS si hace falta
+  const updated: OtpCtx = {
+    ...ctx,
+    lastCode: code,
+    lastIssuedAt: new Date().toISOString()
+  } as OtpCtx;
+
+  this.setOtpCtx(updated); // <-- en lugar de this.set(...)
+}
+
+// Devuelve el último OTP guardado
+getLastOtp(): string | null {
+  return this.getOtpCtx()?.lastCode ?? null; // <-- en lugar de this.get('otpCtx')
+}
+
 }

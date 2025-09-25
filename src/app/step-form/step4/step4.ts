@@ -1,50 +1,49 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, AbstractControl, ValidatorFn, ValidationErrors, ReactiveFormsModule } from '@angular/forms';
-import { StepFormStateService } from '../state/step-form-state.service';
-import { SolicitudesService } from '../../services/solicitudes.service';
-import { FinalizarRegistroDto } from '../../models/solicitudes-step-form.models';
-import { mapPerfilesToTexts, buildDocsMetadata } from '../../models/solicitudes.utils';
-import { firstValueFrom } from 'rxjs';
 import { CommonModule } from '@angular/common';
+import {
+  FormBuilder, FormGroup, Validators,
+  AbstractControl, ValidatorFn, ValidationErrors,
+  ReactiveFormsModule
+} from '@angular/forms';
+import { StepFormStateService, Step4State } from '../state/step-form-state.service';
 
 @Component({
   selector: 'app-step4',
-  templateUrl: './step4.html',
-  standalone: true,                          // 👈
+  standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
+  templateUrl: './step4.html',
   styleUrls: ['./step4.scss']
 })
 export class Step4Component implements OnInit {
-  // ===== props que usa tu HTML =====
   @Input() currentStep!: number;
   @Input() maxSteps!: number;
+
+  /** Si el padre no lo pasa, se crea aquí */
+  @Input() form!: FormGroup;
+
   @Output() prev = new EventEmitter<number>();
   @Output() next = new EventEmitter<number>();
 
-  @Input() form!: FormGroup;
-  loading = false;
-  errorMsg = '';
-  successMsg = '';
-
-  constructor(
-    private fb: FormBuilder,
-    private state: StepFormStateService,
-    private api: SolicitudesService
-  ) { }
+  constructor(private fb: FormBuilder, private state: StepFormStateService) {}
 
   ngOnInit(): void {
-    const s1 = this.state.step1 ?? {};
-    const s4 = this.state.step4 ?? {};
+    const s1 = this.state.get('step1') ?? {};
+    const s4 = this.state.get('step4') ?? {};
+
+    const correoBase   = s4?.correoContacto    ?? s1?.correo ?? '';
+    const celularBase  = s4?.celularContacto   ?? '';
+    const oficinaBase  = s4?.telOficinaContacto ?? '';
+    const extBase      = s4?.extensionOficina   ?? '';
+    const medioVal     = (s4?.medioValidacion ?? 'telegram').toLowerCase();
 
     this.form = this.fb.group({
-      // nombres EXACTOS de tu HTML
-      correo: [s4.correoContacto ?? s1.correo ?? '', [Validators.required, Validators.email]],
-      confirmaCorreo: [s4.correoContacto ?? s1.correo ?? '', [Validators.required, Validators.email]],
-      celular: [s4.celularContacto ?? '', [Validators.required, Validators.pattern(/^\d{10}$/)]],
-      confirmaCelular: [s4.celularContacto ?? '', [Validators.required, Validators.pattern(/^\d{10}$/)]],
-      oficina: [s4.telOficinaContacto ?? ''],
-      extension: [s4.extensionOficina ?? '', [Validators.pattern(/^\d{1,10}$/)]],
-      usaTelegram: [(s4.medioValidacion ?? '').toUpperCase() === 'TELEGRAM']
+      correo:           [correoBase,   [Validators.required, Validators.email]],
+      confirmaCorreo:   [correoBase,   [Validators.required, Validators.email]],
+      celular:          [celularBase,  [Validators.required, Validators.pattern(/^\d{10,}$/)]],
+      confirmaCelular:  [celularBase,  [Validators.required, Validators.pattern(/^\d{10,}$/)]],
+      oficina:          [oficinaBase],
+      extension:        [extBase,      [Validators.pattern(/^\d{1,10}$/)]],
+      usaTelegram:      [medioVal === 'telegram']
     }, {
       validators: [
         equalsValidator('correo', 'confirmaCorreo'),
@@ -52,123 +51,34 @@ export class Step4Component implements OnInit {
       ]
     });
   }
-  // 0, "0" o null/undefined -> null; si viene número lo castea a number
-  private z2n = (v: any) => (v === 0 || v === '0' || v == null ? null : +v);
-
-  // Si no hay área, usa corporación; si no, dependencia; si no, institución; si ninguno -> null
-  private pickAreaEstructuraId(s1: any): number | null {
-    // si ya lo calculaste y guardaste en Step1, úsalo
-    if (s1?.areaEstructuraId) return +s1.areaEstructuraId || null;
-    const first = [s1?.area, s1?.corporacion, s1?.dependencia, s1?.institucion]
-      .find(v => v != null && +v !== 0);
-    return first != null ? +first : null;
-  }
 
   get f(): { [k: string]: AbstractControl } { return this.form.controls; }
 
-  async onGuardar(): Promise<void> {
-    const s1 = this.state.step1 ?? {};
-    const s2 = this.state.step2 ?? {};
+  /** Limpia espacios y caracteres invisibles */
+  private cleanPhone(raw: string | null | undefined): string {
+    return (raw ?? '')
+      .replace(/\u202A|\u202B|\u202C|\u2066|\u2067|\u2069/g, '')
+      .replace(/\s+/g, '')
+      .trim();
+  }
 
-    // si guardas el fallback (areaEstructuraId) en step2 úsalo; si no, cae a area
-    const areaEstructuraId = s2.area ?? null;
+  onNext(): void {
+    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
 
-    // helper 0 → null
-    // ✅ corrige a:
-    const z2n = (v: any) => (v === 0 || v === '0' || v == null ? null : +v);
+    const v = this.form.value;
+    const payload: Step4State = {
+      correoContacto:      (v.correo ?? '').trim() || null,
+      celularContacto:     this.cleanPhone(v.celular),
+      telOficinaContacto:  (v.oficina ?? '').trim() || null,
+      extensionOficina:    (v.extension ?? '').trim() || null,
+      medioValidacion:     v.usaTelegram ? 'telegram' : 'correo'
+    };
 
-    this.errorMsg = '';
-    this.successMsg = '';
+    // Guarda SOLO el paso 4 (los pasos previos ya están guardados en el state)
+    this.state.save('step4', payload, true);
 
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      this.errorMsg = 'Corrige los campos marcados antes de continuar.';
-      return;
-    }
-
-    this.loading = true;
-    try {
-      const v = this.form.value;
-
-      // 1) Persistir estado Step4 (los nombres internos del service)
-      this.state.step4 = {
-        correoContacto: (v.correo || '').trim() || null,
-        celularContacto: (v.celular || '').trim() || null,
-        telOficinaContacto: (v.oficina || '').trim() || null,
-        extensionOficina: (v.extension || '').trim() || null,
-        medioValidacion: v.usaTelegram ? 'TELEGRAM' : 'EMAIL'
-      };
-
-      // 2) Perfiles -> Text8..Text63
-      const perfiles = this.state.step2?.perfiles ?? [];
-      const { ConsultaTextos, ModulosOperacion } = mapPerfilesToTexts(perfiles.map(e=>e.clave));
-
-      // 3) Documentos -> metadata (si existen)
-      const files = this.state.step3?.docs ?? [];
-      const Documentos = files.length ? await buildDocsMetadata(files) : [];
-
-      // 4) Payload final para el SP
-      const p: FinalizarRegistroDto = {
-        RFC: this.state.step1?.rfc ?? null,
-        Nombre: this.state.step1?.nombre ?? null,
-        Nombre2: this.state.step1?.nombre2 ?? null,
-        ApellidoPaterno: this.state.step1?.apellidoPaterno ?? null,
-        ApellidoMaterno: this.state.step1?.apellidoMaterno ?? null,
-        CURP: this.state.step1?.curp ?? null,
-        CUIP: this.state.step1?.cuip ?? null,
-        Telefono: this.state.step1?.telefono ?? null,
-        CorreoElectronico: this.state.step1?.correo ?? null,
-        PaisId: 143,
-        Cargo: this.state.step2?.cargo ?? null,
-        Funciones: this.state.step2?.funciones ?? null,
-        Funciones2: this.state.step2?.funciones2 ?? null,
-        TipoUsuario: this.state.step1?.tipoUsuario ?? 0,
-        Entidad: z2n(s2.entidad),
-        Municipio: z2n(s2.municipio),
-        Area: z2n(areaEstructuraId),
-        Entidad2: z2n(s2.entidad2),
-        Municipio2: z2n(s2.municipio2),
-        Pais2Id: 143,
-        Corporacion2: z2n(s2.corporacion2),
-        CheckBox1_NuevaCuenta: true,
-        CheckBox2_ModificaPerfiles: !!this.state.step2?.chkModifica,
-        CheckBox3_AmpliaPerfiles: !!this.state.step2?.chkAmplia,
-        CheckBox4_ReactivaCuenta: !!this.state.step2?.chkReactiva,
-        CheckBox5_CambioAdscripcion: !!this.state.step2?.chkCambioAdscripcion,
-        CuentaUsuario: this.state.step1?.cuentaUsuario ?? null,
-        Password: this.state.step1?.password ?? null,
-        NumeroOficio: this.state.step1?.numeroOficio ?? '1',
-        FolioIn: this.state.step1?.folio ?? null,
-        ConsultaTextos,
-        ModulosOperacion,
-
-        // Paso 4
-        CorreoContacto: this.state.step4?.correoContacto ?? null,
-        CelularContacto: this.state.step4?.celularContacto ?? null,
-        TelOficinaContacto: this.state.step4?.telOficinaContacto ?? null,
-        ExtensionOficina: this.state.step4?.extensionOficina ?? null,
-
-        // Paso 3
-        Documentos,
-
-        // Paso 5
-        MedioValidacion: this.state.step4?.medioValidacion ?? 'EMAIL'
-      };
-
-      // 5) Guardar en backend (SP)
-      console.log('step2:', this.state.step2);
-      console.log('DTO:', p);
-      const res = await firstValueFrom(this.api.guardarStep4(p));
-
-      // 6) Guarda el resultado para mostrar en Step5 y avanza
-      this.state.step5 = { ...(this.state.step5 ?? {}), ...res };
-      this.successMsg = `¡Guardado! Folio: ${res.folio}`;
-      this.next.emit(this.currentStep + 1);
-    } catch (err: any) {
-      this.errorMsg = err?.error?.message ?? 'No fue posible guardar. Intenta de nuevo.';
-    } finally {
-      this.loading = false;
-    }
+    // Avanza a Step 5 (elección/solicitud de código)
+    this.next.emit(this.currentStep + 1);
   }
 }
 

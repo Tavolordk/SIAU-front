@@ -1,5 +1,4 @@
 export interface DocumentoDto {
-  tipoDocumentoId: number;
   nombreOriginal: string;
   extension: string;
   mimeType: string;
