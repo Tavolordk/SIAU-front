@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule }      from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { UsuarioService }    from '../../services/usuario.service';
-import { LoginResponse }     from '../../models/login-response.model';
-
+import { UsuarioService } from '../../services/usuario.service';
+import { LoginResponse } from '../../models/login-response.model';
+import { AuthService } from '../../services/auth.service';
 @Component({
   selector: 'app-nav-menu',
   standalone: true,
@@ -25,17 +25,18 @@ export class NavMenuComponent implements OnInit {
 
   constructor(
     private usuarioService: UsuarioService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private auth: AuthService
+  ) { }
 
   ngOnInit(): void {
     // Carga perfil completo
     const profile: LoginResponse | null = this.usuarioService.getStoredProfile();
     if (profile) {
       this.session.nombreCompleto = profile.nombreCompleto;
-      this.session.rol            = profile.rol;
-      this.session.permiso        = profile.userId.toString();
-      this.session.entidad        = profile.nombreEstado;
+      this.session.rol = profile.rol;
+      this.session.permiso = profile.userId.toString();
+      this.session.entidad = profile.nombreEstado;
     }
     // Carga cuenta de usuario (username)
     this.userName = this.usuarioService.getUsername();
@@ -45,9 +46,7 @@ export class NavMenuComponent implements OnInit {
     this.menuOpen = !this.menuOpen;
   }
 
-  logout(): void {
-    // Limpia tokens y perfil
-    localStorage.clear();
-    this.router.navigate(['/login']);
-  }
+logout(): void {
+  this.auth.logout();                  // 👈 un solo punto de verdad
+}
 }

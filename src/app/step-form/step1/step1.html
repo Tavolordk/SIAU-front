@@ -65,7 +65,7 @@
           <div *ngIf="e['curpDate']">Fecha inválida dentro de la CURP</div>
           <div *ngIf="e['curpDV']">Dígito verificador inválido</div>
         </div>
-        <a href="#" class="link-red">¿No sabes tu CURP?</a>
+        <a href="https://www.gob.mx/curp/" class="link-red" target="_blank">¿No sabes tu CURP?</a>
       </div>
 
       <!-- DERECHA: CAPTCHA (SUSTITUIR LO QUE TENÍAS) -->
@@ -91,7 +91,7 @@
         <!-- feedback opcional -->
         <!-- feedback opcional -->
         <div *ngIf="curpStatus === 'checking'" class="text-info mt-2">Verificando…</div>
-        <div *ngIf="curpStatus === 'ok'" class="text-success mt-2">CURP  y captcha válidos.</div>
+        <div *ngIf="curpStatus === 'ok'" class="text-success mt-2">CURP y captcha válidos.</div>
         <div *ngIf="curpStatus === 'invalid'" class="text-danger mt-2">CURP y/o captcha inválidos.</div>
         <div *ngIf="curpStatus === 'captchaInvalid'" class="text-danger mt-2">
           Código de verificación incorrecto o expirado.
@@ -454,9 +454,10 @@
         tabindex="-1">
         Corrige los campos marcados con * para continuar.
       </div>
-      <button type="button" class="btn btn-next" (click)="tryProceed($event)" [disabled]="form.invalid || form.pending">
+      <button type="button" class="btn btn-next" (click)="tryProceed($event)" [disabled]="nextDisabled">
         Siguiente
       </button>
+
     </div>
   </form>
 </div>

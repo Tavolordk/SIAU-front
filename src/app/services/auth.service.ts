@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { tap, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
-
+import { Router } from '@angular/router'; 
 interface LoginResponse {
   token: string;
   // aquí puedes incluir más campos que envíe tu API, ej. usuario, permisos, etc.
@@ -12,7 +12,7 @@ interface LoginResponse {
 export class AuthService {
   private baseUrl = '/api/auth';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,private router: Router) {}
 
   /** Autentica y guarda el token en localStorage */
   login(username: string, password: string): Observable<void> {
@@ -53,11 +53,18 @@ export class AuthService {
 
   /** Elimina el token al cerrar sesión */
   logout(): void {
-    localStorage.removeItem('token');
+    try {
+      localStorage.removeItem('profile');   // 👈 el interceptor puede leer de aquí
+      localStorage.removeItem('username');
+      localStorage.removeItem('token');
+      localStorage.removeItem('authToken');
+    } finally {
+      this.router.navigateByUrl('/login', { replaceUrl: true }); // 👈
+    }
   }
 
   /** Retorna true si hay token guardado */
   isAuthenticated(): boolean {
-    return !!localStorage.getItem('token');
+    return !!(localStorage.getItem('token') || localStorage.getItem('profile')); // 👈
   }
 }

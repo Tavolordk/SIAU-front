@@ -40,16 +40,16 @@ export class Step3Component implements OnInit {
 
   // Fecha de hoy (local, no UTC) y no editable
   hoy = this.getTodayLocalISO();
-form!: FormGroup;
+  form!: FormGroup;
   // ======= Form =======
 
 
   constructor(private fb: FormBuilder, private state: StepFormStateService) {
-      this.form = this.fb.group({
-    tipoDocumento: [null, Validators.required],
-    archivo: [null, [Validators.required, this.fileTypeValidator(), this.fileSizeValidator()]],
-    documentos: this.fb.array<FormGroup>([])
-  });
+    this.form = this.fb.group({
+      tipoDocumento: [null, Validators.required],
+      archivo: [null, [Validators.required, this.fileTypeValidator(), this.fileSizeValidator()]],
+      documentos: this.fb.array<FormGroup>([])
+    });
   }
 
   ngOnInit(): void {
@@ -92,35 +92,42 @@ form!: FormGroup;
     const f = input.files?.[0] ?? null;
     this.archivoCtrl?.setValue(f);
     this.archivoCtrl?.markAsTouched();
-    this.archivoCtrl?.updateValueAndValidity({ onlySelf: true });
+    this.archivoCtrl?.markAsDirty();
+    this.archivoCtrl?.updateValueAndValidity({ emitEvent: true });
+    this.form.updateValueAndValidity({ emitEvent: true });
   }
 
-onUpload(): void {
-  this.errorMsg = '';
 
-  // 1) Validaciones mínimas
-  const tipoId = this.form.get('tipoDocumento')!.value as number | null;
-  const file = this.archivoCtrl!.value as File | null;
-  if (!tipoId || !file) { return; }
+  onUpload(): void {
+    this.errorMsg = '';
 
-  // 2) Valida tipo/tamaño acá (además de los validators)
-  const name = (file.name || '').toLowerCase();
-  const extOk = ['.jpg', '.jpeg', '.pdf'].some(ext => name.endsWith(ext));
-  const sizeOk = file.size <= 10 * 1024 * 1024;
-  if (!extOk) { this.errorMsg = 'Solo PDF o JPG.'; return; }
-  if (!sizeOk) { this.errorMsg = 'Máximo 10 MB.'; return; }
+    // 1) Validaciones mínimas
+    this.errorMsg = '';
+    if (!this.canUpload) return;
 
-  // 3) Agrega al FormArray con fecha = hoy
-  this.documentosFA.push(this.createDocGroup(file, tipoId, this.hoy));
+    const tipoId = this.form.get('tipoDocumento')!.value as number | null;
+    const file = this.archivoCtrl!.value as File | null;
 
-  // 4) Limpia input file (y opcionalmente el tipo)
-  this.form.patchValue({ archivo: null /*, tipoDocumento: null*/ });
-  const el = document.getElementById('fileInput') as HTMLInputElement | null;
-  if (el) el.value = '';
+    if (!tipoId || !file) { return; }
 
-  // 5) Sincroniza al StepFormStateService
-  this.syncStateFromForm();
-}
+    // 2) Valida tipo/tamaño acá (además de los validators)
+    const name = (file.name || '').toLowerCase();
+    const extOk = ['.jpg', '.jpeg', '.pdf'].some(ext => name.endsWith(ext));
+    const sizeOk = file.size <= 10 * 1024 * 1024;
+    if (!extOk) { this.errorMsg = 'Solo PDF o JPG.'; return; }
+    if (!sizeOk) { this.errorMsg = 'Máximo 10 MB.'; return; }
+
+    // 3) Agrega al FormArray con fecha = hoy
+    this.documentosFA.push(this.createDocGroup(file, tipoId, this.hoy));
+
+    // 4) Limpia input file (y opcionalmente el tipo)
+    this.form.patchValue({ archivo: null /*, tipoDocumento: null*/ });
+    const el = document.getElementById('fileInput') as HTMLInputElement | null;
+    if (el) el.value = '';
+
+    // 5) Sincroniza al StepFormStateService
+    this.syncStateFromForm();
+  }
 
 
   onRemoveAt(i: number) {
@@ -146,7 +153,7 @@ onUpload(): void {
   // ===== Validadores =====
   private readonly MAX_BYTES = 10 * 1024 * 1024;
   private readonly ALLOWED_TYPES = ['image/jpeg', 'application/pdf'];
-  private readonly ALLOWED_EXTS  = ['.jpg', '.jpeg', '.pdf'];
+  private readonly ALLOWED_EXTS = ['.jpg', '.jpeg', '.pdf'];
 
   private fileTypeValidator(): ValidatorFn {
     return (c: AbstractControl) => {
@@ -167,15 +174,21 @@ onUpload(): void {
   }
 
   // ===== Sincroniza con StepFormStateService manteniendo la misma forma =====
-private syncStateFromForm() {
-  const docs: Step3Doc[] = this.documentosFA.controls.map(g => ({
-    file: g.value.file as File,
-    tipoDocumentoId: g.value.tipoDocumentoId as number,
-    storageRuta: g.value.storageRuta ?? undefined,
-    storageProveedor: g.value.storageProveedor ?? undefined,
-    fechaDocumento: g.value.fechaDocumento as string // requerido
-  }));
-  this.state.step3 = { ...(this.state.step3 ?? { docs: [] }), docs };
-}
+  private syncStateFromForm() {
+    const docs: Step3Doc[] = this.documentosFA.controls.map(g => ({
+      file: g.value.file as File,
+      tipoDocumentoId: g.value.tipoDocumentoId as number,
+      storageRuta: g.value.storageRuta ?? undefined,
+      storageProveedor: g.value.storageProveedor ?? undefined,
+      fechaDocumento: g.value.fechaDocumento as string // requerido
+    }));
+    this.state.step3 = { ...(this.state.step3 ?? { docs: [] }), docs };
+  }
+  get canUpload(): boolean {
+    const tipoSel = this.form.get('tipoDocumento')?.value != null;
+    const fileSel = !!this.form.get('archivo')?.value;
+    return tipoSel && fileSel && !this.loading;
+  }
+
 
 }

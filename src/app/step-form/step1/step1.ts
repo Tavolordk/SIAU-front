@@ -569,52 +569,54 @@ export class Step1Component implements OnInit, OnDestroy {
 
     return snap;
   }
-  tryProceed(ev?: Event) {
-    ev?.preventDefault();
-    ev?.stopPropagation();
+tryProceed(ev?: Event) {
+  ev?.preventDefault();
+  ev?.stopPropagation();
 
-    this.triedSubmit = true;
-    this.form.markAllAsTouched();
-    this.form.updateValueAndValidity({ onlySelf: false, emitEvent: false });
+  this.triedSubmit = true;
+  this.form.markAllAsTouched();
+  this.form.updateValueAndValidity({ onlySelf: false, emitEvent: false });
 
-    if (this.form.value.hp) return;        // honeypot
-    if (this.form.invalid) { this.scrollToFirstError(); return; }
+  if (this.form.value.hp) return; // honeypot
 
-    // Si ya hay token (p.ej. porque diste "Verificar CURP"), avanza directo
-    const existing = this.captcha.getToken();
-    if (existing) {
+  // 🔎 valida todo menos 'captchaCode'
+  if (this.invalidWithoutCaptcha()) { this.scrollToFirstError(); return; }
+
+  const token = this.captcha.getToken();
+  if (token) {
+    const v = this.form.getRawValue();
+    this.state.save('step1', this.mapFormToStep1(v), false);
+    this.state.save('step2', this.buildStep2Snapshot(), true);
+    this.next.emit();
+    return;
+  }
+
+  // Aquí sí exigimos captcha cuando aún no hay token
+  if (!this.captchaId || !this.captchaAnswer) {
+    alert('Resuelve el captcha antes de continuar.');
+    this.scrollToFirstError();
+    return;
+  }
+
+  this.captcha.verify(this.captchaId, this.captchaAnswer).subscribe({
+    next: res => {
+      if (!res.ok || !res.token) {
+        this.captchaBox?.refresh();
+        alert('Código de verificación incorrecto o expirado. Intenta de nuevo.');
+        return;
+      }
       const v = this.form.getRawValue();
       this.state.save('step1', this.mapFormToStep1(v), false);
       this.state.save('step2', this.buildStep2Snapshot(), true);
       this.next.emit();
-      return;
+    },
+    error: _ => {
+      this.captchaBox?.refresh();
+      alert('No se pudo verificar el captcha. Intenta de nuevo.');
     }
+  });
+}
 
-    // Si no hay token aún, verifica aquí el captcha antes de avanzar
-    if (!this.captchaId || !this.captchaAnswer) {
-      alert('Resuelve el captcha antes de continuar.');
-      this.scrollToFirstError();
-      return;
-    }
-
-    this.captcha.verify(this.captchaId, this.captchaAnswer).subscribe({
-      next: res => {
-        if (!res.ok || !res.token) {
-          this.captchaBox?.refresh();
-          alert('Código de verificación incorrecto o expirado. Intenta de nuevo.');
-          return;
-        }
-        const v = this.form.getRawValue();
-        this.state.save('step1', this.mapFormToStep1(v), false);
-        this.state.save('step2', this.buildStep2Snapshot(), true);
-        this.next.emit();
-      },
-      error: _ => {
-        this.captchaBox?.refresh();
-        alert('No se pudo verificar el captcha. Intenta de nuevo.');
-      }
-    });
-  }
 
   onCaptchaChange(e: { id?: string; answer: string }) {
     this.captchaId = e.id;
@@ -683,6 +685,38 @@ export class Step1Component implements OnInit, OnDestroy {
 onCaptchaRefreshed(newId: string) {
   this.captchaId = newId;
   this.form.get('captchaCode')?.reset('', { emitEvent: true }); // borra respuesta y revalida
+}
+// ✅ deshabilita “Siguiente” solo si algo (distinto de captcha) está inválido;
+// si ya hay token, ignoramos captchaCode; si no hay token, pedimos captchaCode válido.
+get nextDisabled(): boolean {
+  if (!this.form) return true;
+
+  // ¿Hay token vigente del captcha?
+  const hasToken = !!this.captcha.getToken();
+
+  // ¿Algún control (excepto captchaCode) inválido?
+  const controls = (this.form as any).controls as { [k: string]: AbstractControl };
+  for (const name of Object.keys(controls)) {
+    if (name === 'captchaCode') continue;           // 👈 lo ignoramos aquí
+    if (controls[name].invalid) return true;
+  }
+
+  // Si ya hay token, no bloquees por el captcha
+  if (hasToken) return false;
+
+  // Si no hay token aún, exige que captchaCode esté válido
+  const c = this.form.get('captchaCode');
+  return !(c && c.valid);
+}
+
+// (opcional, por claridad en tryProceed)
+private invalidWithoutCaptcha(): boolean {
+  const controls = (this.form as any).controls as { [k: string]: AbstractControl };
+  for (const name of Object.keys(controls)) {
+    if (name === 'captchaCode') continue;
+    if (controls[name].invalid) return true;
+  }
+  return false;
 }
 
 }

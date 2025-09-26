@@ -33,7 +33,7 @@
             <label class="form-label mb-0">FECHA DEL DOCUMENTO:</label>
           </div>
           <div class="col-md-8 col-12">
-            <input class="form-control" [value]="hoy" readonly tabindex="-1" [placeholder]="hoy" disabled/>
+            <input class="form-control" [value]="hoy" readonly tabindex="-1" [placeholder]="hoy" disabled />
             <small class="text-muted">La fecha se asigna automáticamente.</small>
           </div>
         </div>
@@ -51,10 +51,11 @@
               <span class="form-text">
                 {{ form.get('archivo')?.value?.name || 'Sin archivos seleccionados' }}
               </span>
-              <button type="button" class="btn btn-secondary"
-                 (click)="onUpload()">
-                Subir Archivo
+              <button type="button" class="btn" [ngClass]="{ 'btn-success': canUpload, 'btn-secondary': !canUpload }"
+                [disabled]="!canUpload" (click)="onUpload()">
+                {{ loading ? 'Subiendo…' : 'Subir Archivo' }}
               </button>
+
 
             </div>
 

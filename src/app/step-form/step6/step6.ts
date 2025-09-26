@@ -8,6 +8,7 @@ import { EMPTY } from 'rxjs';
 import { StepFormStateService, OtpCtx } from '../state/step-form-state.service';
 import { SolicitudesService } from '../../services/solicitudes.service';
 import { TelegramGatewayService } from '../../services/telegram-gateway.service';
+import { AuthService } from '../../services/auth.service'; // 👈 nuevo
 
 @Component({
   selector: 'app-step6',
@@ -37,8 +38,9 @@ export class Step6Component implements OnInit {
     private fb: FormBuilder,
     private state: StepFormStateService,
     private api: SolicitudesService,
-    private tg: TelegramGatewayService
-  ) {}
+    private tg: TelegramGatewayService,
+    private auth: AuthService
+  ) { }
 
   ngOnInit(): void {
     // crea form si el contenedor no lo pasó
@@ -70,7 +72,6 @@ onVerify(): void {
 
   this.api.verificarCodigo$(this.ctx.canal, this.ctx.contacto, this.ctx.proposito, codigo)
     .pipe(
-      // Si NO es ok → mostramos motivo y cortamos el flujo
       switchMap(r => {
         const ok = !!r?.ok;
         if (!ok) {
@@ -79,22 +80,24 @@ onVerify(): void {
           return EMPTY;
         }
 
-        // ✅ marcar medio de validación en el state (lo lee el SP)
+        // marcar medio de validación
         const s4 = this.state.get('step4') ?? {};
         this.state.save('step4', { ...s4, medioValidacion: this.ctx!.canal }, true);
 
-        // ✅ armar el mismo DTO que Step4 y guardar
+        // guardar definitivo
         const dto = this.api.buildFinalizarRegistroDto(this.state);
         return this.api.guardarStep4(dto);
       })
     )
     .subscribe({
       next: () => {
-        this.okMsg = 'Verificado y guardado correctamente.';
-        // limpiar simulados/último OTP locales (opcional)
+        this.okMsg = 'Verificado y guardado correctamente. Cerrando sesión…';
         this.state.setLastOtp?.(null);
         this.state.setOtpSim?.(null);
         this.verifyOk.emit();
+
+        // 👇 cierre de sesión (haya o no sesión activa) y redirección a /login
+        this.auth.logout();
       },
       error: () => {
         this.errorMsg = 'El código fue válido, pero no se pudo completar el guardado.';
@@ -102,6 +105,7 @@ onVerify(): void {
       complete: () => { this.loadingVerify = false; }
     });
 }
+
 
   onResend(): void {
     if (!this.ctx || this.loadingResend) return;
