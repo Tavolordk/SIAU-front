@@ -284,34 +284,14 @@ export class Step1Component implements OnInit, OnDestroy {
         takeUntil(this.destroy$)
       ).subscribe(list => this.instituciones2 = list);
 
-    this.form.get('institucion2')!.valueChanges
-      .pipe(
-        startWith(this.form.get('institucion2')!.value as number | null),
-        tap(() => this.resetControls(['dependencia2', 'corporacion2'])),
-        switchMap((instId: number | null) =>
-          instId ? this.catalogos.getDependencias$(instId) : of<CatalogoItem[]>([])
-        ),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(list => {
-        this.dependencias2 = list;
-        this.validateInList('dependencia2', list);
-      });
+this.form.get('institucion2')!.valueChanges
+  .pipe(startWith(this.form.get('institucion2')!.value), takeUntil(this.destroy$))
+  .subscribe(id => this.cargarDependenciasLocal2(id));
 
     // Comisión: dependencia2 -> corporacion2
-    this.form.get('dependencia2')!.valueChanges
-      .pipe(
-        startWith(this.form.get('dependencia2')!.value as number | null),
-        tap(() => this.resetControls(['corporacion2'])),
-        switchMap((depId: number | null) =>
-          depId ? this.catalogos.getCorporaciones$(depId) : of<CatalogoItem[]>([])
-        ),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(list => {
-        this.corporaciones2 = list;
-        this.validateInList('corporacion2', list);
-      });
+  this.form.get('dependencia2')!.valueChanges
+  .pipe(startWith(this.form.get('dependencia2')!.value), takeUntil(this.destroy$))
+  .subscribe(id => this.cargarCorporacionesLocal2(id));
 
     // Países
     this.catalogos.getPaises$()
@@ -717,6 +697,51 @@ private invalidWithoutCaptcha(): boolean {
     if (controls[name].invalid) return true;
   }
   return false;
+}
+private cargarDependenciasLocal2(parentId: number | null) {
+  const pid = parentId == null ? null : Number(parentId);
+
+  if (pid == null) {
+    this.dependencias2 = [];
+    this.form.get('dependencia2')!.setValue(null, { emitEvent: false });
+    this.corporaciones2 = [];
+    this.form.get('corporacion2')!.setValue(null, { emitEvent: false });
+    return;
+  }
+  if (pid === 0) { // NO APLICA
+    this.dependencias2 = [this.NO_APLICA];
+    this.form.get('dependencia2')!.setValue(0, { emitEvent: true });
+    return;
+  }
+
+  const items = this.estructura
+    .filter(x => x.tipo === 'dependencia' && x.fK_PADRE === pid)
+    .map(x => ({ id: x.id, nombre: x.nombre }));
+
+  this.dependencias2 = items.length ? items : [this.NO_APLICA];
+  this.form.get('dependencia2')!.setValue(this.dependencias2[0].id, { emitEvent: true });
+}
+
+private cargarCorporacionesLocal2(parentId: number | null) {
+  const pid = parentId == null ? null : Number(parentId);
+
+  if (pid == null) {
+    this.corporaciones2 = [];
+    this.form.get('corporacion2')!.setValue(null, { emitEvent: false });
+    return;
+  }
+  if (pid === 0) { // NO APLICA
+    this.corporaciones2 = [this.NO_APLICA];
+    this.form.get('corporacion2')!.setValue(0, { emitEvent: true });
+    return;
+  }
+
+  const items = this.estructura
+    .filter(x => x.tipo === 'corporacion' && x.fK_PADRE === pid)
+    .map(x => ({ id: x.id, nombre: x.nombre }));
+
+  this.corporaciones2 = items.length ? items : [this.NO_APLICA];
+  this.form.get('corporacion2')!.setValue(this.corporaciones2[0].id, { emitEvent: true });
 }
 
 }
