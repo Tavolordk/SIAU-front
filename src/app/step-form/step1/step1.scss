@@ -227,3 +227,10 @@ body{
     width: 140px;
   }
 }
+.section-disabled {
+  opacity: .55;
+  filter: grayscale(0.1);
+  /* pointer-events no es necesario porque los controles ya están disabled,
+     pero si quieres bloquear clicks en enlaces/otros, descomenta: */
+  // pointer-events: none;
+}

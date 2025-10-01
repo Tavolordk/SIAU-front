@@ -128,13 +128,6 @@ export class Step2Component implements OnInit, OnDestroy {
     return !!c && c.hasError(code) && (c.touched || c.dirty || this.triedSubmit);
   }
 
-  searchPerfil = (term: string, item: CatPerfilDto) =>
-    (item.clave + ' ' + item.funcion).toLowerCase().includes((term || '').toLowerCase());
-  onPerfilSelected(item: CatPerfilDto | null) {
-    if (item) this.perfilPlaceholder = `${item.clave} - ${item.funcion}`;
-
-  }
-
   // ---------- Avance con bloqueo si inválido ----------
 
   private scrollToFirstError() {
@@ -361,5 +354,30 @@ export class Step2Component implements OnInit, OnDestroy {
       }
     });
   }
+
+private norm(s: any): string {
+  return (s ?? '')
+    .toString()
+    .normalize('NFD')                 // quita acentos
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[-–—]/g, ' ')          // ignora guiones
+    .toLowerCase()
+    .trim();
+}
+
+searchPerfil = (term: string, item: CatPerfilDto): boolean => {
+  const q = this.norm(term);
+  if (!q) return true;
+
+  const cadena = `${item?.clave ?? ''} - ${item?.funcion ?? ''}`;
+  const haystack =
+    `${this.norm(cadena)} ${this.norm(item?.clave)} ${this.norm(item?.funcion)} ${this.norm(item?.id)}`;
+
+  // match por tokens: cada palabra del query debe aparecer
+  const tokens = q.split(/\s+/);
+  return tokens.every(t => haystack.includes(t))
+      || haystack.replace(/\s+/g, '').includes(q.replace(/\s+/g, '')); // “CT01” ~ “CT 01”
+};
+
 
 }

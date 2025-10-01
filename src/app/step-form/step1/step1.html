@@ -319,7 +319,7 @@
       <div class="col-md-3">
         <label for="fechaIngreso" class="form-label label-obligatorio">Fecha de Ingreso</label>
         <input id="fechaIngreso" type="date" formControlName="fechaIngreso" class="form-control"
-          [min]="form.get('fechaNacimiento')?.value || '1900-01-01'" [max]="todayISO" required>
+          [attr.min]="minFechaIngreso" [attr.max]="todayISO" required>
 
         <div *ngIf="form.get('fechaIngreso')?.touched && form.get('fechaIngreso')?.errors as e"
           class="validation text-danger">
@@ -370,70 +370,74 @@
       </div>
     </div>
 
-    <div class="row mb-3">
-      <div class="col-md-3">
-        <label for="tipoInstitucion2" class="form-label label-obligatorio">Tipo de Institución</label>
-        <select id="tipoInstitucion2" formControlName="tipoInstitucion2" class="form-select" required>
-          <option [ngValue]="null" disabled>Seleccionar</option>
-          <option *ngFor="let a of ambitos; trackBy: trackById" [ngValue]="a.id">{{ a.nombre }}</option>
-        </select>
-        <div *ngIf="form.get('tipoInstitucion2')?.touched && form.get('tipoInstitucion2')?.errors as e"
-          class="validation text-danger">
-          <div *ngIf="e['required']">Selecciona el tipo de institución</div>
-          <div *ngIf="e['invalidOption']">La opción seleccionada no es válida</div>
+    <div [class.section-disabled]="!isComisionado" [attr.aria-disabled]="!isComisionado ? 'true' : 'false'"
+      role="group">
+      <div class="row mb-3">
+        <div class="col-md-3">
+          <label for="tipoInstitucion2" class="form-label label-obligatorio">Tipo de Institución</label>
+          <select id="tipoInstitucion2" formControlName="tipoInstitucion2" class="form-select" required>
+            <option [ngValue]="null" disabled>Seleccionar</option>
+            <option *ngFor="let a of ambitos; trackBy: trackById" [ngValue]="a.id">{{ a.nombre }}</option>
+          </select>
+          <div *ngIf="form.get('tipoInstitucion2')?.touched && form.get('tipoInstitucion2')?.errors as e"
+            class="validation text-danger">
+            <div *ngIf="e['required']">Selecciona el tipo de institución</div>
+            <div *ngIf="e['invalidOption']">La opción seleccionada no es válida</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <label for="entidad2" class="form-label label-obligatorio">Entidad</label>
+          <select id="entidad2" formControlName="entidad2" class="form-select" required>
+            <option [ngValue]="null" disabled>Seleccionar</option>
+            <option *ngFor="let e of entidades; trackBy: trackById" [ngValue]="e.id">{{ e.nombre }}</option>
+          </select>
+          <div *ngIf="form.get('entidad2')?.touched && form.get('entidad2')?.errors as e"
+            class="validation text-danger">
+            <div *ngIf="e['required']">Selecciona la entidad</div>
+            <div *ngIf="e['invalidOption']">La opción seleccionada no es válida</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <label for="municipioAlcaldia3" class="form-label label-obligatorio">Municipio/Alcaldía</label>
+          <select id="municipioAlcaldia3" formControlName="municipioAlcaldia3" class="form-select" required>
+            <option [ngValue]="null" disabled>Selecciona tu Municipio/Alcaldía</option>
+            <option *ngFor="let m of municipiosComision; trackBy: trackById" [ngValue]="m.id">{{ m.nombre }}</option>
+          </select>
+          <div *ngIf="form.get('municipioAlcaldia3')?.touched && form.get('municipioAlcaldia3')?.errors as e"
+            class="validation text-danger">
+            <div *ngIf="e['required']">Selecciona tu municipio/alcaldía</div>
+            <div *ngIf="e['invalidOption']">La opción seleccionada no es válida</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <label for="institucion2" class="form-label label-obligatorio">Institución</label>
+          <select id="institucion2" formControlName="institucion2" class="form-select" required>
+            <option [ngValue]="null" disabled>Seleccionar</option>
+            <option *ngFor="let i of instituciones2; trackBy: trackById" [ngValue]="i.id">{{ i.nombre }}</option>
+          </select>
+          <div *ngIf="form.get('institucion2')?.touched && form.get('institucion2')?.errors as e"
+            class="validation text-danger">
+            <div *ngIf="e['required']">Selecciona la institución</div>
+            <div *ngIf="e['invalidOption']">La opción seleccionada no es válida</div>
+          </div>
         </div>
       </div>
-      <div class="col-md-3">
-        <label for="entidad2" class="form-label label-obligatorio">Entidad</label>
-        <select id="entidad2" formControlName="entidad2" class="form-select" required>
-          <option [ngValue]="null" disabled>Seleccionar</option>
-          <option *ngFor="let e of entidades; trackBy: trackById" [ngValue]="e.id">{{ e.nombre }}</option>
-        </select>
-        <div *ngIf="form.get('entidad2')?.touched && form.get('entidad2')?.errors as e" class="validation text-danger">
-          <div *ngIf="e['required']">Selecciona la entidad</div>
-          <div *ngIf="e['invalidOption']">La opción seleccionada no es válida</div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <label for="municipioAlcaldia3" class="form-label label-obligatorio">Municipio/Alcaldía</label>
-        <select id="municipioAlcaldia3" formControlName="municipioAlcaldia3" class="form-select" required>
-          <option [ngValue]="null" disabled>Selecciona tu Municipio/Alcaldía</option>
-          <option *ngFor="let m of municipiosComision; trackBy: trackById" [ngValue]="m.id">{{ m.nombre }}</option>
-        </select>
-        <div *ngIf="form.get('municipioAlcaldia3')?.touched && form.get('municipioAlcaldia3')?.errors as e"
-          class="validation text-danger">
-          <div *ngIf="e['required']">Selecciona tu municipio/alcaldía</div>
-          <div *ngIf="e['invalidOption']">La opción seleccionada no es válida</div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <label for="institucion2" class="form-label label-obligatorio">Institución</label>
-        <select id="institucion2" formControlName="institucion2" class="form-select" required>
-          <option [ngValue]="null" disabled>Seleccionar</option>
-          <option *ngFor="let i of instituciones2; trackBy: trackById" [ngValue]="i.id">{{ i.nombre }}</option>
-        </select>
-        <div *ngIf="form.get('institucion2')?.touched && form.get('institucion2')?.errors as e"
-          class="validation text-danger">
-          <div *ngIf="e['required']">Selecciona la institución</div>
-          <div *ngIf="e['invalidOption']">La opción seleccionada no es válida</div>
-        </div>
-      </div>
-    </div>
 
-    <div class="row mb-3">
-      <div class="col-md-6">
-        <label for="dependencia2" class="form-label">Dependencia</label>
-        <select id="dependencia2" formControlName="dependencia2" class="form-select">
-          <option [ngValue]="null" disabled>Seleccionar</option>
-          <option *ngFor="let d of dependencias2; trackBy: trackById" [ngValue]="d.id">{{ d.nombre }}</option>
-        </select>
-      </div>
-      <div class="col-md-6">
-        <label for="corporacion2" class="form-label">Corporación</label>
-        <select id="corporacion2" formControlName="corporacion2" class="form-select">
-          <option [ngValue]="null" disabled>Seleccionar</option>
-          <option *ngFor="let c of corporaciones2; trackBy: trackById" [ngValue]="c.id">{{ c.nombre }}</option>
-        </select>
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label for="dependencia2" class="form-label">Dependencia</label>
+          <select id="dependencia2" formControlName="dependencia2" class="form-select">
+            <option [ngValue]="null" disabled>Seleccionar</option>
+            <option *ngFor="let d of dependencias2; trackBy: trackById" [ngValue]="d.id">{{ d.nombre }}</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label for="corporacion2" class="form-label">Corporación</label>
+          <select id="corporacion2" formControlName="corporacion2" class="form-select">
+            <option [ngValue]="null" disabled>Seleccionar</option>
+            <option *ngFor="let c of corporaciones2; trackBy: trackById" [ngValue]="c.id">{{ c.nombre }}</option>
+          </select>
+        </div>
       </div>
     </div>
 

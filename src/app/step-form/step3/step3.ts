@@ -6,6 +6,7 @@ import {
   ReactiveFormsModule, FormArray
 } from '@angular/forms';
 import { StepFormStateService } from '../state/step-form-state.service';
+import { CatalogosService } from '../../services/catalogos.service';
 
 interface TipoDoc { id: number; nombre: string; }
 type Step3Doc = {
@@ -32,11 +33,8 @@ export class Step3Component implements OnInit {
   loading = false;
   errorMsg = '';
 
-  tipos: TipoDoc[] = [
-    { id: 1, nombre: 'COMPROBANTE DE IDENTIFICACIÓN' },
-    { id: 2, nombre: 'COMPROBANTE DE DOMICILIO' },
-    { id: 3, nombre: 'COMPROBANTE LABORAL' },
-  ];
+  tipos: TipoDoc[] = [];   // ← antes tenías hardcodeado
+
 
   // Fecha de hoy (local, no UTC) y no editable
   hoy = this.getTodayLocalISO();
@@ -44,7 +42,7 @@ export class Step3Component implements OnInit {
   // ======= Form =======
 
 
-  constructor(private fb: FormBuilder, private state: StepFormStateService) {
+  constructor(private fb: FormBuilder, private state: StepFormStateService, private catalogos: CatalogosService) {
     this.form = this.fb.group({
       tipoDocumento: [null, Validators.required],
       archivo: [null, [Validators.required, this.fileTypeValidator(), this.fileSizeValidator()]],
@@ -53,6 +51,12 @@ export class Step3Component implements OnInit {
   }
 
   ngOnInit(): void {
+    // 1) Carga tipos de documento desde el catálogo
+    this.catalogos.getTiposDocumento$().subscribe(list => {
+      this.tipos = list;
+      // Si venías con state previo y el ID existe, no hacemos nada especial:
+      // el select ya mostrará la opción correcta por el formControl.
+    });
     // Sembrar desde el state existente (mantenemos la misma forma para Step 4)
     const prevDocs = this.state.step3?.docs ?? [];
     prevDocs.forEach((d: { file: File; tipoDocumentoId: number; fechaDocumento: string | undefined; }) => this.documentosFA.push(this.createDocGroup(d.file, d.tipoDocumentoId, d.fechaDocumento)));

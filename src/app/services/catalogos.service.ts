@@ -26,7 +26,7 @@ export interface CatAmbitoDto { id: number, descripcion: string }
 export interface CatSexoDto { id: number; descripcion: string; }
 export interface CatEstadoCivilDto { id: number; descripcion: string; }
 export interface CatNacionalidadDto { id: number; descripcion: string; pais_id: number; pais: string; }
-
+export interface CatTipoDocumentoDto { id: number; nombre: string; }
 
 export interface CatalogosResponseDto {
   TipoUsuario: TipoUsuarioDto[];
@@ -42,6 +42,8 @@ export interface CatalogosResponseDto {
 
 @Injectable({ providedIn: 'root' })
 export class CatalogosService {
+  tiposDocumento: CatalogoItem[] = [];
+  private tiposDocumento$!: Observable<CatalogoItem[]>;
   perfiles: { id: number; clave: string; nombre: string }[] = [];
   /** Catálogos “planos” para UI */
   entidades: CatalogoItem[] = [];
@@ -71,7 +73,7 @@ export class CatalogosService {
   private allCatalogos$!: Observable<CatalogosResponseDto>;
 
   constructor(private http: HttpClient, @Inject(CATALOG_API_BASE_URL) private baseUrl: string,
-   @Inject(REQUEST_API_BASE_URL) private solicitudesBaseUrl: string) {
+    @Inject(REQUEST_API_BASE_URL) private solicitudesBaseUrl: string) {
     this.url = `${this.baseUrl}/catalogos/tpusuario`;
     this.allCatalogos$ = this.http.get<CatalogosResponseDto>(this.url).pipe(shareReplay(1));
 
@@ -124,6 +126,12 @@ export class CatalogosService {
           id: t.id,
           nombre: t.tP_USUARIO
         }));
+        const urlTipos = `${this.baseUrl}/catalogos/tipos-documentos`;
+        this.tiposDocumento$ = this.http.get<CatTipoDocumentoDto[]>(urlTipos).pipe(
+          map(rows => rows.map(r => ({ id: r.id, nombre: r.nombre }))),
+          tap(list => (this.tiposDocumento = list)),
+          shareReplay({ bufferSize: 1, refCount: false })
+        );
       }),
       shareReplay({ bufferSize: 1, refCount: false })
     );
@@ -288,7 +296,7 @@ export class CatalogosService {
   // en CatalogosService
   private _depByInst = new Map<number, CatalogoItem[]>();
   private _corpByDep = new Map<number, CatalogoItem[]>();
-private _areaByCorp = new Map<number, CatalogoItem[]>(); 
+  private _areaByCorp = new Map<number, CatalogoItem[]>();
 
   // … dentro del tap(res => { ... }) llena los mapas como te pasé antes …
 
@@ -302,49 +310,59 @@ private _areaByCorp = new Map<number, CatalogoItem[]>();
     return this.allCatalogos$.pipe(map(() => this._corpByDep.get(dependenciaId) ?? []));
   }
   getTiposUsuario$() {
-  return this.allCatalogos$.pipe(map(() => this.tiposUsuario));
-}
-getAreas$(corporacionId: number) {               // 👈 nuevo
-  return this.allCatalogos$.pipe(map(() => this._areaByCorp.get(corporacionId) ?? []));
-}
-getPaises$() {                                   // 👈 nuevo
-  return this.allCatalogos$.pipe(map(() => this.paises));
-}
-/** Perfiles por estructura: envía SOLO el id más específico ≠ 0 (area>corporacion>dependencia>institucion) */
-getPerfilesPorEstructuraAuto$(
-  ids: { institucionId?: number | null; dependenciaId?: number | null; corporacionId?: number | null; areaId?: number | null }
-) {
-  const url = `${this.solicitudesBaseUrl}/api/solicitudes/perfiles-por-estructura`;
-
-  // normaliza a 0 si viene null/NaN/etc.
-  const norm = (n?: number | null) => (typeof n === 'number' && isFinite(n) && n > 0 ? n : 0);
-
-  const area        = norm(ids.areaId);
-  const corporacion = norm(ids.corporacionId);
-  const dependencia = norm(ids.dependenciaId);
-  const institucion = norm(ids.institucionId);
-
-  let params = new HttpParams();
-  if (area > 0) {
-    params = params.set('areaId', String(area));
-  } else if (corporacion > 0) {
-    params = params.set('corporacionId', String(corporacion));
-  } else if (dependencia > 0) {
-    params = params.set('dependenciaId', String(dependencia));
-  } else if (institucion > 0) {
-    params = params.set('institucionId', String(institucion));
+    return this.allCatalogos$.pipe(map(() => this.tiposUsuario));
   }
-  // si todos son 0, va sin params → el backend devuelve todos los perfiles
+  getAreas$(corporacionId: number) {               // 👈 nuevo
+    return this.allCatalogos$.pipe(map(() => this._areaByCorp.get(corporacionId) ?? []));
+  }
+  getPaises$() {                                   // 👈 nuevo
+    return this.allCatalogos$.pipe(map(() => this.paises));
+  }
+    getTiposDocumento$(): Observable<CatalogoItem[]> {
+    return this.tiposDocumento$;
+  }
 
-  return this.http.get<PerfilItemApi[]>(url, { params }).pipe(
-    map(rows =>
-      rows.map((r, i) => ({
-        id: i + 1,            // cambia a r.id cuando tu API exponga cp.id
-        clave: r.clave,
-        funcion: r.descripcion
-      }))
-    )
-  );
-}
+  // (opcional) sincrónico por si lo necesitas en pipes puros
+  getTipoDocumentoNameById(id: number): string | null {
+    const hit = this.tiposDocumento.find(t => t.id === id);
+    return hit ? hit.nombre : null;
+    // Si quieres “live”, usa getTiposDocumento$ y map()
+  }
+  /** Perfiles por estructura: envía SOLO el id más específico ≠ 0 (area>corporacion>dependencia>institucion) */
+  getPerfilesPorEstructuraAuto$(
+    ids: { institucionId?: number | null; dependenciaId?: number | null; corporacionId?: number | null; areaId?: number | null }
+  ) {
+    const url = `${this.solicitudesBaseUrl}/api/solicitudes/perfiles-por-estructura`;
+
+    // normaliza a 0 si viene null/NaN/etc.
+    const norm = (n?: number | null) => (typeof n === 'number' && isFinite(n) && n > 0 ? n : 0);
+
+    const area = norm(ids.areaId);
+    const corporacion = norm(ids.corporacionId);
+    const dependencia = norm(ids.dependenciaId);
+    const institucion = norm(ids.institucionId);
+
+    let params = new HttpParams();
+    if (area > 0) {
+      params = params.set('areaId', String(area));
+    } else if (corporacion > 0) {
+      params = params.set('corporacionId', String(corporacion));
+    } else if (dependencia > 0) {
+      params = params.set('dependenciaId', String(dependencia));
+    } else if (institucion > 0) {
+      params = params.set('institucionId', String(institucion));
+    }
+    // si todos son 0, va sin params → el backend devuelve todos los perfiles
+
+    return this.http.get<PerfilItemApi[]>(url, { params }).pipe(
+      map(rows =>
+        rows.map((r, i) => ({
+          id: i + 1,            // cambia a r.id cuando tu API exponga cp.id
+          clave: r.clave,
+          funcion: r.descripcion
+        }))
+      )
+    );
+  }
 
 }

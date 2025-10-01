@@ -140,28 +140,10 @@ export class Step1Component implements OnInit, OnDestroy {
     });
 
     // Reglas dinámicas (comisión)
-    this.form.get('comisionado')!.valueChanges
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(v => {
-        const req = v === 'Si' ? [Validators.required] : [];
+this.form.get('comisionado')!.valueChanges
+  .pipe(startWith(this.form.get('comisionado')!.value), takeUntil(this.destroy$))
+  .subscribe(v => this.applyCommissionState(v === 'Si'));
 
-        // Aplica/retira required
-        ['tipoInstitucion2', 'entidad2', 'municipioAlcaldia3', 'institucion2'].forEach(cn => {
-          const c = this.form.get(cn)!;
-          c.setValidators(req);
-          c.updateValueAndValidity({ emitEvent: false });
-        });
-
-        // Si NO está comisionado, limpia valores y errores del bloque
-        if (v !== 'Si') {
-          ['tipoInstitucion2', 'entidad2', 'municipioAlcaldia3', 'institucion2', 'dependencia2', 'corporacion2']
-            .forEach(cn => {
-              const c = this.form.get(cn)!;
-              c.reset(null, { emitEvent: false });
-              c.setErrors(null);
-            });
-        }
-      });
 
     this.form.valueChanges
       .pipe(debounceTime(200), takeUntil(this.destroy$))
@@ -300,10 +282,14 @@ this.form.get('institucion2')!.valueChanges
         this.paises = list;
         this.validateInList('paisNacimiento', list);
       });
-
-
-
-  }
+this.form.get('fechaNacimiento')!.valueChanges
+  .pipe(takeUntil(this.destroy$))
+  .subscribe(() => {
+    // cuando cambia nacimiento, fuerza recalcular validaciones de ingreso
+    this.form.get('fechaIngreso')!.updateValueAndValidity({ emitEvent: false });
+  });
+  
+    }
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -743,5 +729,41 @@ private cargarCorporacionesLocal2(parentId: number | null) {
   this.corporaciones2 = items.length ? items : [this.NO_APLICA];
   this.form.get('corporacion2')!.setValue(this.corporaciones2[0].id, { emitEvent: true });
 }
+// 👇 lista de controles del bloque de Comisión
+private readonly commissionControls = [
+  'tipoInstitucion2', 'entidad2', 'municipioAlcaldia3',
+  'institucion2', 'dependencia2', 'corporacion2'
+];
 
+// 👇 los que son requeridos SOLO cuando está comisionado
+private readonly commissionRequired = [
+  'tipoInstitucion2', 'entidad2', 'municipioAlcaldia3', 'institucion2'
+];
+
+get isComisionado(): boolean {
+  return this.form?.get('comisionado')?.value === 'Si';
+}
+
+private applyCommissionState(isOn: boolean) {
+  for (const name of this.commissionControls) {
+    const c = this.form.get(name)!;
+
+    if (isOn) {
+      // habilita y aplica required donde corresponda
+      c.enable({ emitEvent: false });
+      c.setValidators(this.commissionRequired.includes(name) ? [Validators.required] : []);
+    } else {
+      // limpia y deshabilita por completo
+      c.reset(null, { emitEvent: false });
+      c.setErrors(null);
+      c.clearValidators();
+      c.disable({ emitEvent: false });
+    }
+    c.updateValueAndValidity({ emitEvent: false });
+  }
+}
+get minFechaIngreso(): string {
+  const n = this.form?.get('fechaNacimiento')?.value;
+  return (n && /^\d{4}-\d{2}-\d{2}$/.test(n)) ? n : '1900-01-01';
+}
 }

@@ -17,6 +17,7 @@
           <label for="perfilInput" class="form-label">*Perfil:</label>
 
           <ng-select [items]="perfilesDisponibles" bindLabel="funcion" bindValue="id" [searchable]="true"
+          [searchFn]="searchPerfil" 
             [clearable]="false" [dropdownPosition]="'auto'" [appendTo]="'body'" [hideSelected]="true"
             class="form-control" formControlName="perfil"
             (change)="onNgSelectChange($event)">
