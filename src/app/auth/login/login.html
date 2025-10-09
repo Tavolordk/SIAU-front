@@ -1,60 +1,111 @@
-<div class="background-pattern"></div>
 
-<div class="login-container">
-  <div class="logo-title">
-    <img
-      src="../../../assets/images/SSPC_vertical.png"
-      alt="Escudo nacional"
-      class="escudo"
-    />
-  </div>
+<!-- Layout en dos columnas -->
+<div class="main-content">
+  <!-- Columna izquierda: AVISO -->
+  <section class="left-section">
+    <div class="left-inner">
+      <p class="left-title">Estimado usuario del Sistema Nacional de Información</p>
 
-  <div class="system-title">
-    Sistema Integral de Administración de Usuarios
-  </div>
+      <p>
+        A través de esta aplicación puedes registrarte para generar
+        <b>Cédulas de Usuario</b> en línea.
+      </p>
 
-  <form
-    [formGroup]="loginForm"
-    (ngSubmit)="iniciarSesion()"
+      <p>
+        Si funges como enlace ante el Sistema de Administración de Usuarios del
+        Sistema Nacional de Información, también podrás registrarte para validar
+        las cédulas de los integrantes de tu dependencia de Seguridad Pública o
+        del Poder Judicial.
+      </p>
+
+      <p>Solo necesitas tener a la mano tu <b>CURP</b>.</p>
+
+      <p>Si aún no te has registrado, puedes iniciar el proceso en el siguiente enlace:</p>
+
+      <p class="left-link-wrap">
+        <a class="left-link" href="/stepform">Regístrate aquí</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- Columna derecha: LOGIN (conserva tu TS: loginForm, iniciarSesion, etc.) -->
+  <section class="right-section">
+    <div class="login-container">
+      <!-- Escudo / logo superior (usa tu imagen vertical actual) -->
+      <div class="logo-title">
+        <img
+          src="../../../assets/images/SSPC_vertical.png"
+          alt="Escudo nacional"
+          class="escudo"
+        />
+      </div>
+
+      <!-- Subtítulo de sistema -->
+      <div class="login-form-title text-center mb-3">
+        <b>Sistema Integral de Administración de Usuarios SIAU</b>
+      </div>
+
+      <!-- Formulario -->
+      <form
+        [formGroup]="loginForm"
+        (ngSubmit)="iniciarSesion()"
+        autocomplete="off"
+        class="form-box"
+        novalidate
+      >
+        <label class="form-label" for="usuario">Usuario</label>
+        <input
+          id="usuario"
+          formControlName="usuario"
+          type="text"
+          class="form-control"
+          placeholder="Usuario"
+          required
+          autocomplete="off"
+        />
+
+<label class="form-label" for="contrasena">Contraseña</label>
+<div class="input-group password-box">
+  <input
+    id="contrasena"
+    formControlName="contrasena"
+    [type]="hidePassword ? 'password' : 'text'"
+    class="form-control"
+    placeholder="Contraseña"
+    required
     autocomplete="off"
-    class="form-box"
+  />
+  <span
+    class="input-group-text password-toggle"
+    role="button"
+    (click)="togglePassword()"
+    [attr.aria-label]="hidePassword ? 'Mostrar contraseña' : 'Ocultar contraseña'"
+    [attr.title]="hidePassword ? 'Mostrar contraseña' : 'Ocultar contraseña'"
   >
-    <label class="form-label" for="usuario">Usuario</label>
-    <input
-      id="usuario"
-      formControlName="usuario"
-      type="text"
-      class="form-control"
-      placeholder="Usuario"
-      required
-    />
-
-    <label class="form-label" for="contrasena">Contraseña</label>
-    <input
-      id="contrasena"
-      formControlName="contrasena"
-      type="password"
-      class="form-control"
-      placeholder="Contraseña"
-      required
-    />
-
-    <button
-      type="submit"
-      class="btn btn-login"
-      [disabled]="loading || loginForm.invalid"
-    >
-      Iniciar sesión
-    </button>
-  </form>
-
-  <a class="forgot-link" href="/olvido-contrasena">
-    ¿Olvidaste tu contraseña?
-  </a>
-
-  <div *ngIf="mensajeError" class="alert alert-danger mt-3">
-    {{ mensajeError }}
-  </div>
+    <fa-icon [icon]="hidePassword ? faEyeSlash : faEye"></fa-icon>
+  </span>
 </div>
 
+
+        <button
+          type="submit"
+          class="btn btn-login"
+          [disabled]="loading || loginForm.invalid"
+        >
+          Iniciar sesión
+        </button>
+      </form>
+
+      <a class="forgot-link" href="/olvido-contrasena">
+        ¿Olvidaste tu contraseña?
+      </a>
+
+      <div *ngIf="mensajeError" class="alert alert-danger mt-3">
+        {{ mensajeError }}
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Versión -->
 <div class="version-label">v.1.0.0.0</div>

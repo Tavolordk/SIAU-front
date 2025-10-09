@@ -1,6 +1,6 @@
-/* login.component.scss (o login.css) */
-
-/* 1. Fuentes */
+/* ===============================
+   1) Fuentes (opcional)
+   =============================== */
 @font-face {
   font-family: 'Noto Sans';
   src: url('../../../assets/fonts/NotoSans-Regular.ttf') format('truetype');
@@ -10,12 +10,24 @@
 }
 @font-face {
   font-family: 'Patria';
-  src: url('/assets/fonts/Patria_Regular.otf') format('truetype');
+  src: url('/assets/fonts/Patria_Regular.otf') format('opentype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
-/* Background global y body (muévelo a styles.scss si lo prefieres) */
+
+/* ===============================
+   2) Base
+   =============================== */
+:host {
+  display: block;
+  min-height: 100vh;
+  width: 100%;
+  background: #fff;
+  font-family: 'Noto Sans', 'Open Sans', Arial, sans-serif;
+  overflow-x: hidden;
+}
+
 html, body {
   height: 100%;
   margin: 0;
@@ -24,103 +36,218 @@ html, body {
   width: 100vw;
   overflow: hidden;
 }
-body {
-  background: #fff;
-  font-family: 'Roboto', Arial, sans-serif;
-}
+body { background: #fff; }
 
-input[formControlName="contrasena"]::placeholder {
-  color: #fff;
-}
-
-input[formControlName="contrasena"] {
-  background-color: #aaa7a7;
-}
-
-/* Patrón de fondo */
-.background-pattern {
-  position: absolute;
-  top: 0;
-  left: 0;
+/* ===============================
+   3) Layout 2 columnas
+   =============================== */
+.main-content {
+  min-height: 100vh;
   width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  background: none;
+  display: flex;
+  flex-direction: row;
+  padding: 0;
+  gap: 0;
+  box-sizing: border-box;
 }
-.background-pattern::before {
+
+/* IZQUIERDA: aviso (blanco a la izquierda, patrón a la derecha) */
+.left-section {
+  position: relative;
+  flex: 1.4 1 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  overflow: hidden;
+  padding: clamp(16px, 5vw, 56px) clamp(16px, 4vw, 48px);
+}
+
+/* Patrón anclado a la derecha; mitad izquierda en blanco */
+/* Triángulo derecho-superior con el patrón */
+/* Panel izquierdo: patrón con recorte “deformado”
+   que se mete más hacia la izquierda en la zona media */
+/* Panel izquierdo: patrón visible SOLO a la derecha de la diagonal */
+.left-section::before {
   content: "";
   position: absolute;
   inset: 0;
-    background: url('../../../assets/images/Fondo.png'), url('../../../assets/images/Fondo-rotado.png');
-    background-repeat: no-repeat, no-repeat;
-    background-position: left bottom, right top;
-    background-size: 40%, 40%;
+  z-index: 0;
+  pointer-events: none;
+
+  /* Tus dos imágenes, ancladas a la derecha para “empujar” hacia el centro */
+  background:
+    url('../../../assets/images/Fondo.png')        right bottom / auto 130% no-repeat,
+    url('../../../assets/images/Fondo-rotado.png') right   top   / auto 130% no-repeat;
+  opacity: .30; /* ajusta 0.18–0.30 a gusto */
+
+  /* === Diagonal como en tu línea roja ===
+     Arranca en (0,0) y cruza hasta X% del borde inferior.
+     Todo lo que queda a la IZQUIERDA de esa diagonal NO se pinta (queda blanco). */
+  --x-bottom: 45%; /* ← mueve este valor: 40–55% hasta que calce con tu captura */
+  clip-path: polygon(
+    0 0,         /* esquina sup-izq (inicio de la diagonal) */
+    100% 0,      /* sup-der */
+    100% 100%,   /* inf-der */
+    var(--x-bottom) 100% /* punto donde la diagonal toca el borde inferior */
+  );
+  -webkit-clip-path: polygon(0 0, 100% 0, 100% 100%, var(--x-bottom) 100%);
 }
 
-/* Contenedor del formulario */
-.login-container {
+
+/* Contenido del aviso por encima del patrón */
+.left-inner {
   position: relative;
   z-index: 1;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  max-width: 640px;
+  width: 100%;
+}
+.left-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 1rem;
+}
+.left-section p {
+  font-size: 1.05rem;
+  color: #222;
+  line-height: 1.5;
+  margin: 0 0 0.9rem 0;
+}
+.left-link-wrap { margin-top: 0.4rem; }
+.left-link {
+  color: #7a1834;
+  font-weight: 700;
+  text-decoration: underline;
+  font-size: 1.05rem;
 }
 
-/* Logo y título */
+/* DERECHA: login completamente blanco */
+.right-section {
+  flex: 1 1 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  padding: clamp(16px, 5vw, 56px);
+}
+.right-section .login-container {
+  position: relative;
+  z-index: 1;
+  min-height: auto;
+  background: transparent;
+  padding: 0;
+}
+
+/* ===============================
+   4) Encabezados y logos
+   =============================== */
 .logo-title {
   display: flex;
   flex-direction: column;
   align-items: center;
   margin-bottom: 18px;
 }
-.seguridad-title {
-  font-family: 'EB Garamond', serif;
+.escudo {
+  width: 400px;
+  max-width: 80vw;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  margin: 0.5em auto 1em auto;
+}
+.system-title {
+  font-family: 'Patria', 'EB Garamond', serif;
   font-size: 2.7rem;
   color: #6d1437;
   font-weight: 700;
-  margin-top: -10px;
-}
-.subtitle {
-  font-size: 1rem;
-  color: #222;
-  margin-bottom: 10px;
-  font-weight: 400;
-}
-.system-title {
-  font-family: 'EB Garamond', serif;
-  font-size: 2rem;
-  color: #222;
-  font-weight: 700;
-  margin-bottom: 30px;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
   text-align: center;
+  margin: -10px 0 1rem 0;
+}
+.sspc-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0.25rem 0 1.25rem 0;
+}
+.sspc-logo {
+  max-width: 260px;
+  width: 80%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  image-rendering: auto;
 }
 
-/* Formulario */
+/* ===============================
+   5) Formulario
+   =============================== */
 .form-box {
   width: 350px;
   max-width: 90vw;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  text-align: left;
 }
 .form-label {
   font-size: 1rem;
   color: #444;
+  margin-bottom: 0.2rem;
 }
 .form-control {
   font-size: 1rem;
-  border-radius: 4px;
+  border-radius: 6px;
   border: 1px solid #bbb;
   padding: 8px 12px;
+  background: #fff;
+  color: #222;
+  height: 40px;
+  box-shadow: none;
 }
 .form-control:focus {
   border-color: #6d1437;
-  box-shadow: 0 0 0 0.1rem rgba(109, 20, 55, .15);
+  box-shadow: 0 0 0 0.12rem rgba(109, 20, 55, .15);
 }
 
-/* Botón */
+/* Password gris + placeholder claro */
+input[formControlName="contrasena"] {
+  background-color: #aaa7a7;
+  color: #fff;
+  border: none;
+}
+input[formControlName="contrasena"]::placeholder { color: #fff; }
+
+/* Input-group del password */
+.password-box .form-control {
+  background: #aaa7a7 !important;
+  color: #fff !important;
+  border: none !important;
+}
+.password-box .form-control:focus {
+  background: #aaa7a7 !important;
+  color: #fff !important;
+  border: none !important;
+}
+.input-group-text {
+  background: #aaa7a7;
+  border: none;
+  color: #fff;
+  border-radius: 0 6px 6px 0;
+  font-size: 1.1rem;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  padding-inline: 0.7rem;
+}
+
+/* ===============================
+   6) Botón y enlaces
+   =============================== */
 .btn-login {
   background-color: #6d1437;
   color: #fff;
@@ -130,14 +257,13 @@ input[formControlName="contrasena"] {
   border: none;
   padding: 8px 0;
   margin-top: 10px;
-  transition: background 0.2s;
+  transition: background 0.2s ease-in-out;
+  width: 100%;
 }
 .btn-login:hover,
-.btn-login:focus {
-  background-color: #4d0e28;
-}
+.btn-login:focus { background-color: #4d0e28; }
+.btn-login[disabled] { opacity: 0.7; cursor: not-allowed; }
 
-/* Link “Olvidaste contraseña” */
 .forgot-link {
   margin-top: 18px;
   color: #444;
@@ -145,34 +271,35 @@ input[formControlName="contrasena"] {
   text-decoration: underline;
   transition: color 0.2s;
 }
-.forgot-link:hover {
-  color: #6d1437;
-}
+.forgot-link:hover { color: #6d1437; }
 
-/* Versión */
+/* ===============================
+   7) Versión
+   =============================== */
 .version-label {
   position: absolute;
   right: 18px;
   bottom: 10px;
-  color: #d3d3d3;
+  color: #171616;
   font-size: 0.85rem;
   user-select: none;
 }
 
-/* Responsive */
-@media (max-width: 600px) {
-  .form-box {
-    width: 95vw;
-  }
-  .system-title {
-    font-size: 1.2rem;
-  }
-  .seguridad-title {
-    font-size: 1.5rem;
-  }
+/* ===============================
+   8) Responsive
+   =============================== */
+@media (max-width: 992px) {
+  .main-content { flex-direction: column; }
+  .left-section::before { --blank: 65%; } /* más blanco en tablets/móvil */
 }
-.escudo {
-    width: 400px;
-    margin: 0.5em auto 1em auto;
-    display: block;
+@media (max-width: 600px) {
+  .form-box { width: 95vw; }
+  .system-title { font-size: 1.8rem; }
+  .escudo { width: 280px; }
+  .left-section p, .left-title { font-size: 0.98rem; }
+}
+@media (max-width: 420px) {
+  .system-title { font-size: 1.6rem; }
+  .sspc-logo { max-width: 200px; }
+  .escudo { width: 220px; }
 }

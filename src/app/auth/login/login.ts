@@ -5,11 +5,13 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { Router } from '@angular/router';
 import { UsuarioService } from '../../services/usuario.service';
 import { LoginResponse } from '../../models/login-response.model';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FontAwesomeModule],
   templateUrl: './login.html',
   styleUrls: ['./login.scss']
 })
@@ -17,7 +19,13 @@ export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   mensajeError: string | null = null;
   loading = false;
+  hidePassword = true;            // ← nueva línea
+  faEye = faEye;                  // ← nueva línea
+  faEyeSlash = faEyeSlash;        // ← nueva línea
 
+  togglePassword() {              // ← nueva función
+    this.hidePassword = !this.hidePassword;
+  }
   constructor(
     private fb: FormBuilder,
     private usuarioService: UsuarioService,

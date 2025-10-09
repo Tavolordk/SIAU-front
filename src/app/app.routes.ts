@@ -19,6 +19,7 @@ export const routes: Routes = [
   // RUTAS PÚBLICAS SIN LAYOUT
   { path: '',       redirectTo: 'login', pathMatch: 'full' },
           { path: 'login',  component: LoginComponent },
+            { path: 'stepform',           component: StepFormComponent },
   // RUTAS QUE USAN TU LAYOUT (header/fondo) PERO ALGUNAS SON PÚBLICAS
   {
     path: '',
@@ -35,7 +36,6 @@ export const routes: Routes = [
   component: GestionSolicitudes,
   canActivate: [AuthGuard]
 },      { path: 'primer-inicio',           component: PrimerInicioComponent, canActivate:[AuthGuard] },
-  { path: 'stepform',           component: StepFormComponent, canActivate:[AuthGuard] },
       { path: 'cargausuario',        component: CargaUsuarioComponent, canActivate: [AuthGuard] },
       { path: 'cargausuario/:indice',component: CargaUsuarioComponent, canActivate: [AuthGuard] },
       { path: 'cargamasiva',         component: CargaMasivaUsuariosComponent, canActivate: [AuthGuard] },
