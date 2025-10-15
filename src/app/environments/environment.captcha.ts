@@ -1,3 +1,4 @@
 export const environmentCaptcha = {
-  apiBaseUrl: 'https://localhost:7218'
+  production:true,
+  apiBaseUrl: '/api'
 };

@@ -1,4 +1,4 @@
 export const environmentRequest = {
-  production: false,
-  apiBaseUrl: 'https://localhost:7078', 
+  production: true,
+  apiBaseUrl: '/api'              // el service seguirá haciendo /solicitudes/...
 };

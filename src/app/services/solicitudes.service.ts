@@ -122,7 +122,7 @@ export class SolicitudesService {
     return this.http.post(`${this.baseUrl}/solicitudes/${id}/adjuntos`, adjunto, { observe: 'response' });
   }
     guardarStep4(payload: FinalizarRegistroDto): Observable<GuardarStep4Response> {
-    return this.http.post<GuardarStep4Response>(`${this.baseUrl}/api/solicitudes/guardar-step4`, payload);
+    return this.http.post<GuardarStep4Response>(`${this.baseUrl}/solicitudes/guardar-step4`, payload);
   }
   // src/app/solicitudes/services/solicitudes.service.ts
 uploadTempDoc(tipoDocumentoId: number, file: File, fechaDocumento?: string) {
@@ -231,7 +231,7 @@ solicitarCodigo$(
   ttlSegundos = 900,
   maxIntentos = 5
 ) {
-  const url = `${this.baseUrl}/api/solicitudes/solicitar-codigo`;
+  const url = `${this.baseUrl}/solicitudes/solicitar-codigo`;
   return this.http.post<SolicitarCodigoRes>(url, {
     canal, contacto, proposito, ttlSegundos, maxIntentos
   });
@@ -244,7 +244,7 @@ verificarCodigo$(
   proposito: 'signup'|'change_contact'|'login'|'2fa',
   codigo: string
 ) {
-  const url = `${this.baseUrl}/api/solicitudes/verificar-codigo`;
+  const url = `${this.baseUrl}/solicitudes/verificar-codigo`;
   return this.http.post<VerificarCodigoRes>(url, {
     canal, contacto, proposito, codigo
   });

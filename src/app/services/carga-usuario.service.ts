@@ -13,7 +13,7 @@ export interface Opcion { id: number; nombre: string; }
 @Injectable({ providedIn: 'root' })
 export class CargaUsuarioService {
   private baseUrl = '/api/cedula';
-  private api = environmentRequest.apiBaseUrl;                            // <— NUEVO (ej: https://localhost:7462)
+  private api = environmentRequest.apiBaseUrl;                            // <— NUEVO (ej: http://10.241.136.29:7462)
 
   // inyecta CatalogosService para mapear nombres→IDs
   constructor(private http: HttpClient, private cat: CatalogosService, private usuarioSvc:UsuarioService ) {}  // <— NUEVO
@@ -37,12 +37,12 @@ export class CargaUsuarioService {
     const body = mapExcelRowToSolicitudBody(row, this.cat);    // <— ya tienes municipio como int y cedula presente
     body.UserId = this.usuarioSvc.getUserId() ?? 0;         // <- acá, a nivel raíz
     console.log('[POST body]', body);                          // opcional
-    return this.http.post(`${this.api}/api/solicitudes/crear`, body);
+    return this.http.post(`${this.api}/solicitudes/crear`, body);
   }
 
     saveSolicitudFromCedula(model: CedulaModel) {
     const body = mapCedulaToSolicitudBody(model);
     body.UserId = this.usuarioSvc.getUserId() ?? 0;         // <- acá, a nivel raíz
-    return this.http.post(`${this.api}/api/solicitudes/crear`, body); 
+    return this.http.post(`${this.api}/solicitudes/crear`, body); 
 }
 }

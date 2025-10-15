@@ -1,3 +1,3 @@
 export const environmentTelegram = {
-  apiBaseUrl: 'https://localhost:7049'
+  apiBaseUrl: 'http://10.241.136.29:7049'
 };

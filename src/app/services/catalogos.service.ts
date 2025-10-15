@@ -332,7 +332,7 @@ export class CatalogosService {
   getPerfilesPorEstructuraAuto$(
     ids: { institucionId?: number | null; dependenciaId?: number | null; corporacionId?: number | null; areaId?: number | null }
   ) {
-    const url = `${this.solicitudesBaseUrl}/api/solicitudes/perfiles-por-estructura`;
+    const url = `${this.solicitudesBaseUrl}/solicitudes/perfiles-por-estructura`;
 
     // normaliza a 0 si viene null/NaN/etc.
     const norm = (n?: number | null) => (typeof n === 'number' && isFinite(n) && n > 0 ? n : 0);

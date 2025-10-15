@@ -1,5 +1,4 @@
 export const environmentCatalog = {
-  production: false,
-  apiBaseUrl: 'https://localhost:7142', // Catalogos.Api (dev)
-  basePath: '/catalogos'                // prefijo del controller
+  production: true,
+  apiBaseUrl: '/api'              // el service seguirá haciendo /catalogos/...
 };

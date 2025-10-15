@@ -6,7 +6,7 @@ import { ContactoCreateDto } from '../models/contacto.model';
 @Injectable({ providedIn: 'root' })
 export class PersonasService {
   private http = inject(HttpClient);
-    private baseUrl = 'https://localhost:7143/personas';
+    private baseUrl = 'http://10.241.136.29:7143/personas';
 
 
   // ========== ORQUESTACIÓN PRINCIPAL ==========
