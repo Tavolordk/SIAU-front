@@ -1,0 +1,16 @@
+version: "3.9"
+name: "angular-app"
+services:
+  web:
+    image: ${REGISTRY}/${NAMESPACE}/${APP_REPO}:${TAG}
+    # To build instead of pulling, uncomment the block below and remove the "image:" line
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    #   args:
+    #     BUILD_CONFIGURATION: ${BUILD_CONFIGURATION}
+    ports:
+      - "${HOST_PORT:-4200}:80"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped

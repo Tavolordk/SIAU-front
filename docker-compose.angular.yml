@@ -1,0 +1,10 @@
+version 3.9
+name osusuarios-angular
+
+services
+  web
+    image docker.iotavoolea29osusuarios-angularlatest
+    ports
+      - ${ANGULAR_PORT-4200}80   # hostcontainer → cambia ANGULAR_PORT en .env
+    env_file .env
+    restart unless-stopped
