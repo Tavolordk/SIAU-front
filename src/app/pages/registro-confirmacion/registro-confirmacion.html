@@ -1,0 +1,88 @@
+<!-- Header reutilizable (sin progress bar) -->
+<app-header-siau
+  [title]="'Sistema Integral de Administración de Usuarios'"
+  [userName]="usuarioNombre"
+  [userRole]="usuarioRol"
+  [logoSrc]="'assets/images/SSPC.png'"
+  [bgSrc]="'assets/images/encabezado.png'"
+  [height]="90">
+</app-header-siau>
+
+<!-- Contenido -->
+<div class="main-container">
+  <div class="section-bar">Confirmación de solicitud</div>
+
+  <div class="card card-custom">
+    <div class="folio-label">Su número de folio es:</div>
+    <div class="folio-box">{{ folio }}</div>
+
+    <div class="text-center mb-3">
+      <span class="info-label">Guarde este folio para cualquier consulta sobre su trámite</span>
+    </div>
+
+    <div class="container" style="max-width:95%;">
+      <div class="row info-row">
+        <div class="col-4 info-label">Tipo de solicitud:</div>
+        <div class="col-8 info-value">{{ tipoSolicitud }}</div>
+      </div>
+
+      <div class="row info-row">
+        <div class="col-4 info-label">Fecha y hora:</div>
+        <div class="col-8 info-value">{{ fechaHora }}</div>
+      </div>
+
+      <div class="row info-row">
+        <div class="col-4 info-label">Documentos recibidos:</div>
+        <div class="col-8 info-value">
+          <ul class="docs-list">
+            <li *ngFor="let d of documentos">
+              <fa-icon [icon]="icFile" class="me-2"></fa-icon>{{ d }}
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="process-section-bar">Proceso de revisión</div>
+    <table class="process-table">
+      <tr>
+        <td class="label">Estatus actual:</td>
+        <td class="value">{{ estatusActual }}</td>
+      </tr>
+      <tr>
+        <td class="label">Próximo paso:</td>
+        <td class="value">{{ proximoPaso }}</td>
+      </tr>
+      <tr>
+        <td class="label">Tiempo estimado:</td>
+        <td class="value">{{ tiempoEstimado }}</td>
+      </tr>
+    </table>
+
+    <div class="confirmation-section">
+      <div><fa-icon [icon]="icCheck"></fa-icon></div>
+      <div class="confirmation-title">¡Confirmación enviada!</div>
+      <div class="confirmation-text">
+        La confirmación ha sido enviada al correo electrónico registrado.<br>
+        Si vinculaste Telegram, también la recibirás en tu cuenta.
+      </div>
+    </div>
+
+    <div class="resolution-section">
+      Recibirá la resolución en un plazo máximo de 5 días hábiles a través de:
+      <div class="contact-info">
+        <fa-icon [icon]="icMail"></fa-icon> Correo electrónico: {{ contactoResolucionCorreo }}<br>
+        <fa-icon [icon]="icTg"></fa-icon> {{ contactoResolucionTelegram }} (Telegram), en caso de haber indicado que cuenta con Telegram
+      </div>
+    </div>
+
+    <div class="no-response-section">
+      ¿No recibiste respuesta?<br>
+      <span class="contact-info">
+        Si en 5 días hábiles no has recibido una resolución, contáctanos para seguimiento:<br>
+        Mesa de servicio: {{ mesaServicio }}<br>
+        <a class="contact-email" href="mailto:{{ correoMesa }}">{{ correoMesa }}</a>
+      </span>
+    </div>
+  </div>
+</div>

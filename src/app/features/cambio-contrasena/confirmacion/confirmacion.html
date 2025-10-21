@@ -1,0 +1,74 @@
+<!-- Header reutilizable -->
+<app-header-siau
+  [title]="'Sistema Integral de Administración de Usuarios'"
+  [userName]="usuarioNombre"
+  [userRole]="usuarioCuenta"
+  [logoSrc]="'assets/images/SSPC.png'"
+  [bgSrc]="'assets/images/encabezado.png'"
+  [height]="headerOffset">
+</app-header-siau>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" [style.top.px]="headerOffset">
+    <div class="sidebar-header">
+      <div>Gestión de Cédulas Únicas<br />de Registro de Usuario</div>
+      <fa-icon [icon]="i.bars" class="ms-auto"></fa-icon>
+    </div>
+
+    <button class="nav-btn w-100 text-start">
+      Gestión de cédulas
+      <fa-icon [icon]="i.chevronDown" class="float-end"></fa-icon>
+    </button>
+
+    <button class="nav-btn active w-100 text-start">
+      Gestión de contraseña
+    </button>
+  </aside>
+
+  <!-- Contenido -->
+  <main class="main">
+    <div class="card main-card">
+
+      <!-- Steps -->
+      <div class="steps">
+        <div class="step">
+          <div class="circle">1</div>
+          <div class="label">Verificar Identidad</div>
+        </div>
+        <div class="step">
+          <div class="circle">2</div>
+          <div class="label">Nueva Contraseña</div>
+        </div>
+        <div class="step">
+          <div class="circle">3</div>
+          <div class="label">Confirmación</div>
+        </div>
+      </div>
+
+      <!-- Pestaña/Requisitos -->
+      <div class="tab-bar">
+        <div class="tab">Requisitos</div>
+      </div>
+
+      <!-- Éxito -->
+      <section class="success">
+        <fa-icon [icon]="i.check" class="success-icon"></fa-icon>
+        <h2 class="success-title">¡Contraseña cambiada con éxito!</h2>
+        <p class="success-subtitle">Tu contraseña ha sido actualizada correctamente</p>
+      </section>
+
+      <!-- Info -->
+      <div class="info-box">
+        <fa-icon [icon]="i.info" class="me-2"></fa-icon>
+        Por seguridad hemos cerrado tu sesión en todos los demás dispositivos
+      </div>
+
+      <!-- Acción -->
+      <div class="text-center pb-4">
+        <button class="btn btn-oro" type="button" (click)="onVolver()">Volver al sistema</button>
+      </div>
+    </div>
+  </main>
+</div>

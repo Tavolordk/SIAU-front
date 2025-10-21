@@ -1,0 +1,43 @@
+<div class="main-container">
+  <div class="title">
+    {{ titulo }}
+  </div>
+
+  <div class="subtitle">
+    {{ subtitulo }}
+  </div>
+
+  <div class="code-box">
+    <span class="code-number">{{ codigo }}</span>
+  </div>
+
+  <div class="content">
+    <p><b>Estimado {{ nombreUsuario }}:</b></p>
+
+    <p>
+      Hemos recibido una solicitud para {{ descripcionProposito }}
+      en el Sistema de Administración de Usuarios.
+    </p>
+
+    <p>
+      Si no ingresas el código de activación en el periodo de validación, deberás generar otro.
+    </p>
+
+    <p>
+      Si usted no solicitó este código, ignore este mensaje y, en caso necesario,
+      comuníquese con nuestro centro de atención.
+    </p>
+
+    <div class="d-flex align-items-center mt-3 mb-2">
+      <span class="fecha-hora-label">Fecha y hora:</span>
+      <span class="fecha-hora-value">{{ fecha | date:'dd/MM/yyyy' }}</span>
+      <span class="fecha-hora-time">{{ fecha | date:'HH:mm' }} hrs.</span>
+    </div>
+  </div>
+
+  <div class="footer mt-3">
+    <span class="mesa-servicio">Mesa de servicio:</span> {{ mesaServicio }}
+    <span class="red">Red:</span> {{ red }}<br>
+    <span class="correo">Correo electrónico:</span> {{ correo }}
+  </div>
+</div>

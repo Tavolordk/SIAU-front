@@ -1,0 +1,187 @@
+/* Colores guía */
+$vino: #6d1432;
+$oro: #bfa05a;
+$gris-suave: #e5e5e5;
+$gris-borde: #e0e0e0;
+$gris-txt: #222;
+$gris-muted: #bdbdbd;
+
+/* Evita doble scroll horizontal en el área del componente */
+:host { display: block; overflow-x: hidden; }
+
+/* Layout general (sidebar fijo + main) */
+.siau-layout {
+  position: relative;
+}
+
+.sidebar {
+  position: fixed;
+  left: 0;
+  width: 320px;
+  min-height: 100vh;
+  background: #fff;
+  border-right: 0;
+  z-index: 10;
+
+  .sidebar-header {
+    background: $vino;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+
+    fa-icon { font-size: 1.4rem; }
+  }
+
+  .sidebar-item {
+    width: 100%;
+    text-align: left;
+    border: 0;
+    border-radius: 0;
+    padding: 18px 24px;
+    font-size: 1.1rem;
+    background: #e5e5e5;
+    color: $gris-muted;
+    cursor: not-allowed;
+
+    &.active {
+      background: #a0a0a0;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .muted { color: $gris-muted; font-size: 1rem; }
+  }
+}
+
+.main-content {
+  margin-left: 320px;
+  padding: 48px 0 0 0;
+  min-height: 100vh;
+  overflow-x: hidden; /* defensa extra contra scroll X */
+}
+
+.main-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.08);
+  padding: 0 0 32px 0;
+  max-width: 1100px;
+  margin: 32px auto 0;
+}
+
+/* Stepper */
+.stepper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 80px;
+  padding: 40px 0 0;
+
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 1.05rem;
+    color: $gris-txt;
+    font-weight: 500;
+
+    .circle {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: $vino; color: #fff; display: grid; place-items: center;
+      font-size: 1.6rem; font-weight: 700; margin-bottom: 8px;
+    }
+
+    &.inactive {
+      color: #444; font-weight: 400;
+
+      .circle { background: $gris-muted; }
+    }
+  }
+}
+
+/* Barra de requisitos */
+.requirements-bar {
+  background: $vino; color: #fff;
+  font-size: 1.15rem; font-weight: 700;
+  padding: 8px 32px; border-radius: 8px 8px 0 0;
+}
+
+/* Contenido de requisitos */
+.requirements-content {
+  padding: 32px 48px 0;
+
+  .desc {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: $gris-txt;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+}
+
+/* Formulario */
+.form-label {
+  font-size: 1rem; color: $gris-muted; font-weight: 600; margin-bottom: 8px;
+}
+
+.form-control {
+  font-size: 1.05rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: $gris-suave;
+  color: $gris-txt;
+  padding: 12px 48px 12px 12px;
+  box-shadow: none;
+
+  &:focus {
+    border-color: $gris-borde;
+    background: #f2f2f2;
+    box-shadow: none;
+  }
+}
+
+.input-group-text {
+  background: $gris-suave;
+  border: 1px solid transparent;
+  border-left: 0;
+  border-radius: 0 8px 8px 0;
+  font-size: 1.05rem;
+  color: $vino;
+}
+
+/* Error */
+.form-error {
+  color: $vino; font-size: .95rem; font-weight: 600; margin: 10px 0 18px;
+}
+
+/* Botón oro */
+.btn-gold {
+  background: $oro; color: #fff;
+  font-size: 1rem; font-weight: 600;
+  border-radius: 8px; border: none; padding: 10px 28px;
+
+  &:hover { background: darken($oro, 8%); color: #fff; }
+}
+
+/* Responsividad */
+@media (max-width: 1200px) {
+  .main-card { max-width: 98vw; }
+  .sidebar { width: 240px; }
+  .main-content { margin-left: 240px; }
+}
+
+@media (max-width: 900px) {
+  .sidebar { position: static; width: 100%; min-height: auto; }
+  .main-content { margin-left: 0; padding-top: 24px; }
+  .main-card { padding-bottom: 24px; }
+  .requirements-content { padding: 24px 8px 0; }
+}
+
+@media (max-width: 600px) {
+  .main-card { margin-top: 16px; }
+  .stepper { gap: 24px; padding-top: 24px; }
+  .requirements-bar { font-size: 1rem; padding: 8px; }
+}

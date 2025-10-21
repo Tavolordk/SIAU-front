@@ -1,0 +1,58 @@
+<app-header-siau [title]="'Sistema Integral de Administración de Usuarios'" [userName]="usuarioNombre"
+    [userRole]="usuarioCuenta" [logoSrc]="'assets/images/SSPC.png'" [bgSrc]="'assets/images/encabezado.png'"
+    [height]="110">
+</app-header-siau>
+<div class="layout">
+        <app-siau-sidebar [fixed]="true" [top]="110" [activeMain]="'cedulas'" [activeSub]="'mis'"
+            (navigate)="onSidebarNavigate($event)">
+        </app-siau-sidebar>
+        <main class="main-content">
+            <h1 class="main-title">Gestión de mis cédulas</h1>
+
+            <app-hero-cta label="Nueva solicitud" color="vino" size="lg" (clicked)="onCancelar()">
+            </app-hero-cta>
+
+
+            <section class="bitacora-container">
+                <div class="bitacora-header">
+                    Bitácora de comentarios
+                    <button class="close-btn" type="button" (click)="onCerrarBitacora()">
+                        <fa-icon [icon]="icons.close"></fa-icon>
+                    </button>
+                </div>
+
+                <div class="bitacora-body">
+                    <div class="bitacora-entry">
+                        <span class="bitacora-role">Administrador</span>
+                        <span class="bitacora-user">María Gómez</span>
+                        <span class="bitacora-date">20/05/2025 - 10:15</span>
+                        <div class="bitacora-comment mt-2">
+                            Documentación incompleta, faltan los anexos requeridos
+                        </div>
+                    </div>
+
+                    <div class="bitacora-entry">
+                        <span class="bitacora-label">Enlace</span>
+                        <span class="bitacora-user">Juan Pérez</span>
+                        <span class="bitacora-date">19/05/2025 - 14:30</span>
+                        <div class="bitacora-comment mt-2">
+                            Solicitud aprobada mediante enlace de validación
+                        </div>
+                    </div>
+
+                    <div class="bitacora-add-title">Agregar nuevo comentario</div>
+                    <input class="bitacora-add-input" type="text"
+                        placeholder="Ingrese comentarios o motivos de rechazo/aprobación" />
+
+                    <div class="bitacora-actions">
+                        <button class="btn-cancelar" type="button" (click)="onCancelar()">
+                            Cancelar <span class="x">X</span>
+                        </button>
+                        <button class="btn-agregar" type="button" (click)="onAgregar()">
+                            <fa-icon [icon]="icons.plus"></fa-icon> Agregar
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+</div>

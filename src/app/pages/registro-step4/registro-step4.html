@@ -1,0 +1,95 @@
+<!-- HEADER reutilizable -->
+<app-header-siau
+  [title]="'Sistema Integral de Administración de Usuarios'"
+  [userName]="usuarioNombre"
+  [userRole]="usuarioRol"
+  [logoSrc]="'assets/images/SSPC.png'"
+  [bgSrc]="'assets/images/encabezado.png'"
+  [height]="90">
+</app-header-siau>
+
+<!-- Título / progreso -->
+  <app-registro-progress
+    [title]="'Registro'"
+    [currentStep]="currentStep"
+    [totalSteps]="totalSteps"
+    [percent]="progressPercent"  
+    [accent]="'#7a1832'">
+  </app-registro-progress>
+
+<!-- Sección de contacto -->
+<section class="contact-section">
+  <div class="contact-header">Medios de contacto</div>
+
+  <div class="contact-card">
+    <div class="contact-body">
+      <div class="required-note">*Campos requeridos</div>
+      <div class="contact-instructions">
+        Ingresa los medios de contacto en los que quieras recibir notificaciones cuando realices trámites con tu cuenta
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <!-- Correos -->
+        <div class="row mb-2">
+          <div class="col-md-6">
+            <label for="correo" class="form-label">Correo electrónico <span class="text-danger">*</span></label>
+            <input id="correo" type="email" class="form-control" autocomplete="off" formControlName="correo">
+          </div>
+          <div class="col-md-6">
+            <label for="correo2" class="form-label">Confirma tu correo electrónico <span class="text-danger">*</span></label>
+            <input id="correo2" type="email" class="form-control" autocomplete="off" formControlName="correo2">
+          </div>
+        </div>
+
+        <!-- Teléfonos -->
+        <div class="row mb-2">
+          <div class="col-md-6">
+            <label for="celular" class="form-label">Número de celular <span class="text-danger">*</span></label>
+            <input id="celular" type="text" class="form-control" autocomplete="off" formControlName="celular" placeholder="10 dígitos">
+          </div>
+          <div class="col-md-6">
+            <label for="celular2" class="form-label">Confirma tu número de celular <span class="text-danger">*</span></label>
+            <input id="celular2" type="text" class="form-control" autocomplete="off" formControlName="celular2" placeholder="10 dígitos">
+          </div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-md-6">
+            <label for="oficina" class="form-label">Número telefónico de oficina <span class="text-danger">*</span></label>
+            <input id="oficina" type="text" class="form-control" autocomplete="off" formControlName="oficina" placeholder="Ej. 5555555555">
+          </div>
+          <div class="col-md-6">
+            <label for="extension" class="form-label">Extensión</label>
+            <input id="extension" type="text" class="form-control" autocomplete="off" formControlName="extension">
+          </div>
+        </div>
+
+        <!-- Radio -->
+        <div class="row mb-2 align-items-center">
+          <div class="col-12">
+            <label class="form-label mb-1" style="font-weight:500;">Cuenta con aplicativo de:</label>
+          </div>
+          <div class="col-12">
+            <div class="form-check ms-2">
+              <input class="form-check-input" type="radio" id="telegram" value="telegram" formControlName="app">
+              <label class="form-check-label" for="telegram">Telegram</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="d-flex justify-content-between mt-4">
+          <button type="button" class="btn btn-custom btn-back" (click)="onBack()">
+            <fa-icon [icon]="icLeft" class="me-2"></fa-icon>
+            Regresar
+          </button>
+
+          <button type="submit" class="btn btn-custom btn-next">
+            Siguiente
+            <fa-icon [icon]="icRight" class="ms-2"></fa-icon>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>

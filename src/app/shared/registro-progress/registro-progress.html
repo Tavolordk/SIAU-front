@@ -1,0 +1,9 @@
+<h1 class="register-title mt-5 mb-2">{{ title }}</h1>
+
+<div class="progress-bar-custom mb-1" [style.--accent]="accent">
+  <div class="progress-bar-inner" [style.width.%]="progressPercent"></div>
+</div>
+
+<div class="step-label" *ngIf="currentStep != null && totalSteps != null">
+  Paso {{ currentStep }} de {{ totalSteps }}
+</div>

@@ -1,0 +1,127 @@
+/* Usa Bootstrap por NPM (ya cargado en src/styles.scss) */
+
+/* Colores base del diseño */
+$vino: #89143a;
+$oro:  #b49548;
+
+.req { color: $vino; }
+.btn-vino{
+        background-color: $vino;
+}
+.btn-oro{
+    background-color: $oro;
+}
+
+.sombra { box-shadow: 0 6px 16px rgba(0,0,0,.12); }
+
+/* Título barra */
+.barra-titulo {
+  background: #eee;
+  border-radius: .5rem;
+  padding: .6rem 1rem;
+  text-align: center;
+  font-weight: 700;
+}
+
+/* Panel genérico */
+.panel {
+  background: #fff;
+  border-radius: .75rem;
+  box-shadow: 0 6px 16px rgba(0,0,0,.08);
+  overflow: hidden;
+
+  .panel-header {
+    font-weight: 700;
+    color: #fff;
+    padding: .6rem 1rem;
+
+    &.vino { background: $vino; }
+    &.oro  { background: $oro; }
+  }
+
+  .panel-body { padding: 1rem; }
+}
+
+/* Tarjetas de estatus */
+.card.estatus {
+  border: 1px solid #e0e0e0;
+  .card-header { background: #f8f9fa; font-weight: 600; }
+}
+
+/* Ajustes de inputs */
+.form-label { font-weight: 600; }
+/* Card flotante bajo el header */
+.hero-wrapper { margin-top: -22px; } /* súbelo un poco para que 'flote' */
+.hero-card {
+  max-width: 440px;
+  margin: 0 auto 16px auto;
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  border: 1px solid rgba(0,0,0,.06);
+}
+
+/* Botón vino/rojo */
+.btn-vino {
+  background-color: #8b1e41;
+  border-color: #8b1e41;
+}
+.btn-vino:hover,
+.btn-vino:focus {
+  background-color: #751735;
+  border-color: #751735;
+}
+
+/* (Opcional) la barra de título gris */
+.barra-titulo {
+  background: #ececec;
+  color: #000;
+  border-radius: 10px;
+  text-align: center;
+  padding: 10px 12px;
+  font-weight: 600;
+}
+/* --- SOLO para la sección de Documentos --- */
+
+/* Evita cualquier scroll vertical interno en la zona de Documentos */
+.panel .panel-body .doc-controls,
+.panel .panel-body .table-responsive,
+.panel .panel-body .documentos-mock,
+.panel .panel-body .nota-gris {
+  overflow: visible !important;
+  max-height: none !important;
+}
+
+/* Bootstrap pone overflow-x en .table-responsive (bien),  
+   pero nos aseguramos de que NO meta overflow-y */
+.panel .panel-body .table-responsive {
+  overflow-y: visible !important;
+}
+
+/* Asegura que nada en Documentos “anide” scroll por accidente */
+.panel .panel-body .doc-controls,
+.panel .panel-body .nota-gris {
+  contain: layout style;           /* aisla el layout y evita chain scrolling */
+  overscroll-behavior: contain;    /* no encadena scrolls internos */
+}
+
+/* Card de ‘Nueva solicitud’: sin scroll interno, sin efectos colaterales */
+.hero-wrapper,
+.hero-card {
+  overflow: visible !important;
+}
+
+/* Estética de la nota gris y de la tabla (opcional) */
+.bg-gris-suave {
+  background: #f1f1f1;
+}
+
+.documentos-mock thead th,
+.documentos-mock td {
+  background: #fff;
+}
+.input-radio-red{
+ background-color: #751d41;
+ border-color: #751735;
+}

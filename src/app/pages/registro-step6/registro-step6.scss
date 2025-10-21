@@ -1,0 +1,75 @@
+:host{
+  --guinda:#7a1832;
+  --oro:#b89b5e;
+
+  display:block;
+  background:#fff;
+  font-family:'Montserrat', Arial, sans-serif;
+  color:#222;
+}
+
+.main-content{
+  margin-top:30px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.register-title{ font-size:2.2rem; font-weight:800; text-align:center; }
+
+/* Progreso */
+.progress-bar-custom{
+  width:400px; max-width:90vw; height:4px; background:#e5e5e5; border-radius:2px; position:relative; margin:0 auto;
+}
+.progress-bar-inner{
+  position:absolute; left:0; top:0; height:100%; background:var(--guinda); border-radius:2px;
+}
+
+/* Paso */
+.step-label{ text-align:center; font-size:1rem; color:#444; margin-top:8px; margin-bottom:25px; }
+
+/* Sección */
+.section-title{
+  background:var(--guinda); color:#fff; font-weight:700; font-size:1.2rem;
+  border-radius:8px; padding:10px 0; width:80vw; max-width:1100px; text-align:left; margin:0 auto 18px;
+}
+.info-box{
+  background:#e5e5e5; color:#222; border-radius:10px; padding:28px 30px 18px; font-size:1.2rem; font-weight:500;
+  width:80vw; max-width:1100px; margin:0 auto 30px; text-align:center;
+}
+
+/* Form */
+.form-section{ width:100%; max-width:600px; margin:0 auto; text-align:center; }
+.form-label-custom{ font-size:2rem; font-weight:700; color:#111; margin-bottom:18px; }
+
+.form-control-custom{
+  width:320px; max-width:90vw; margin:0 auto;
+  border:2px solid var(--guinda); border-radius:8px; font-size:1.3rem; text-align:center; padding:8px 0;
+  font-weight:500; color:#222; background:#fff;
+}
+
+/* Info/links */
+.code-validity{ color:#b3b3b3; font-size:1.05rem; margin-top:10px; font-weight:600; }
+.resend-link{ color:var(--guinda); font-size:1.05rem; font-weight:600; text-decoration:underline; margin-top:8px; }
+
+/* Acciones */
+.action-buttons{
+  display:flex; justify-content:space-between; width:480px; max-width:95vw; margin:40px auto 0;
+}
+.btn-regresar{
+  background:#999; color:#fff; font-size:1.2rem; font-weight:700; border-radius:8px; padding:8px 38px; border:none;
+  display:flex; align-items:center; gap:8px;
+}
+.btn-verificar{
+  background:var(--oro); color:#fff; font-size:1.2rem; font-weight:700; border-radius:8px; padding:8px 38px; border:none;
+}
+
+/* Responsive */
+@media (max-width: 700px){
+  .register-title{ font-size:1.2rem; }
+  .section-title, .info-box{ width:95vw; font-size:1rem; padding:12px 8px; }
+  .form-label-custom{ font-size:1.1rem; }
+  .form-control-custom{ width:90vw; font-size:1rem; }
+  .action-buttons{ width:95vw; flex-direction:column; gap:18px; }
+  .btn-regresar, .btn-verificar{ width:100%; justify-content:center; }
+}

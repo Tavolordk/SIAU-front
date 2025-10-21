@@ -1,0 +1,313 @@
+<!-- Header reutilizable a 100% -->
+<app-header-siau
+  [title]="'Sistema Integral de Administración de Usuarios'"
+  [userName]="usuarioNombre"
+  [userRole]="usuarioRol"
+  [logoSrc]="'assets/images/SSPC.png'"
+  [bgSrc]="'assets/images/encabezado.png'"
+  [height]="110">
+</app-header-siau>
+
+<!-- Botón flotante de menú -->
+<button class="sidebar-btn" type="button" (click)="onToggleSidebar()">
+  <fa-icon [icon]="icBars"></fa-icon>
+</button>
+
+<!-- Página full width -->
+<div class="page-shell container-fluid px-0">
+  <h1 class="main-title">Consultar Cédulas</h1>
+  <button class="new-request-btn" type="button">Nueva solicitud</button>
+
+  <!-- Filtros -->
+  <div class="filter-card shadow-sm">
+    <div class="d-flex flex-wrap align-items-center mb-2 gap-2">
+      <div class="dropdown filter-dropdown">
+        <button class="btn btn-light dropdown-toggle w-100 text-start" type="button" data-bs-toggle="dropdown">
+          Información Personal
+        </button>
+      </div>
+      <div class="dropdown filter-dropdown">
+        <button class="btn btn-light dropdown-toggle w-100 text-start" type="button" data-bs-toggle="dropdown">
+          Información de Solicitud
+        </button>
+      </div>
+      <div class="dropdown filter-dropdown">
+        <button class="btn btn-light dropdown-toggle w-100 text-start" type="button" data-bs-toggle="dropdown">
+          Información Institucional/Estatal
+        </button>
+      </div>
+    </div>
+
+    <div class="d-flex flex-wrap align-items-center mb-2 gap-2">
+      <span class="filter-info">Fecha: 2025-03-01 / 2025-03-15 <i class="far fa-calendar-alt"></i></span>
+      <span class="filter-info">Entidad: Chiapas <i class="fas fa-map-marker-alt"></i></span>
+      <span class="filter-info">Tipo de Solicitud: Nueva Cuenta <i class="fas fa-file-alt"></i></span>
+    </div>
+
+    <div class="d-flex flex-wrap align-items-center mb-2 gap-2">
+      <button class="filter-btn" type="button" (click)="onBuscar()">Buscar</button>
+      <button class="filter-btn-secondary" type="button" (click)="onLimpiar()">Limpiar</button>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="table-card shadow-sm mt-4">
+    <div class="table-scroll">
+      <table class="table custom-table mb-0">
+        <thead>
+          <tr>
+            <th style="width:32px;"></th>
+            <th>Folio</th>
+            <th>Fecha</th>
+            <th>Nombre(s)</th>
+            <th>Primer Apellido</th>
+            <th>Segundo Apellido</th>
+            <th>Usuario</th>
+            <th>Tipo de Solicitud</th>
+            <th>Tipo de Institución</th>
+            <th>Entidad, Municipio</th>
+            <th>Institución, Dependencia, Corporación</th>
+            <th>Información relacionada en RNPSP</th>
+            <th>Información relacionada en SAU</th>
+            <th>Resultado integral ECCC</th>
+            <th>Estatus</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="checkbox" class="table-checkbox"></td>
+            <td>PM-2023-02-0195</td>
+            <td>2025-03-05</td>
+            <td>Manuel Alejandro</td>
+            <td>Lira</td>
+            <td>Blanco</td>
+            <td>u174Q7PL203L</td>
+            <td>Reactivación de Cuenta</td>
+            <td>Municipal</td>
+            <td>Entidad: Coahuila de Zaragoza, municipio: San Juan de Sabinas</td>
+            <td>Institución: Secretaría de Seguridad y Protección Ciudadana, dependencia: Área de Pruebas para Eventos, Corporación: Área de Pruebas para Eventos</td>
+            <td>Estatus: Activo, tipo de dependencia: Municipal, dependencia: Secretaría de Seguridad y Protección Ciudadana, entidad: Ciudad de México, municipio: La Magdalena Contreras</td>
+            <td>Estatus: Activo, tipo de dependencia: Municipal, dependencia: Secretaría de Seguridad y Protección Ciudadana, entidad: Ciudad de México, municipio: La Magdalena Contreras</td>
+            <td>Aprobado, vigente</td>
+            <td><span class="status-badge status-rechazada">Rechazada</span></td>
+            <td class="action-icons">
+              <i class="far fa-comment-alt"></i>
+              <i class="far fa-file-alt"></i>
+              <i class="far fa-eye"></i>
+            </td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" class="table-checkbox"></td>
+            <td>PM-2023-02-0106</td>
+            <td>2025-03-05</td>
+            <td>Andrea Sofía</td>
+            <td>Ramírez</td>
+            <td>Luna</td>
+            <td>-----</td>
+            <td>Nueva Cuenta</td>
+            <td>Federal</td>
+            <td>-----</td>
+            <td>Institución: Petróleos Mexicanos</td>
+            <td>-----</td>
+            <td>-----</td>
+            <td>-----</td>
+            <td><span class="status-badge status-pendiente">Pendiente</span></td>
+            <td class="action-icons">
+              <i class="far fa-comment-alt"></i>
+              <i class="far fa-file-alt"></i>
+              <i class="far fa-eye"></i>
+            </td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" class="table-checkbox"></td>
+            <td>PM-2023-02-0101</td>
+            <td>2025-03-06</td>
+            <td>María Fernanda</td>
+            <td>López</td>
+            <td>Rodríguez</td>
+            <td>-----</td>
+            <td>Nueva Cuenta</td>
+            <td>Municipal</td>
+            <td>Entidad: Chiapas, municipio: Biquipal de Ocampo</td>
+            <td>Institución: Fiscalía General de la República</td>
+            <td>-----</td>
+            <td>-----</td>
+            <td>-----</td>
+            <td><span class="status-badge status-cancelada">Cancelada</span></td>
+            <td class="action-icons">
+              <i class="far fa-comment-alt"></i>
+              <i class="far fa-file-alt"></i>
+              <i class="far fa-eye"></i>
+            </td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" class="table-checkbox"></td>
+            <td>PM-2023-02-0102</td>
+            <td>2025-03-07</td>
+            <td>José Manuel</td>
+            <td>Hernández</td>
+            <td>García</td>
+            <td>u179TQ102G5</td>
+            <td>Ampliación de Perfiles</td>
+            <td>Estatal</td>
+            <td>Entidad: Michoacán de Ocampo</td>
+            <td>Institución: Secretaría de Seguridad y Protección Ciudadana, dependencia: Guardia Nacional, corporación: CESN</td>
+            <td>-----</td>
+            <td>-----</td>
+            <td>-----</td>
+            <td><span class="status-badge status-aprobada">Aprobada</span></td>
+            <td class="action-icons">
+              <i class="far fa-comment-alt"></i>
+              <i class="far fa-file-alt"></i>
+              <i class="far fa-eye"></i>
+            </td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" class="table-checkbox"></td>
+            <td>PM-2023-02-0103</td>
+            <td>2025-03-07</td>
+            <td>Carlos Alberto</td>
+            <td>Martínez</td>
+            <td>Flores</td>
+            <td>u0697H2025K</td>
+            <td>Modificación de Perfil / Adscripción</td>
+            <td>Estatal</td>
+            <td>Entidad: Oaxaca</td>
+            <td>Institución: Secretaría de Seguridad y Protección Ciudadana, dependencia: Centro Nacional de Inteligencia (CNI), corporación: CESN</td>
+            <td>Estatus: Activo, tipo de dependencia: Estatal, dependencia: Secretaría de la Defensa Nacional, entidad: Jalisco, municipio: Arandas</td>
+            <td>Estatus: Activo, tipo de dependencia: Federal, dependencia: Procuraduría General de Justicia del Estado, entidad: Puebla, municipio: Atlixco</td>
+            <td>Aprobado, vigente</td>
+            <td><span class="status-badge status-aprobada">Aprobada</span></td>
+            <td class="action-icons">
+              <i class="far fa-comment-alt"></i>
+              <i class="far fa-file-alt"></i>
+              <i class="far fa-eye"></i>
+            </td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" class="table-checkbox"></td>
+            <td>PM-2023-02-0104</td>
+            <td>2025-03-07</td>
+            <td>Ana Karen</td>
+            <td>Gutiérrez</td>
+            <td>Morales</td>
+            <td>-----</td>
+            <td>Nueva Cuenta</td>
+            <td>Federal</td>
+            <td>-----</td>
+            <td>-----</td>
+            <td>-----</td>
+            <td>-----</td>
+            <td>-----</td>
+            <td><span class="status-badge status-pendiente">Pendiente</span></td>
+            <td class="action-icons">
+              <i class="far fa-comment-alt"></i>
+              <i class="far fa-file-alt"></i>
+              <i class="far fa-eye"></i>
+            </td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" class="table-checkbox"></td>
+            <td>PM-2023-02-0105</td>
+            <td>2025-03-10</td>
+            <td>Luis Enrique</td>
+            <td>Torres</td>
+            <td>Vargas</td>
+            <td>u2597WQ4201T</td>
+            <td>Reactivación de Cuenta</td>
+            <td>Estatal</td>
+            <td>Entidad: México, municipio: Xonacatlán</td>
+            <td>Institución: Secretaría de Seguridad y Protección Ciudadana, dependencia: Centro Nacional de Inteligencia (CNI), corporación: CESN</td>
+            <td>Estatus: Activo, tipo de dependencia: Estatal, dependencia: Secretaría de la Defensa Nacional, entidad: Jalisco, municipio: Arandas</td>
+            <td>Estatus: Activo, tipo de dependencia: Federal, dependencia: Procuraduría General de Justicia del Estado, entidad: Puebla, municipio: Atlixco</td>
+            <td>No aprobado, no vigente</td>
+            <td><span class="status-badge status-espera">En espera</span></td>
+            <td class="action-icons">
+              <i class="far fa-comment-alt"></i>
+              <i class="far fa-file-alt"></i>
+              <i class="far fa-eye"></i>
+            </td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" class="table-checkbox"></td>
+            <td>PM-2023-02-0106</td>
+            <td>2025-03-10</td>
+            <td>Valeria</td>
+            <td>Sánchez</td>
+            <td>Delgado</td>
+            <td>u070VH4201N</td>
+            <td>Ampliación de Perfiles</td>
+            <td>Estatal</td>
+            <td>Entidad: Tamaulipas</td>
+            <td>Institución: Secretaría de Seguridad y Protección Ciudadana, dependencia: Centro Nacional de Inteligencia (CNI), corporación: CESN</td>
+            <td>Estatus: Activo, tipo de dependencia: Estatal, dependencia: Secretaría de la Defensa Nacional, entidad: Jalisco, municipio: Arandas</td>
+            <td>Estatus: Activo, tipo de dependencia: Federal, dependencia: Procuraduría General de Justicia del Estado, entidad: Puebla, municipio: Atlixco</td>
+            <td>No aprobado, no vigente</td>
+            <td><span class="status-badge status-cancelada">Cancelada</span></td>
+            <td class="action-icons">
+              <i class="far fa-comment-alt"></i>
+              <i class="far fa-file-alt"></i>
+              <i class="far fa-eye"></i>
+            </td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" class="table-checkbox"></td>
+            <td>PM-2023-02-0108</td>
+            <td>2025-03-12</td>
+            <td>Juan Pablo</td>
+            <td>Pérez</td>
+            <td>Mendoza</td>
+            <td>u1747HQ2025K</td>
+            <td>Modificación de Perfil / Adscripción</td>
+            <td>Federal</td>
+            <td>Entidad: Guerrero, municipio: Acapulco de Juárez</td>
+            <td>Institución: Consejo Estatal de Seguridad Pública, dependencia: Secretaría de Seguridad Pública, corporación: Policía Estatal</td>
+            <td>Estatus: Activo, tipo de dependencia: Estatal, dependencia: Secretaría de Seguridad Pública, entidad: Puebla, municipio: Atlixco</td>
+            <td>-----</td>
+            <td>No aprobado, no vigente</td>
+            <td><span class="status-badge status-espera">En espera</span></td>
+            <td class="action-icons">
+              <i class="far fa-comment-alt"></i>
+              <i class="far fa-file-alt"></i>
+              <i class="far fa-eye"></i>
+            </td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" class="table-checkbox"></td>
+            <td>PM-2023-02-0109</td>
+            <td>2025-03-12</td>
+            <td>Laura Isabel</td>
+            <td>Castillo</td>
+            <td>Nava</td>
+            <td>-----</td>
+            <td>Nueva Cuenta</td>
+            <td>Municipal</td>
+            <td>Entidad: Guerrero, municipio: Acapulco de Juárez</td>
+            <td>Institución: Secretaría de Seguridad Pública, dependencia: Dirección General de Prevención y Readaptación Social</td>
+            <td>-----</td>
+            <td>-----</td>
+            <td>-----</td>
+            <td><span class="status-badge status-pendiente">Pendiente</span></td>
+            <td class="action-icons">
+              <i class="far fa-comment-alt"></i>
+              <i class="far fa-file-alt"></i>
+              <i class="far fa-eye"></i>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-footer">
+      <button class="approve-btn" type="button" (click)="onAprobar()">Aprobar</button>
+      <nav>
+        <ul class="pagination mb-0">
+          <li class="page-item"><a class="page-link" href="#">1</a></li>
+          <li class="page-item active"><a class="page-link" href="#">2</a></li>
+          <li class="page-item"><a class="page-link" href="#">3</a></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,43 @@
+<div class="header-bg"
+     [style.--header-height.px]="height"
+     [style.--header-bg-url]="bgSrc ? 'url(' + bgSrc + ')' : 'none'">
+
+  <!-- Logo -->
+  <div class="logo-title">
+    <img [src]="logoSrc" [alt]="logoAlt" />
+  </div>
+
+  <!-- Título -->
+  <div class="header-title">{{ title }}</div>
+
+  <!-- Usuario -->
+  <div class="user-info" *ngIf="showUser">
+    <div class="user-name">
+      {{ userName }}<br />
+      <span class="user-role">{{ userRole }}</span>
+    </div>
+
+    <button #userBtn
+            type="button"
+            class="user-icon btn p-0"
+            (click)="toggleMenu($event)"
+            [attr.aria-expanded]="isOpen"
+            aria-haspopup="true">
+      <fa-icon [icon]="icUser"></fa-icon>
+    </button>
+  </div>
+
+  <!-- Solo plantilla: se inyecta en el overlay al abrir -->
+  <ng-template #menuTpl>
+    <div class="user-menu-panel" (click)="$event.stopPropagation()">
+      <!-- Puedes usar tu componente aquí -->
+      <app-user-menu-card
+        [email]="userEmail"
+        [city]="userCity"
+        (logout)="onLogout()">
+      </app-user-menu-card>
+    </div>
+  </ng-template>
+
+  <ng-content></ng-content>
+</div>

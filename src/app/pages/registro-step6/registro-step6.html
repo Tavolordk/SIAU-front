@@ -1,0 +1,67 @@
+<!-- Header reutilizable -->
+<app-header-siau
+  [title]="'Sistema Integral de Administración de Usuarios'"
+  [userName]="usuarioNombre"
+  [userRole]="usuarioRol"
+  [logoSrc]="'assets/images/SSPC.png'"
+  [bgSrc]="'assets/images/encabezado.png'"
+  [height]="110">
+</app-header-siau>
+
+<!-- Contenido principal -->
+<div class="main-content">
+  <!-- Reutilizable: título + progress + paso -->
+  <app-registro-progress
+    [title]="'Registro'"
+    [currentStep]="currentStep"
+    [totalSteps]="totalSteps"
+    [percent]="progressPercent"  
+    [accent]="'#7a1832'">
+  </app-registro-progress>
+
+  <div class="section-title px-4">Validación de medios de contacto</div>
+
+  <div class="info-box">
+    La Validación de medios de contacto añade una capa de protección a tus cuentas.<br>
+    Primero ingresa el código enviado a tu {{ channelLabel }}.
+  </div>
+
+  <div class="form-section">
+    <div class="form-label-custom mb-3">
+      Ingresa el código enviado a tu {{ channelLabel }}
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="verify()">
+      <input
+        class="form-control form-control-custom mb-2"
+        type="text"
+        inputmode="numeric"
+        maxlength="6"
+        placeholder="••••••"
+        formControlName="code">
+
+      <div class="code-validity mb-1" *ngIf="!expired">
+        El código será válido por {{ mmss }} minutos.
+      </div>
+      <div class="code-validity text-danger mb-1" *ngIf="expired">
+        El código ha expirado.
+      </div>
+
+      <button type="button" class="resend-link btn btn-link p-0" (click)="resend()">
+        ¿No recibiste el código? Reenviar
+      </button>
+
+      <div class="action-buttons mt-4">
+        <button type="button" class="btn btn-regresar" (click)="onBack()">
+          <span>Regresar</span>
+          <fa-icon [icon]="icLeft"></fa-icon>
+        </button>
+
+        <button type="submit" class="btn btn-verificar"
+                [disabled]="form.invalid || expired">
+          Verificar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

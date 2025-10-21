@@ -1,0 +1,50 @@
+/* styles.scss */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
+
+:host {
+  --accent: #7a1832; /* se puede sobrescribir vía [style.--accent] */
+  display: block;
+  color: #222;
+}
+
+/* Título “Registro” SIEMPRE en Montserrat */
+.register-title{
+  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+               Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+  font-weight: 800;         /* ajusta a 700 si lo prefieres */
+  font-size: 2.2rem;        /* cohesivo entre pantallas */
+  line-height: 1.15;
+  text-align: center;
+  margin-top: 2.5rem;
+  margin-bottom: .5rem;
+}
+
+/* Progress */
+.progress-bar-custom {
+  width: 400px;
+  max-width: 90vw;
+  height: 4px;
+  background: #e5e5e5;
+  border-radius: 2px;
+  margin: 0 auto;
+  position: relative;
+}
+.progress-bar-inner {
+  position: absolute; left: 0; top: 0;
+  height: 100%; border-radius: 2px;
+  background: var(--accent);
+}
+
+/* Etiqueta Paso */
+.step-label {
+  text-align: center;
+  font-size: 1rem;
+  color: #444;
+  margin-top: 8px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .register-title { font-size: 1.4rem; }
+  .progress-bar-custom { width: 92vw; }
+}

@@ -1,0 +1,116 @@
+<!-- Header -->
+<app-header-siau
+  [title]="'Sistema Integral de Administración de Usuarios'"
+  [userName]="usuarioNombre"
+  [userRole]="usuarioCuenta"
+  [logoSrc]="'assets/images/SSPC.png'"
+  [bgSrc]="'assets/images/encabezado.png'"
+  [height]="headerOffset">
+</app-header-siau>
+
+<div class="siau-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar" [style.top.px]="headerOffset">
+    <div class="sidebar-header">
+      <div>Gestión de Cédulas Únicas<br>de Registro de Usuario</div>
+      <fa-icon [icon]="icons.bars"></fa-icon>
+    </div>
+    <button class="nav-link w-100 text-start disabled">
+      Gestión de cédulas
+      <fa-icon [icon]="icons.chevronDown" class="float-end"></fa-icon>
+    </button>
+    <button class="nav-link selected w-100 text-start">Gestión de contraseña</button>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-content">
+    <div class="main-card shadow">
+      <!-- Stepper -->
+      <div class="steps">
+        <div class="step">
+          <div class="step-circle">1</div>
+          <div class="step-title">Verificar Identidad</div>
+        </div>
+        <div class="step">
+          <div class="step-circle">2</div>
+          <div class="step-title">Nueva Contraseña</div>
+        </div>
+        <div class="step inactive">
+          <div class="step-circle">3</div>
+          <div class="step-title">Confirmación</div>
+        </div>
+      </div>
+
+      <!-- Pestña Requisitos -->
+      <div class="tab-bar">
+        <span class="tab active">Requisitos</span>
+      </div>
+
+      <div class="requirements-info">
+        <fa-icon [icon]="icons.info"></fa-icon>
+        <span>Tu nueva contraseña debe cumplir con los siguientes requisitos de seguridad.</span>
+      </div>
+
+      <!-- Formulario -->
+      <section class="form-section" [formGroup]="form">
+        <div class="form-left">
+          <div class="form-label mt-3">Nueva contraseña</div>
+          <div class="input-group mb-2" style="max-width: 360px;">
+            <input class="form-control"
+                   [type]="show1 ? 'text':'password'"
+                   placeholder="Crear una nueva contraseña"
+                   formControlName="newPassword"
+                   autocomplete="new-password">
+            <button class="input-group-text" type="button" (click)="show1 = !show1" aria-label="Mostrar/ocultar">
+              <fa-icon [icon]="show1 ? icons.eyeSlash : icons.eye"></fa-icon>
+            </button>
+          </div>
+
+          <div class="password-strength mb-3">
+            Fortaleza: {{ strength }}
+          </div>
+
+          <div class="form-label-confirm">Confirmar nueva contraseña</div>
+          <div class="input-group mb-2" style="max-width: 360px;">
+            <input class="form-control"
+                   [type]="show2 ? 'text':'password'"
+                   placeholder="Repite tu nueva contraseña"
+                   formControlName="confirmPassword"
+                   autocomplete="new-password">
+            <button class="input-group-text" type="button" (click)="show2 = !show2" aria-label="Mostrar/ocultar">
+              <fa-icon [icon]="show2 ? icons.eyeSlash : icons.eye"></fa-icon>
+            </button>
+          </div>
+
+          <div class="password-match-info mb-3" *ngIf="pwd2.touched && pwd2.errors?.['nomatch']">
+            Las contraseñas deben coincidir
+          </div>
+        </div>
+
+        <div class="form-right">
+          <div class="security-req-title">
+            <fa-icon [icon]="icons.shield"></fa-icon>
+            Requisitos de seguridad
+          </div>
+          <ul class="security-req-list">
+            <li><span class="dot" [class.ok]="rqLen"></span> Mínimo 8 caracteres</li>
+            <li><span class="dot" [class.ok]="rqNum"></span> Al menos un número</li>
+            <li><span class="dot" [class.ok]="rqSpec"></span> Al menos un carácter especial</li>
+            <li><span class="dot" [class.ok]="rqUpper"></span> Una mayúscula</li>
+            <li><span class="dot" [class.ok]="rqLower"></span> Una minúscula</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Botonera -->
+      <div class="footer-btns">
+        <button class="btn btn-regresar" type="button" (click)="onRegresar()">
+          <fa-icon [icon]="icons.back"></fa-icon> Regresar
+        </button>
+        <button class="btn btn-continuar" type="button" [disabled]="form.invalid" (click)="onContinuar()">
+          Continuar
+        </button>
+      </div>
+    </div>
+  </main>
+</div>

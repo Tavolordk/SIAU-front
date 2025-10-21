@@ -1,0 +1,46 @@
+<div class="modal-card" [formGroup]="form">
+  <!-- Barra vino con título y X -->
+  <div class="modal-head">
+    <div class="titulo">Nueva solicitud de perfiles</div>
+    <button type="button" class="btn-x" (click)="cerrar.emit()">X</button>
+  </div>
+
+  <!-- Franja de información -->
+  <div class="info-strip">
+    <div class="avatar"></div>
+    <div class="chip">{{ usuarioId }}</div>
+    <div class="chip">Folio: {{ folio }}</div>
+    <div class="chip">Fecha: {{ fecha }}</div>
+    <div class="chip">Hora: {{ hora }}</div>
+  </div>
+
+  <!-- Instrucción -->
+  <div class="cuerpo">
+    <div class="instruccion">
+      seleccione las opciones que aplican <span class="req">*</span>
+    </div>
+
+    <!-- Radios -->
+    <div class="opciones">
+      <label class="opcion">
+        <input type="radio" formControlName="tipo" value="NUEVA_CUENTA" />
+        <span>Nueva cuenta</span>
+      </label>
+
+      <label class="opcion">
+        <input type="radio" formControlName="tipo" value="MODIFICACION" />
+        <span>Modificación de perfiles/adscripción</span>
+      </label>
+
+      <label class="opcion">
+        <input type="radio" formControlName="tipo" value="AMPLIACION" />
+        <span>Ampliación de perfiles</span>
+      </label>
+
+      <label class="opcion">
+        <input type="radio" formControlName="tipo" value="REACTIVACION" />
+        <span>Reactivación de cuenta</span>
+      </label>
+    </div>
+  </div>
+</div>

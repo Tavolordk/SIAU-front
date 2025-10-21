@@ -1,0 +1,251 @@
+:root{
+  --guinda:#5a0f2b;
+  --guinda-700:#4b0d24;
+  --guinda-300:#8f3a57;
+  --gris-50:#f5f5f7;
+  --text-weak:#d9cfd4;
+  --sidebar-pad: 1rem;
+}
+
+
+html, body { height: 100%; }
+body {
+  background: #fff;
+  color: #222;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", "Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+}
+
+/* Colores de Bootstrap con nuestro guinda */
+.btn-primary, .bg-primary, .text-primary { --bs-primary: var(--guinda); }
+a { color: var(--guinda); }
+
+
+/* Top bar */
+.topbar{
+  position: relative;
+  z-index: 1030;
+  color: #fff;
+  .brand-mark{
+    width: 160px; height: auto;
+  }
+
+  .brand-title{
+    color: #fff;
+  }
+
+  .btn-user{
+    background: transparent;
+    color: #000;
+    border: 1px solid rgba(255,255,255,.15);
+    padding: .5rem .75rem;
+    border-radius: .75rem;
+    transition: background .2s ease;
+    &:hover{ background: rgba(255,255,255,.08); }
+  }
+
+  .avatar{
+    width: 34px; height: 34px; border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .text-light-50{ color: rgba(255,255,255,.7)!important; }
+}
+
+/* Layout base */
+.layout{
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  min-height: calc(100vh - 84px - 56px); /* header-bg + topbar base */
+  background: #fff;
+
+  @media (max-width: 992px){
+    grid-template-columns: 0 1fr; /* Sidebar oculto por defecto */
+  }
+}
+
+/* Sidebar */
+.sidebar{
+  background: #f0eef1;
+  border-right: 1px solid #e0d9de;
+  position: sticky;
+  top: 84px; /* debajo del header-bg */
+  align-self: start;
+  height: calc(100vh - 84px);
+  overflow: auto;
+  transition: width .25s ease, transform .25s ease;
+
+.sidebar .sidebar-inner { padding: var(--sidebar-pad); }
+
+/* Hacer que .menu-title abarque TODO el ancho (y pegue arriba) */
+.menu-title{
+  display: flex;                /* ya lo tienes por d-flex */
+  align-items: center;
+  justify-content: space-between;
+
+  background: var(--guinda);
+  color: #fff;
+  line-height: 1.1;
+  font-weight: 700;
+
+  /* sangrado para “comerse” el padding externo */
+  margin: calc(-1 * var(--sidebar-pad)) calc(-1 * var(--sidebar-pad)) .75rem;
+  padding: .85rem var(--sidebar-pad);
+
+  /* si no quieres esquinas redondeadas, déjalo en 0 */
+  border-radius: .5rem;         /* o 0 si quieres a ras */
+}
+
+  .nav{
+    .nav-item{ margin-bottom:.25rem; }
+
+    .nav-link{
+      display: flex; align-items: center; gap: .5rem;
+      color: #333; border-radius: .5rem;
+      padding: .5rem .75rem;
+      transition: background .15s ease, color .15s ease, transform .05s ease;
+      i{ font-size: 1rem; color: var(--guinda-300); }
+      &:hover{
+        background: #e7e1e5; color: #000;
+        transform: translateX(1px);
+      }
+      &.active{
+        background: gray; color: #fff;
+        i{ color: #fff; }
+      }
+    }
+
+    .nav-label{
+      font-size: .9rem;
+      font-weight: 600;
+      color: var(--guinda-700);
+      margin: .5rem .25rem;
+      opacity: .9;
+    }
+  }
+
+  &.sidebar-collapsed{
+    transform: translateX(-100%);
+  }
+
+  @media (min-width: 992px){
+    &.sidebar-collapsed{
+      width: 72px;
+      transform: none;
+
+      .nav-link span{ display:none; }
+      .menu-title{ display:none; }
+      .sidebar-inner{ padding: .75rem; }
+    }
+  }
+}
+
+/* Content */
+.content{
+  position: relative;
+
+  .content-bg{
+    position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    img{
+      width:100%; height:100%; object-fit: cover;
+      opacity:.03;
+    }
+  }
+
+  .container{ position: relative; z-index: 1; }
+}
+
+.bienvenida{
+  color: var(--guinda);
+  letter-spacing: .02em;
+}
+
+/* -------- Dropdown animado (hover + transición) -------- */
+
+/* Muestra el menú en hover (desktop) */
+.nav-user:hover .dropdown-menu{
+  display: block;
+}
+
+/* Animación */
+.dropdown-animate{
+  --slide: 8px;
+  transform: translateY(calc(var(--slide)));
+  opacity: 0;
+  visibility: hidden;
+  transition: transform .18s ease, opacity .18s ease, visibility 0s linear .18s;
+}
+
+.dropdown-animate.show{
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+/* Ajustes Bootstrap para dropdown en navbar oscuro */
+.dropdown-menu{
+  border-radius: .75rem;
+  border: 1px solid rgba(0,0,0,.08);
+  box-shadow: 0 10px 30px rgba(0,0,0,.18);
+}
+
+/* Utilitaria */
+.btn-icon{
+  --bs-btn-padding-y: .375rem;
+  --bs-btn-padding-x: .5rem;
+  --bs-btn-border-radius: .5rem;
+  border: 1px solid rgba(0,0,0,.1);
+  background: #fff;
+}
+/* Botón estilo navbar con líneas rojas */
+.navbar-toggler-red{
+  border: 1px solid rgba(185,14,42,.35);
+  border-radius: .6rem;
+  padding: .3rem .45rem;
+  background-color: var(--guinda); /* o transparent si prefieres */
+  box-shadow: 0 2px 6px rgba(0,0,0,.05);
+}
+
+/* Forzamos el ícono porque no estamos dentro de .navbar */
+.navbar-toggler-red .navbar-toggler-icon{
+  width: 1.25rem; height: 1.25rem;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+  background-size: 100% 100%;
+}
+
+.navbar-toggler-red:focus{
+  box-shadow: 0 0 0 .2rem rgba(185,14,42,.15);
+}
+/* HEADER con imagen que CUBRE todo */
+.topbar{
+  position: relative;
+  min-height: auto;             /* altura del header, ajusta a tu gusto */
+  color: #1f1f1f;
+
+  /* imagen de fondo usando la variable --header-bg */
+  &::before{
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: var(--header-bg);
+    background-size: cover;      /* <— clave: que cubra */
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: -2;
+  }
+
+  /* overlay opcional para contraste (puedes quitarlo o ajustar opacidad) */
+  &::after{
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,.82);
+    z-index: -1;
+  }
+
+  .container-fluid{ position: relative; z-index: 1; }
+}
+
+.display-1{
+    font-weight: 700;
+}

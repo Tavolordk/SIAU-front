@@ -1,0 +1,105 @@
+<!-- HEADER reutilizable -->
+<app-header-siau
+  [title]="'Sistema Integral de Administración de Usuarios'"
+  [userName]="usuarioNombre"
+  [userRole]="usuarioRol"
+  [logoSrc]="'assets/images/SSPC.png'"
+  [bgSrc]="'assets/images/encabezado.png'"
+  [height]="90">
+</app-header-siau>
+
+<!-- Título / paso -->
+  <app-registro-progress
+    [title]="'Registro'"
+    [currentStep]="currentStep"
+    [totalSteps]="totalSteps"
+    [percent]="progressPercent"  
+    [accent]="'#7a1832'">
+  </app-registro-progress>
+
+<!-- Barra de sección -->
+<div class="section-bar">Confirmación de solicitud</div>
+
+<!-- Tarjeta principal -->
+<div class="main-card">
+  <div class="folio-label">Su número de folio es:</div>
+  <div class="folio-box">
+    <span class="folio-number">{{ folio }}</span>
+  </div>
+  <div class="text-center mb-3" style="font-size: .98rem;">
+    Guarde este folio para cualquier consulta sobre su trámite
+  </div>
+
+  <div class="info-label">Tipo de solicitud:</div>
+  <div class="info-value">{{ tipoSolicitud }}</div>
+
+  <div class="info-label">Fecha y hora:</div>
+  <div class="info-value">{{ fechaHoraTexto }}</div>
+
+  <div class="info-label">Documentos recibidos:</div>
+  <ul class="info-list">
+    <li *ngFor="let d of documentos">{{ d }}</li>
+  </ul>
+
+  <!-- Proceso de revisión -->
+  <div class="review-section">
+    <div class="review-bar">Proceso de revisión</div>
+    <table class="review-table">
+      <tr>
+        <td class="label">Estatus actual:</td>
+        <td class="value">{{ estatusActual }}</td>
+      </tr>
+      <tr>
+        <td class="label">Próximo paso:</td>
+        <td class="value">{{ proximoPaso }}</td>
+      </tr>
+      <tr>
+        <td class="label">Tiempo estimado:</td>
+        <td class="value">{{ tiempoEstimado }}</td>
+      </tr>
+    </table>
+
+    <div class="review-check">
+      <fa-icon [icon]="icCheck"></fa-icon>
+    </div>
+  </div>
+
+  <!-- Mensajes -->
+  <div class="confirmation-section">
+    <strong>¡Confirmación enviada!</strong><br>
+    La confirmación ha sido enviada al correo electrónico {{ correoUsuario }}<br>
+    <span *ngIf="telefonoTelegramUsuario">
+      y a la cuenta de Telegram vinculada {{ telefonoTelegramUsuario }}.
+    </span>
+  </div>
+
+  <div class="resolution-section">
+    Recibirá la resolución en un plazo máximo de 5 días hábiles a través de:<br>
+    <fa-icon [icon]="icMail"></fa-icon>
+    Correo electrónico: {{ contactoResolucionCorreo }}<br>
+    <fa-icon [icon]="icTg"></fa-icon>
+    {{ contactoResolucionTelegram }} (Telegram), en caso de haber indicado que cuenta con Telegram
+  </div>
+
+  <div class="no-response-section">
+    <strong>¿No recibiste respuesta?</strong><br>
+    Si en 5 días hábiles no has recibido una resolución, contáctanos para seguimiento:<br>
+    <span class="contact-info">
+      Mesa de servicio: 55-1103-6000 (ext. 12345)<br>
+      <span style="font-weight: 600;">Correo: mesasdeservicios@sspc.gob.mx</span>
+    </span>
+  </div>
+
+  <!-- Acciones -->
+  <div class="action-buttons">
+    <button class="btn btn-print" type="button" (click)="onPrint()">
+      <fa-icon [icon]="icPrint" class="me-1"></fa-icon>
+      Imprimir comprobante
+    </button>
+
+    <button class="btn btn-email" type="button" (click)="onSendReceiptByEmail()">
+      <fa-icon [icon]="icMail"></fa-icon>
+      Recibir por correo electrónico
+    </button>
+  </div>
+</div>

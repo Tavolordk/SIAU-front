@@ -1,0 +1,512 @@
+<!-- Header reutilizable -->
+<app-header-siau [title]="'Sistema Integral de Administración de Usuarios'" [userName]="usuarioNombre"
+    [userRole]="usuarioCuenta" [logoSrc]="'assets/images/SSPC.png'" [bgSrc]="'assets/images/encabezado.png'"
+    [height]="140">
+</app-header-siau>
+<div class="container-xl py-3 px-2">
+
+    <!-- Botón Nueva solicitud -->
+    <!-- Botón Nueva solicitud (en card flotante) -->
+<app-hero-cta
+  label="Nueva solicitud"
+  color="vino"
+  size="lg"
+  (clicked)="onCancelar()">
+</app-hero-cta>
+
+<app-seleccion-requerimientos
+  [usuarioId]="'U123456'"
+  [folio]="'PM-2023-00161'"
+  [fecha]="'20/05/2025'"
+  [hora]="'13:30'"
+  [selected]="'MODIFICACION'"
+  (cambio)="$event"
+  (cerrar)="onCerrarModal()">
+</app-seleccion-requerimientos>
+
+
+    <!-- Título de cédula -->
+    <div class="barra-titulo my-3">Cédula única de registro de usuarios</div>
+
+    <!-- ===== Información personal ===== -->
+    <div class="panel mb-4">
+        <div class="panel-header vino">Información personal</div>
+        <div class="panel-body" [formGroup]="fPersonal">
+
+            <!-- ¿Eres personal de Seguridad Pública? -->
+            <div class="row align-items-center mb-3">
+                <div class="col-12 text-center fw-bold mb-2">¿Eres personal de Seguridad Pública? <span
+                        class="req">*</span></div>
+                <div class="col-12 d-flex justify-content-center gap-4">
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" id="spSi" [value]="true"
+                            formControlName="esPersonalSP">
+                        <label class="form-check-label" for="spSi">Sí</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" id="spNo" [value]="false"
+                            formControlName="esPersonalSP">
+                        <label class="form-check-label" for="spNo">No</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Usuario / CURP -->
+            <div class="row g-3 align-items-end">
+                <div class="col-md-12 text-center mb-1">
+                    <label class="form-label">Usuario</label>
+                    <input class="form-control bg-secondary-subtle" formControlName="usuario" placeholder="u15xxxxxx" name="usuario">
+                </div>
+
+                <div class="col-md-12 text-center">
+                    <label class="form-label">CURP <span class="req">*</span></label>
+                    <input class="form-control bg-secondary-subtle" formControlName="curp" placeholder="BADD...">
+                </div>
+
+                <div class="col-md-6 d-flex gap-2">
+                    <button class="btn btn-secondary flex-fill" type="button" (click)="buscarCurp()">Buscar
+                        CURP</button>
+                </div>
+                <div class="col-md-6 d-flex gap-2">
+                    <button class="btn btn-oro flex-fill text-white" type="button" (click)="validarCurp()">Validar
+                        CURP</button>
+                </div>
+                <div class="col-12 text-center small text-success">
+                    *Verificado en RENAPO
+                </div>
+            </div>
+
+            <!-- Nombres -->
+            <div class="row g-3 mt-1">
+                <div class="col-md-4 text-center">
+                    <label class="form-label">Nombre(s) <span class="req">*</span></label>
+                    <input class="form-control bg-secondary-subtle" formControlName="nombre">
+                </div>
+                <div class="col-md-4 text-center">
+                    <label class="form-label">Primer apellido <span class="req">*</span></label>
+                    <input class="form-control bg-secondary-subtle" formControlName="primerApellido">
+                </div>
+                <div class="col-md-4 text-center">
+                    <label class="form-label">Segundo apellido</label>
+                    <input class="form-control bg-secondary-subtle" formControlName="segundoApellido">
+                </div>
+            </div>
+
+            <div class="row g-3 mt-1">
+                <div class="col-md-12">
+                    <label class="form-label">Sexo <span class="req">*</span></label>
+                    <select class="form-select bg-secondary-subtle" formControlName="sexo">
+                        <option [ngValue]="null">Selecciona</option>
+                        <option *ngFor="let o of sexos" [ngValue]="o.value">{{ o.label }}</option>
+                    </select>
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label">Fecha de nacimiento <span class="req">*</span></label>
+                    <input type="date" class="form-control bg-secondary-subtle" formControlName="fechaNacimiento">
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label">Nacionalidad <span class="req">*</span></label>
+                    <select class="form-select bg-secondary-subtle" formControlName="nacionalidad">
+                        <option [ngValue]="null">Selecciona</option>
+                        <option *ngFor="let o of nacionalidades" [ngValue]="o.value">{{ o.label }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row g-3 mt-1">
+                <div class="col-md-12">
+                    <label class="form-label">País de nacimiento <span class="req">*</span></label>
+                    <select class="form-select bg-secondary-subtle" formControlName="paisNacimiento">
+                        <option [ngValue]="null">Selecciona</option>
+                        <option *ngFor="let o of paises" [ngValue]="o.value">{{ o.label }}</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Entidad de nacimiento <span class="req">*</span></label>
+                    <select class="form-select bg-secondary-subtle" formControlName="entidadNacimiento">
+                        <option [ngValue]="null">Selecciona</option>
+                        <option *ngFor="let o of entidades" [ngValue]="o.value">{{ o.label }}</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Municipio/Alcaldía <span class="req">*</span></label>
+                    <select class="form-select bg-secondary-subtle" formControlName="municipioNacimiento">
+                        <option [ngValue]="null">Selecciona</option>
+                        <option *ngFor="let o of municipios" [ngValue]="o.value">{{ o.label }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row g-3 mt-1">
+                <div class="col-md-12">
+                    <label class="form-label">Estado civil</label>
+                    <select class="form-select bg-secondary-subtle" formControlName="estadoCivil">
+                        <option [ngValue]="null">Selecciona</option>
+                        <option *ngFor="let o of estadosCiviles" [ngValue]="o.value">{{ o.label }}</option>
+                    </select>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label">RFC</label>
+                    <input class="form-control bg-secondary-subtle" formControlName="rfc">
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label">CUIP</label>
+                    <input class="form-control bg-secondary-subtle" formControlName="cuip">
+                </div>
+            </div>
+
+            <div class="row g-3 mt-1">
+                <div class="col-md-6">
+                    <label class="form-label">Correo electrónico <span class="req">*</span></label>
+                    <input class="form-control bg-secondary-subtle" formControlName="correo" type="email">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Número de celular <span class="req">*</span></label>
+                    <input class="form-control bg-secondary-subtle" formControlName="celular">
+                </div>
+            </div>
+
+            <div class="row g-3 mt-2">
+                <div class="col-12 justify-content-center d-flex">
+                    <label class="form-label me-3">Cuenta con aplicativo de:</label>
+                    <div class="form-check form-check-inline ">
+                        <input class="form-check-input input-radio-red" type="radio" id="tg" value=false
+                            formControlName="aplicativo">
+                        <label class="form-check-label" for="tg">Telegram</label>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ===== Adscripción actual ===== -->
+    <div class="panel mb-4">
+        <div class="panel-header oro">Información de adscripción actual</div>
+        <div class="panel-body" [formGroup]="fAds">
+            <div class="row g-3">
+                <div class="col-md-12 text-center">
+                    <label class="form-label">Tipo de institución <span class="req">*</span></label>
+                    <select class="form-select bg-secondary-subtle" formControlName="tipoInstitucion">
+                        <option [ngValue]="null">Selecciona</option>
+                        <option *ngFor="let o of tiposInstitucion" [ngValue]="o.value">{{ o.label }}</option>
+                    </select>
+                </div>
+                <div class="col-md-6 text-center">
+                    <label class="form-label">Entidad <span class="req">*</span></label>
+                    <select class="form-select bg-secondary-subtle" formControlName="entidad">
+                        <option [ngValue]="null">Selecciona</option>
+                        <option *ngFor="let o of entidades" [ngValue]="o.value">{{ o.label }}</option>
+                    </select>
+                </div>
+                <div class="col-md-6 text-center">
+                    <label class="form-label">Municipio/Alcaldía <span class="req">*</span></label>
+                    <select class="form-select bg-secondary-subtle" formControlName="municipio">
+                        <option [ngValue]="null">Selecciona</option>
+                        <option *ngFor="let o of municipios" [ngValue]="o.value">{{ o.label }}</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6 text-center">
+                    <label class="form-label">Institución <span class="req">*</span></label>
+                    <select class="form-select bg-secondary-subtle" formControlName="institucion">
+                        <option [ngValue]="null">Selecciona</option>
+                        <option *ngFor="let o of instituciones" [ngValue]="o.value">{{ o.label }}</option>
+                    </select>
+                </div>
+                <div class="col-md-6 text-center">
+                    <label class="form-label">Dependencia <span class="req">*</span></label>
+                    <select class="form-select bg-secondary-subtle" formControlName="dependencia">
+                        <option [ngValue]="null">Selecciona</option>
+                        <option *ngFor="let o of dependencias" [ngValue]="o.value">{{ o.label }}</option>
+                    </select>
+                </div>
+                <div class="col-md-6 text-center">
+                    <label class="form-label">Corporación <span class="req">*</span></label>
+                    <select class="form-select bg-secondary-subtle" formControlName="corporacion">
+                        <option [ngValue]="null">Selecciona</option>
+                        <option *ngFor="let o of corporaciones" [ngValue]="o.value">{{ o.label }}</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6 text-center">
+                    <label class="form-label">Área <span class="req">*</span></label>
+                    <select class="form-select bg-secondary-subtle" formControlName="area">
+                        <option [ngValue]="null">Selecciona</option>
+                        <option *ngFor="let o of areas" [ngValue]="o.value">{{ o.label }}</option>
+                    </select>
+                </div>
+                <div class="col-md-6 text-center">
+                    <label class="form-label">Cargo</label>
+                    <input class="form-control bg-secondary-subtle" formControlName="cargo">
+                </div>
+                <div class="col-md-6 text-center">
+                    <label class="form-label">Funciones</label>
+                    <input class="form-control bg-secondary-subtle" formControlName="funciones"/>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Fecha de ingreso <span class="req">*</span></label>
+                    <input type="date" class="form-control bg-secondary-subtle" formControlName="fechaIngreso">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Número de empleado</label>
+                    <input class="form-control bg-secondary-subtle" formControlName="numeroEmpleado">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Comisionado ===== -->
+    <div class="panel mb-4">
+        <div class="panel-header oro">En caso de estar comisionado</div>
+        <div class="panel-body" [formGroup]="fComision">
+
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label class="form-label me-3">¿Está comisionado? <span class="req">*</span></label>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" id="comSi" [value]="true"
+                            formControlName="estaComisionado" (change)="onCambioComisionado(true)">
+                        <label class="form-check-label" for="comSi">Sí</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" id="comNo" [value]="false"
+                            formControlName="estaComisionado" (change)="onCambioComisionado(false)">
+                        <label class="form-check-label" for="comNo">No</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">País <span class="req">*</span></label>
+                    <select class="form-select bg-secondary-subtle" formControlName="pais">
+                        <option [ngValue]="null">Selecciona</option>
+                        <option *ngFor="let o of paises" [ngValue]="o.value">{{ o.label }}</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Tipo de institución <span class="req">*</span></label>
+                    <select class="form-select bg-secondary-subtle" formControlName="tipoInstitucion">
+                        <option [ngValue]="null">Selecciona</option>
+                        <option *ngFor="let o of tiposInstitucion" [ngValue]="o.value">{{ o.label }}</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Entidad <span class="req">*</span></label>
+                    <select class="form-select bg-secondary-subtle" formControlName="entidad">
+                        <option [ngValue]="null">Selecciona</option>
+                        <option *ngFor="let o of entidades" [ngValue]="o.value">{{ o.label }}</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Municipio <span class="req">*</span></label>
+                    <select class="form-select bg-secondary-subtle" formControlName="municipio">
+                        <option [ngValue]="null">Selecciona</option>
+                        <option *ngFor="let o of municipios" [ngValue]="o.value">{{ o.label }}</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Institución <span class="req">*</span></label>
+                    <select class="form-select bg-secondary-subtle" formControlName="institucion">
+                        <option [ngValue]="null">Selecciona</option>
+                        <option *ngFor="let o of instituciones" [ngValue]="o.value">{{ o.label }}</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Dependencia <span class="req">*</span></label>
+                    <select class="form-select bg-secondary-subtle" formControlName="dependencia">
+                        <option [ngValue]="null">Selecciona</option>
+                        <option *ngFor="let o of dependencias" [ngValue]="o.value">{{ o.label }}</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Corporación <span class="req">*</span></label>
+                    <select class="form-select bg-secondary-subtle" formControlName="corporacion">
+                        <option [ngValue]="null">Selecciona</option>
+                        <option *ngFor="let o of corporaciones" [ngValue]="o.value">{{ o.label }}</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Especificar</label>
+                    <input class="form-control bg-secondary-subtle" formControlName="especificar" placeholder="Detalle" [disabled]="true">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Estatus del usuario ===== -->
+    <div class="panel mb-4">
+        <div class="panel-header oro">Estatus del usuario</div>
+        <div class="panel-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="card estatus">
+                        <div class="card-header">Resultado integral ECCC</div>
+                        <div class="card-body small">
+                            Aprobado/Rechazado<br>Vigente/No vigente
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card estatus">
+                        <div class="card-header">Estatus adscripción SAU</div>
+                        <div class="card-body small">
+                            Activo/Inactivo - Tipo Dependencia<br>Dependencia - Institución
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card estatus">
+                        <div class="card-header">Estatus adscripciones RNSP</div>
+                        <div class="card-body small">
+                            Activo/Inactivo - Tipo Dependencia<br>Dependencia - Institución
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Perfiles de usuario ===== -->
+    <div class="panel mb-4">
+        <div class="panel-header oro">Perfiles de usuario</div>
+        <!-- Perfiles de usuario -->
+        <div class="panel-body">
+            <div class="row g-2 align-items-end" [formGroup]="form">
+                <div class="col-md-9">
+                    <label class="form-label">Agregar perfil de consulta</label>
+                    <select class="form-select bg-secondary-subtle" formControlName="perfilSeleccionado">
+                        <option [ngValue]="null">Selecciona</option>
+                        <option *ngFor="let p of perfilesConsulta" [ngValue]="p.value">{{ p.label }}</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="button" class="btn btn-oro w-100 text-white" (click)="agregarPerfilSeleccionado()">
+                        Agregar +
+                    </button>
+                </div>
+            </div>
+
+            <ul class="list-group mt-3" *ngIf="perfilesFA.length > 0">
+                <li class="list-group-item d-flex justify-content-between align-items-center"
+                    *ngFor="let p of perfilesFA.controls; let i = index">
+                    <span>{{ labelPerfil(p.value) }}</span>
+                    <button class="btn btn-sm btn-outline-danger" type="button"
+                        (click)="eliminarPerfil(i)">Quitar</button>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+    <!-- ===== Documentos ===== -->
+    <!-- ===== Documentos (MOCK ESTÁTICO) ===== -->
+    <!-- ===== Documentos ===== -->
+    <div class="panel mb-4">
+        <div class="panel-header oro">Documentos</div>
+        <div class="panel-body">
+
+            <!-- Fila 1: Tipo de documento -->
+            <div class="row g-3 align-items-end doc-controls" [formGroup]="form">
+                <div class="col-lg-12 col-md-12">
+                    <label class="form-label">Tipo de documento <span class="req">*</span></label>
+                    <select class="form-select bg-secondary-subtle" formControlName="tipoDocumentoActual">
+                        <option [ngValue]="null">Selecciona</option>
+                        <option *ngFor="let t of tiposDocumento" [ngValue]="t.value">{{ t.label }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Fila 2: Elegir archivo + Subir (cada uno en su nivel) -->
+            <div class="row g-3 align-items-end doc-controls">
+                <div class="col-lg-5 col-md-6">
+                    <label class="form-label d-block">Archivo</label>
+
+                    <!-- Botón "Elegir archivo" real -->
+                    <div class="input-file">
+                        <input id="docFile" type="file" class="visually-hidden"
+                            (change)="onArchivoSeleccionado($event)">
+                        <label for="docFile" class="btn btn-oro text-white">
+                            Elegir archivo*
+                        </label>
+                        <span class="ms-2 text-muted small">PDF / PNG &nbsp;|&nbsp; máx. 2&nbsp;MB</span>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-4">
+                    <label class="form-label d-block invisible">Subir</label>
+                    <button type="button" class="btn btn-oro w-100 text-white">
+                        Subir
+                    </button>
+                </div>
+            </div>
+
+            <!-- Nota en gris -->
+            <div class="row mt-2">
+                <div class="col-12">
+                    <div class="text-center">
+                        <b>Se requiere de manera obligatoria la carga de: Identificación oficial (INE), recibo de nómina
+                            (quincena <br />inmediata anterior) y credencial laboral.</b> <br />
+                    </div>
+                    <span>El total de los archivos a subir no puede superar los 10MB <br />
+                        Archivos permitidos PDF o JPG
+                    </span>
+                </div>
+            </div>
+
+            <!-- Tabla mock estática con los 3 documentos del diseño -->
+            <div class="table-responsive mt-3">
+                <table class="table table-bordered align-middle table-sm documentos-mock">
+                    <thead>
+                        <tr>
+                            <th style="width:40%">Tipo</th>
+                            <th>Nombre de archivo</th>
+                            <th style="width:130px" class="text-center">Visualizar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Identificación oficial (INE)</td>
+                            <td>INE.pdf</td>
+                            <td class="text-center">
+                                <fa-icon [icon]="icons.eye" class="me-1 btn"></fa-icon>
+                                <fa-icon [icon]="icons.trash" class="me-1 btn"></fa-icon>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>RECIBO DE NÓMINA (QUINCENA INMEDIATA ANTERIOR)</td>
+                            <td>RECIBO_NOMINA.pdf</td>
+                            <td class="text-center">
+                                <fa-icon [icon]="icons.eye" class="me-1 btn"></fa-icon>
+                                <fa-icon [icon]="icons.trash" class="me-1 btn"></fa-icon>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>CREDENCIAL LABORAL</td>
+                            <td>CREDENCIAL_LABORAL.pdf</td>
+                            <td class="text-center">
+                                <fa-icon [icon]="icons.eye" class="me-1 btn"></fa-icon>
+                                <fa-icon [icon]="icons.trash" class="me-1 btn"></fa-icon>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Botonera inferior (maqueta) -->
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <button class="btn btn-secondary" type="button">
+                    <fa-icon [icon]="icons.save" class="me-2"></fa-icon>
+                    Guardar
+                </button> <button class="btn btn-oro text-white" type="button">Validar</button>
+                <button class="btn btn-danger" type="button">Rechazar</button>
+                <button class="btn btn-danger ms-auto" type="button">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>

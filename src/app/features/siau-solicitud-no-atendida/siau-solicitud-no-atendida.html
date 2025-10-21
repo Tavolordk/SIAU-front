@@ -1,0 +1,31 @@
+<div class="container-fluid px-0">
+  <div class="main-title">
+    {{ titulo }}
+  </div>
+
+  <div class="content-container">
+    <p class="mb-2 fw-bold">Estimado(a) {{ nombreUsuario }}:</p>
+
+    <p class="mb-2 fw-bold">
+      Tu cédula de solicitud con folio {{ folio }} de
+      {{ descripcionTipo }}
+      fue revisada; sin embargo, no pudo ser atendida exitosamente por alguno de los siguientes motivos:
+    </p>
+
+    <ul class="ms-3">
+      <li *ngFor="let m of motivos">{{ m }}</li>
+    </ul>
+
+    <p class="mb-0">
+      Agradecemos tu comprensión.<br>
+      Atentamente,<br>
+      Sistema Integral de Administración de Usuarios (SIAU)
+    </p>
+  </div>
+
+  <div class="service-box">
+    <p>Para conocer más detalles o recibir asistencia, comunícate a la Mesa de Servicios:</p>
+    <div class="service-phone">Mesa de servicio: {{ mesaServicioTelefono }}</div>
+    <div class="service-email">Correo: {{ correoMesa }}</div>
+  </div>
+</div>

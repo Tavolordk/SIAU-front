@@ -1,0 +1,38 @@
+/* Bootstrap ya cargado globalmente desde NPM (no CDN). */
+
+.header-bar {
+  background-color: #8b1e41;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 5px 5px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.table-container {
+  margin: 0;
+  padding: 0;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  overflow: hidden;
+
+  thead th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    border-top: none;
+  }
+
+  tbody tr:nth-child(even) {
+    background-color: #e9ecef;
+  }
+}
+
+.close-btn {
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  background: none;
+  border: none;
+  line-height: 1;
+}

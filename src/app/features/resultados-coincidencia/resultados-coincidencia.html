@@ -1,0 +1,41 @@
+<div class="container mt-4">
+  <div class="table-container">
+    <div class="header-bar">
+      <h5 class="mb-0">{{ titulo }}</h5>
+      <button type="button" class="close-btn" aria-label="Cerrar" (click)="closed.emit()">
+        &times;
+      </button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-bordered mb-0">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Primer apellido</th>
+            <th>Segundo apellido</th>
+            <th>Fecha de nacimiento</th>
+            <th>CURP</th>
+            <th>RFC</th>
+            <th>CUIP</th>
+            <th>Sexo</th>
+            <th>Domicilio de nacimiento</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of resultados; let i = index" [class.bg-light]="i % 2 === 1">
+            <td>{{ r.nombre }}</td>
+            <td>{{ r.primerApellido }}</td>
+            <td>{{ r.segundoApellido }}</td>
+            <td>{{ r.fechaNacimiento }}</td>
+            <td>{{ r.curp }}</td>
+            <td>{{ r.rfc }}</td>
+            <td>{{ r.cuip }}</td>
+            <td>{{ r.sexo }}</td>
+            <td>{{ r.domicilioNacimiento }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

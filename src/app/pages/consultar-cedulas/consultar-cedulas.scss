@@ -1,0 +1,100 @@
+:host{
+  --guinda:#6d2245;
+  background:#fafbfc;
+  display:block;
+  width:100%;
+  font-family:'Montserrat',sans-serif;
+}
+
+/* Evita cortes de ancho */
+.page-shell{ width:100%; padding-inline: clamp(12px,2vw,32px); }
+
+/* Botón menú */
+.sidebar-btn{
+  position:fixed; top: clamp(12px,2vw,24px); left: clamp(12px,2vw,24px);
+  background:var(--guinda); color:#fff; border:none; width:32px; height:32px;
+  border-radius:4px; display:flex; align-items:center; justify-content:center; z-index:1000;
+}
+
+/* Título */
+.main-title{
+  margin-top: clamp(20px, 4vw, 32px);
+  text-align:center; color:var(--guinda);
+  font-weight:700; font-size: clamp(1.375rem, 2.3vw, 2rem);
+}
+
+/* Botón “Nueva solicitud” */
+.new-request-btn{
+  display:block; margin:16px auto 0;
+  background:var(--guinda); color:#fff; border:none;
+  border-radius:6px; padding:8px 32px; font-size:1rem; font-weight:700;
+  box-shadow:0 2px 8px rgba(0,0,0,.07);
+}
+
+/* Filtros full width */
+.filter-card{
+  width:100%;
+  background:#fff; border-radius:8px;
+  box-shadow:0 2px 8px rgba(0,0,0,.07);
+  padding:16px clamp(12px,2vw,24px) 8px;
+  margin-top: clamp(16px, 3vw, 32px);
+}
+.filter-dropdown{ min-width:260px; }
+.filter-info{
+  background:#f5f5f5; border-radius:6px; padding:4px 12px;
+  font-size:.95rem; font-weight:700; color:#222; display:inline-flex; align-items:center;
+}
+.filter-btn{ background:var(--guinda); color:#fff; font-weight:700; border:none; border-radius:6px; padding:8px 32px; font-size:1.1rem; }
+.filter-btn-secondary{ background:#bdbdbd; color:#fff; font-weight:700; border:none; border-radius:6px; padding:8px 32px; font-size:1.1rem; }
+
+/* Tabla full width */
+.table-card{
+  width:100%; background:#fff; border-radius:12px;
+  box-shadow:0 4px 16px rgba(0,0,0,.10);
+  margin: clamp(12px, 2.5vw, 24px) auto 0; padding:0;
+  display:flex; flex-direction:column;
+}
+.table-scroll{ width:100%; overflow-x:auto; }
+.custom-table{
+  width:100%;
+  min-width:1100px; /* se expande; en móvil aparece scroll horizontal */
+  th, td{ font-size:.95rem; vertical-align:middle; border-top:none; border-bottom:1px solid #e0e0e0; padding:12px 8px; white-space:nowrap; }
+  th{ background:#fff; color:var(--guinda); font-weight:700; font-size:.98rem; border-bottom:2px solid #e0e0e0; text-align:left; }
+  td{ color:#222; font-weight:500; }
+  tr:last-child td{ border-bottom:none; }
+}
+.table-footer{
+  width:100%; display:flex; justify-content:space-between; align-items:center;
+  padding:12px clamp(12px,2vw,24px);
+}
+
+/* Badges y acciones */
+.status-badge{ display:inline-block; padding:4px 16px; border-radius:12px; font-size:.95rem; font-weight:700; color:#fff; }
+.status-rechazada{ background:#b13a5b; }
+.status-pendiente{ background:#7c4d9b; }
+.status-cancelada{ background:#e07a3f; }
+.status-aprobada{ background:#2e8a6b; }
+.status-espera{ background:#e0a32f; color:#fff; }
+
+.action-icons i{ font-size:1.2rem; margin-right:10px; color:var(--guinda); cursor:pointer; }
+.action-icons i:last-child{ margin-right:0; }
+
+.table-checkbox{ width:18px; height:18px; accent-color:var(--guinda); }
+
+.approve-btn{
+  background:#2e8a6b; color:#fff; font-weight:700; border:none; border-radius:6px; padding:8px 32px; font-size:1.1rem;
+  box-shadow:0 2px 8px rgba(0,0,0,.07);
+}
+
+/* Paginación */
+.pagination .page-link{ color:var(--guinda); border:none; background:none; font-weight:700; font-size:1.1rem; }
+.pagination .active .page-link{ background:var(--guinda); color:#fff; border-radius:50%; }
+
+/* Responsivo */
+@media (max-width: 992px){
+  .filter-dropdown{ min-width: unset; flex:1 1 260px; }
+  .custom-table{ min-width: 900px; }
+}
+@media (max-width: 576px){
+  .custom-table{ min-width: 780px; }
+}

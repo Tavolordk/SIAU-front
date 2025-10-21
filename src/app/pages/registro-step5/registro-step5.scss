@@ -1,0 +1,58 @@
+:host{
+  --guinda:#7b2040;
+
+  display:block;
+  background:#fff;
+  font-family:'Montserrat', Arial, sans-serif;
+  color:#222;
+}
+
+.main-content{ margin-top: 30px; text-align:center; }
+
+/* Título / progreso */
+.registro-title{ font-size:2.3rem; font-weight:700; }
+.progress-bar-custom{
+  width:350px; height:5px; background:#e5e5e5; border-radius:2.5px;
+  margin:0 auto;
+}
+.progress-bar-inner{
+  height:100%; background:var(--guinda); border-radius:2.5px; width:60%;
+}
+.paso-text{ font-size:1rem; margin-top:8px; }
+
+.section-title-bar{
+  background:var(--guinda); color:#fff; font-size:1.25rem; font-weight:700;
+  border-radius:8px; padding:10px 0; margin:35px auto 0; width:80%; max-width:1100px;
+}
+
+.info-box{
+  background:#e5e5e7; color:#222; font-size:1.2rem; border-radius:10px;
+  padding:24px 0 16px; margin:0 auto; width:80%; max-width:1100px; font-weight:500;
+}
+
+.select-title{ font-size:1.6rem; font-weight:700; margin:40px 0 24px; }
+
+/* Botones de canal */
+.contact-btn{
+  width:480px; max-width:90vw;
+  font-size:1.15rem; font-weight:700; color:#222;
+  background:#fff; border:2px solid var(--guinda); border-radius:10px;
+  padding:10px 0; display:flex; align-items:center; justify-content:center;
+  transition: background .2s, color .2s, box-shadow .2s;
+
+  &:hover,&:focus{
+    background:#f7e9ef; color:var(--guinda);
+    box-shadow:0 4px 14px rgba(0,0,0,.08);
+  }
+}
+
+/* Responsive */
+@media (max-width: 900px){
+  .section-title-bar, .info-box{ width:95%; }
+}
+@media (max-width: 600px){
+  .registro-title{ font-size:1.3rem; }
+  .select-title{ font-size:1.1rem; }
+  .contact-btn{ font-size:1rem; width:98vw; }
+  .section-title-bar, .info-box{ font-size:1rem; }
+}

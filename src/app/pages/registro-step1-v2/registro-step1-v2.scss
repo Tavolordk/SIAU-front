@@ -1,0 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+:host{
+  --guinda:#7a2234;
+  --oro:#bfa14a;
+  --verde:#1b4d3e;
+  --gris-borde:#e5e5e5;
+  --gris-input:#ededed;
+
+  display:block;
+  font-family: 'Montserrat', Arial, sans-serif;
+  color:#222;
+  background:#fff;
+}
+
+.header-bg{
+  background:url('../../../assets/images/encabezado.png');
+  height:80px;
+}
+.header-title{
+  font-size:20px;
+  font-weight:400;
+  color:#333;
+  margin-top:18px;
+  margin-left:20px;
+}
+.user-info{
+  color:#474646; font-size:13px; text-align:right;
+}
+
+.main-title{
+  font-size:22px; font-weight:700; text-align:center;
+  margin:30px 0 0;
+}
+.step-indicator{ width:350px; margin:10px auto; }
+.step-bar{ height:3px; background:var(--guinda); width:16.66%; border-radius:2px; }
+.step-label{ text-align:center; font-size:13px; color:#333; margin-top:5px; }
+
+.section-title{
+  background:#e5e5e5; color:#222; font-size:15px; font-weight:600;
+  padding:7px 0 7px 20px; margin-bottom:0;
+}
+
+.form-container{
+  max-width:900px; margin:0 auto 30px;
+  background:#fff; border-radius:10px;
+  box-shadow:0 2px 12px rgba(0,0,0,.08);
+  padding:0 0 30px 0;
+}
+.form-section{
+  background:var(--guinda); color:#fff; font-size:15px; font-weight:700;
+  padding:7px 0; text-align:center; border-radius:6px 6px 0 0; margin-bottom:0;
+}
+.form-section-gold{
+  background:var(--oro); color:#fff; font-size:14px; font-weight:600;
+  padding:6px 0 6px 20px; border-radius:4px 4px 0 0; margin-bottom:0;
+}
+.form-section-inner{ padding:30px 40px 0; }
+
+.form-label{ font-size:13px; color:#222; font-weight:500; }
+.form-label.required::after{ content:"*"; color:var(--guinda); margin-left:2px; }
+
+.form-control, .form-select{
+  background:var(--gris-input); border:none; border-radius:6px;
+  font-size:14px; color:#333; height:36px; margin-bottom:10px;
+}
+.form-select{ padding-right:30px; }
+
+.form-check-label{ font-size:14px; color:#222; margin-right:20px; }
+.form-check-input{ margin-top:0; }
+
+.captcha-img{ height:32px; width:90px; object-fit:cover; border-radius:4px; border:1px solid #ccc; }
+.captcha-link, .forgot-link{ color:var(--guinda); font-size:13px; text-decoration:underline; cursor:pointer; }
+
+.verify-btn{
+  background:var(--verde); color:#fff; border:none; border-radius:6px;
+  font-size:15px; font-weight:600; padding:6px 30px; margin:10px 0 15px 0;
+}
+
+.terms-label{ font-size:13px; color:#222; }
+.terms-link{ color:var(--guinda); text-decoration:underline; }
+
+.btn-custom{
+  background:var(--oro); color:#fff; font-weight:600; border:none; border-radius:6px;
+  font-size:15px; padding:6px 30px;
+  &:active,&:focus{ background:#a08a3a; color:#fff; }
+}
+.btn-secondary-custom{
+  background:#bdbdbd; color:#222; font-weight:600; border:none; border-radius:6px;
+  font-size:15px; padding:6px 30px;
+  &:active,&:focus{ background:#a0a0a0; color:#222; }
+}
+
+.form-note{ font-size:12px; color:var(--guinda); margin:0 0 10px 10px; }
+
+/* Grid propia del form */
+.form-row{ display:flex; flex-wrap:wrap; gap:10px 20px; }
+.form-group{ flex:1 1 0; min-width:180px; }
+.form-group-half{ flex:0 0 48%; min-width:180px; }
+.form-group-third{ flex:0 0 32%; min-width:120px; }
+.form-group-quarter{ flex:0 0 24%; min-width:100px; }
+.form-group-full{ flex:0 0 100%; }
+.form-group-captcha{ display:flex; align-items:center; gap:10px; }
+.form-group-captcha input{ width:120px; }
+.form-group-captcha .captcha-link{ margin-left:10px; }
+
+.form-actions{
+  display:flex; justify-content:space-between; align-items:center;
+  margin-top:30px; padding:0 40px;
+}
+
+/* Responsive */
+@media (max-width: 991px){
+  .form-section-inner{ padding:20px 10px 0; }
+  .tipo-usuario-container{ padding:20px 10px 15px; }
+}
+@media (max-width: 600px){
+  .form-row{ flex-direction:column; }
+  .form-actions{ flex-direction:column; gap:10px; padding:0 10px; }
+}
+
+/* Caja de tipo usuario */
+.tipo-usuario-container{
+  background:#fff; box-shadow:0 2px 12px rgba(0,0,0,.08);
+  border-radius:10px; padding:25px 30px 20px; margin:0 auto 30px; max-width:350px;
+}
+.user-icon{
+  width:40px; height:40px; background:#e0e0e0; border-radius:50%;
+  fa-icon{ color:#666; font-size:18px; }
+}

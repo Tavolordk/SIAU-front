@@ -1,0 +1,44 @@
+<aside class="sidebar" [class.fixed]="fixed" [style.top.px]="fixed ? top : null">
+  <div class="sidebar-header">
+    <div>{{ titleLine1 }}<br />{{ titleLine2 }}</div>
+    <fa-icon [icon]="icons.bars"></fa-icon>
+  </div>
+
+  <div class="sidebar-menu">
+    <!-- Gestión de cédulas -->
+    <button
+      type="button"
+      class="menu-item"
+      [class.active]="activeMain === 'cedulas'"
+      (click)="goMain('cedulas')">
+      Gestión de cédulas
+      <fa-icon [icon]="icons.chevronDown"></fa-icon>
+    </button>
+
+    <div class="submenu" *ngIf="showCedulasSubmenu">
+      <button
+        type="button"
+        class="submenu-item"
+        [class.active]="activeSub === 'mis'"
+        (click)="goSub('mis')">
+        Mis cédulas
+      </button>
+      <button
+        type="button"
+        class="submenu-item"
+        [class.active]="activeSub === 'consultar'"
+        (click)="goSub('consultar')">
+        Consultar cédula
+      </button>
+    </div>
+
+    <!-- Gestión de contraseña -->
+    <button
+      type="button"
+      class="menu-item-2"
+      [class.active]="activeMain === 'contrasena'"
+      (click)="goMain('contrasena')">
+      Gestión de contraseña
+    </button>
+  </div>
+</aside>

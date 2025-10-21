@@ -1,0 +1,80 @@
+body {
+  background: #fff;
+  font-family: 'Roboto', Arial, sans-serif;
+}
+
+.main-container {
+  max-width: 800px;
+  margin: 40px auto 0 auto;
+  padding: 0 24px;
+}
+
+.siau-title {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 36px;
+  margin-top: 16px;
+}
+
+.siau-content {
+  font-size: 1.05rem;
+  color: #222;
+
+  b, strong {
+    font-weight: 700;
+  }
+
+  .fa-user, .fa-lock {
+    color: #2e9e6f;
+    margin-right: 6px;
+  }
+
+  ul {
+    margin-left: 0;
+    padding-left: 1.5em;
+    margin-bottom: 0.5em;
+  }
+
+  li {
+    margin-bottom: 0.5em;
+  }
+}
+
+.siau-footer {
+  background: #a13a5a;
+  color: #fff;
+  border-radius: 16px;
+  padding: 28px 18px 22px 18px;
+  text-align: center;
+  font-size: 1.18rem;
+  font-weight: 500;
+  margin-top: 48px;
+  margin-bottom: 32px;
+
+  .mesa-servicio,
+  .correo {
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: block;
+  }
+
+  .mesa-servicio {
+    margin-top: 10px;
+    margin-bottom: 6px;
+  }
+
+  .correo {
+    margin-top: 2px;
+  }
+}
+
+@media (max-width: 600px) {
+  .main-container {
+    padding: 0 6px;
+  }
+  .siau-footer {
+    font-size: 1rem;
+    padding: 18px 6px 14px 6px;
+  }
+}

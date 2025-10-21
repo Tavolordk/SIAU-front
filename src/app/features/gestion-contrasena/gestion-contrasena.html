@@ -1,0 +1,89 @@
+<!-- Header va fuera, tú lo colocas con <app-header-siau ...> -->
+<app-header-siau [title]="'Sistema Integral de Administración de Usuarios'" [userName]="usuarioNombre"
+    [userRole]="usuarioCuenta" [logoSrc]="'assets/images/SSPC.png'" [bgSrc]="'assets/images/encabezado.png'"
+    [height]="140">
+</app-header-siau>
+
+<div class="siau-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" [style.top.px]="headerOffset">
+    <div class="sidebar-header">
+      <div>
+        Gestión de Cédulas Únicas<br />de Registro de Usuario
+      </div>
+      <fa-icon [icon]="icons.bars" class="ms-auto"></fa-icon>
+    </div>
+
+    <ul class="sidebar-menu list-unstyled mb-0">
+      <li>
+        <button class="sidebar-item" disabled>
+          Gestión de cédulas
+          <fa-icon [icon]="icons.chevronDown" class="float-end muted"></fa-icon>
+        </button>
+      </li>
+      <li>
+        <button class="sidebar-item active" disabled>Gestión de contraseña</button>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-content">
+    <div class="main-card">
+
+      <!-- Stepper -->
+      <div class="stepper">
+        <div class="step">
+          <div class="circle">1</div>
+          Verificar Identidad
+        </div>
+        <div class="step inactive">
+          <div class="circle">2</div>
+          Nueva Contraseña
+        </div>
+        <div class="step inactive">
+          <div class="circle">3</div>
+          Confirmación
+        </div>
+      </div>
+
+      <!-- Requisitos -->
+      <div class="requirements-bar mt-4"><span>Requisitos</span></div>
+
+      <section class="requirements-content">
+        <p class="desc">
+          Por seguridad necesitamos verificar tu identidad antes de permitir el<br />
+          cambio de contraseña
+        </p>
+
+        <form [formGroup]="form" class="mx-auto" style="max-width:600px">
+          <div class="mb-2">
+            <label class="form-label" for="currentPassword">Contraseña actual</label>
+            <div class="input-group">
+              <input
+              style="padding: 9px;"
+                id="currentPassword"
+                class="form-control"
+                [type]="show ? 'text' : 'password'"
+                formControlName="currentPassword"
+                autocomplete="current-password"
+              />
+              <button class="input-group-text" type="button" (click)="togglePwd()" aria-label="Mostrar/ocultar">
+                <fa-icon [icon]="show ? icons.eyeSlash : icons.eye"></fa-icon>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-error" *ngIf="pwd.touched && pwd.invalid">
+            Debes de ingresar tu contraseña actual para continuar
+          </div>
+
+          <button class="btn btn-gold" type="button" (click)="verificarIdentidad()">
+            Verificar identidad
+          </button>
+        </form>
+      </section>
+    </div>
+  </main>
+</div>

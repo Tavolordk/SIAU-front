@@ -1,0 +1,13 @@
+<div class="hero-wrapper mt-2">
+  <div class="hero-card text-center">
+    <button
+      type="button"
+      class="btn text-white"
+      [ngClass]="[btnClass, sizeClass, fullWidth ? 'w-100' : '']"
+      [disabled]="disabled"
+      (click)="onClick()"
+      [attr.aria-label]="label">
+      {{ label }}
+    </button>
+  </div>
+</div>

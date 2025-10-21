@@ -1,0 +1,31 @@
+/* Paleta (misma que tu pantalla) */
+$vino: #89143a;
+$oro:  #b49548;
+
+/* Contenedor */
+:host { display: block; }
+
+/* Card flotante bajo el header */
+.hero-wrapper { margin-top: -22px; }
+.hero-card {
+  max-width: 440px;
+  margin: 0 auto 16px auto;
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  border: 1px solid rgba(0,0,0,.06);
+  overflow: visible; // evita scrolls raros
+}
+
+/* Botones de color (por si no existen globalmente) */
+.btn-vino {
+  background-color: #8b1e41;
+  border-color: #8b1e41;
+  &:hover, &:focus { background-color: #751735; border-color: #751735; }
+}
+.btn-oro {
+  background-color: $oro;
+  border-color: $oro;
+  &:hover, &:focus { background-color: darken($oro, 6%); border-color: darken($oro, 6%); }
+}

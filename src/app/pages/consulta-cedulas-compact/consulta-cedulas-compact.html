@@ -1,0 +1,390 @@
+<div class="sidebar-btn">
+  <button class="btn"><i class="fas fa-bars"></i></button>
+</div>
+
+<div class="container-fluid">
+  <div class="main-title">Consultar Cédulas</div>
+
+  <div class="subtitle-bar">
+    <div class="subtitle">Nueva solicitud</div>
+  </div>
+
+  <div class="filter-bar">
+    <!-- Información Personal -->
+    <div class="dropdown filter-dropdown">
+      <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        Información Personal <i class="fas fa-chevron-down float-end"></i>
+      </button>
+      <div class="dropdown-menu">
+        <div class="row">
+          <div class="col-6">
+            <label>Usuario</label>
+            <input type="text" class="form-control mb-2" placeholder="">
+          </div>
+          <div class="col-6">
+            <label>Nombre (s)</label>
+            <input type="text" class="form-control mb-2" placeholder="">
+          </div>
+          <div class="col-6">
+            <label>Primer Apellido</label>
+            <input type="text" class="form-control mb-2" placeholder="">
+          </div>
+          <div class="col-6">
+            <label>Segundo Apellido</label>
+            <input type="text" class="form-control mb-2" placeholder="">
+          </div>
+          <div class="col-6">
+            <label>CURP</label>
+            <input type="text" class="form-control mb-2" placeholder="">
+          </div>
+          <div class="col-6">
+            <label>RFC</label>
+            <input type="text" class="form-control mb-2" placeholder="">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información de Solicitud -->
+    <div class="dropdown filter-dropdown">
+      <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        Información de Solicitud <i class="fas fa-chevron-down float-end"></i>
+      </button>
+      <div class="dropdown-menu">
+        <div class="row">
+          <div class="col-6">
+            <label>Fecha Desde:</label>
+            <input type="date" class="form-control mb-2">
+          </div>
+          <div class="col-6">
+            <label>Hasta:</label>
+            <input type="date" class="form-control mb-2">
+          </div>
+          <div class="col-6">
+            <label>Folio</label>
+            <input type="text" class="form-control mb-2" placeholder="">
+          </div>
+          <div class="col-6">
+            <label>Tipo de Solicitud</label>
+            <select class="form-select mb-2">
+              <option>Seleccionar...</option>
+              <option>Nueva Cuenta</option>
+              <option>Modificación de Perfil / Adscripción</option>
+              <option>Reactivación de Cuenta</option>
+              <option>Ampliación de Perfiles</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label>Estatus</label>
+            <select class="form-select mb-2">
+              <option>Seleccionar...</option>
+              <option>Recibida</option>
+              <option>Guardada</option>
+              <option>Validada</option>
+              <option>Aprobada</option>
+              <option>Cancelada</option>
+              <option>Rechazada</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información Institucional -->
+    <div class="dropdown filter-dropdown">
+      <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        Información Institucional <i class="fas fa-chevron-down float-end"></i>
+      </button>
+      <div class="dropdown-menu">
+        <div class="row">
+          <div class="col-6">
+            <label>Tipo de Institución</label>
+            <select class="form-select mb-2">
+              <option>Municipal</option>
+              <option>Estatal</option>
+              <option>Federal</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label>Entidad</label>
+            <select class="form-select mb-2">
+              <option>Coahuila de Zaragoza</option>
+              <option>San Juan de Sabinas</option>
+              <option>Oaxaca</option>
+              <option>Michoacán de Ocampo</option>
+              <option>Tamaulipas</option>
+              <option>Estado de México</option>
+              <option>Guerrero</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label>Municipio</label>
+            <select class="form-select mb-2">
+              <option>San Juan de Sabinas</option>
+              <option>Bejucal de Ocampo</option>
+              <option>Atlamajalcingo del Río</option>
+              <option>Yaxcabá</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label>Institución</label>
+            <select class="form-select mb-2">
+              <option>Secretaría de Gobierno</option>
+              <option>Secretaría de Seguridad y Protección Ciudadana</option>
+              <option>Fiscalía General de la República</option>
+              <option>Centro Nacional de Inteligencia</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label>Dependencia</label>
+            <select class="form-select mb-2">
+              <option>Seleccionar...</option>
+              <option>División Científica</option>
+              <option>Policía Federal Preventiva</option>
+              <option>Guardia Nacional</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label>Corporación</label>
+            <select class="form-select mb-2">
+              <option>Seleccionar...</option>
+              <option>CSEN</option>
+              <option>Policía Estatal</option>
+              <option>Policía Municipal</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-responsive">
+    <table class="table custom-table align-middle">
+      <thead>
+      <tr>
+        <th>Folio</th>
+        <th>Fecha</th>
+        <th>Nombre(s)</th>
+        <th>Primer Apellido</th>
+        <th>Segundo Apellido</th>
+        <th>Tipo de Solicitud</th>
+        <th>Entidad</th>
+        <th>Información relacionada con el SAUV</th>
+        <th>Resultado integral ECC</th>
+        <th>Estatus</th>
+        <th>Acciones</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td>PM-2023-02-00159</td>
+        <td>2023-03-05</td>
+        <td>Manuel Alejandro</td>
+        <td>Lira</td>
+        <td>Blanco</td>
+        <td>...</td>
+        <td>...</td>
+        <td>...</td>
+        <td>Aprobado Vigente</td>
+        <td>
+          <span class="badge badge-status badge-rechazada">Rechazada</span>
+        </td>
+        <td>
+          <div class="table-actions">
+            <button (click)="onSave('PM-2023-02-00159')"><i class="fas fa-save"></i></button>
+            <button (click)="onComments('PM-2023-02-00159')"><i class="fas fa-comments"></i></button>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>PM-2023-02-00160</td>
+        <td>2023-03-05</td>
+        <td>Andrea Sofía</td>
+        <td>Ramírez</td>
+        <td>Luna</td>
+        <td>Nueva Cuenta</td>
+        <td>Federal</td>
+        <td>Petroleros mexicanos</td>
+        <td>...</td>
+        <td>
+          <span class="badge badge-status badge-guardada">Guardada</span>
+        </td>
+        <td>
+          <div class="table-actions">
+            <button (click)="onSave('PM-2023-02-00160')"><i class="fas fa-save"></i></button>
+            <button (click)="onComments('PM-2023-02-00160')"><i class="fas fa-comments"></i></button>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>PM-2023-02-00161</td>
+        <td>2023-03-06</td>
+        <td>María Fernanda</td>
+        <td>López</td>
+        <td>Rodríguez</td>
+        <td>Nueva Cuenta</td>
+        <td>Municipal</td>
+        <td>Petroleros mexicanos</td>
+        <td>Entidad: Chiapas, municipio: Bejucal de Ocampo</td>
+        <td>
+          <span class="badge badge-status badge-cancelada">Cancelada</span>
+        </td>
+        <td>
+          <div class="table-actions">
+            <button (click)="onSave('PM-2023-02-00161')"><i class="fas fa-save"></i></button>
+            <button (click)="onComments('PM-2023-02-00161')"><i class="fas fa-comments"></i></button>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>PM-2023-02-00162</td>
+        <td>2023-03-07</td>
+        <td>José Manuel</td>
+        <td>Hernández</td>
+        <td>García</td>
+        <td>Ampliación de Perfiles</td>
+        <td>Estatal</td>
+        <td>Entidad: Michoacán de Ocampo</td>
+        <td>Secretaría de Seguridad y Protección Ciudadana, dependencia: Guardia Nacional, corporación: División Científica</td>
+        <td>
+          <span class="badge badge-status badge-aprobado">Aprobada</span>
+        </td>
+        <td>
+          <div class="table-actions">
+            <button (click)="onSave('PM-2023-02-00162')"><i class="fas fa-save"></i></button>
+            <button (click)="onComments('PM-2023-02-00162')"><i class="fas fa-comments"></i></button>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>PM-2023-02-00163</td>
+        <td>2023-03-07</td>
+        <td>Carlos Alberto</td>
+        <td>Martínez</td>
+        <td>Flores</td>
+        <td>Modificación de Perfil / Adscripción</td>
+        <td>Estatal</td>
+        <td>Entidad: Oaxaca</td>
+        <td>Institución: Secretaría de Seguridad y Protección Ciudadana, dependencia: Centro Nacional de Inteligencia (CISEN), corporación: CSEN</td>
+        <td>
+          <span class="badge badge-status badge-validada">Validad</span>
+        </td>
+        <td>
+          <div class="table-actions">
+            <button (click)="onSave('PM-2023-02-00163')"><i class="fas fa-save"></i></button>
+            <button (click)="onComments('PM-2023-02-00163')"><i class="fas fa-comments"></i></button>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>PM-2023-02-00164</td>
+        <td>2023-03-07</td>
+        <td>Ana Karen</td>
+        <td>Gutiérrez</td>
+        <td>Morales</td>
+        <td>Nueva Cuenta</td>
+        <td>Federal</td>
+        <td>Entidad: Oaxaca</td>
+        <td>Institución: Secretaría de Seguridad y Protección Ciudadana, dependencia: Policía Federal Preventiva</td>
+        <td>
+          <span class="badge badge-status badge-guardada">Guardada</span>
+        </td>
+        <td>
+          <div class="table-actions">
+            <button (click)="onSave('PM-2023-02-00164')"><i class="fas fa-save"></i></button>
+            <button (click)="onComments('PM-2023-02-00164')"><i class="fas fa-comments"></i></button>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>PM-2023-02-00165</td>
+        <td>2023-03-10</td>
+        <td>Luis Enrique</td>
+        <td>Torres</td>
+        <td>Vargas</td>
+        <td>Reactivación de Cuenta</td>
+        <td>Municipal</td>
+        <td>Entidad: México, municipio: Yaxcabá</td>
+        <td>Institución: Secretaría de Seguridad y Protección Ciudadana, dependencia: Fiscalía General de la República</td>
+        <td>
+          <span class="badge badge-status badge-validada">Validad</span>
+        </td>
+        <td>
+          <div class="table-actions">
+            <button (click)="onSave('PM-2023-02-00165')"><i class="fas fa-save"></i></button>
+            <button (click)="onComments('PM-2023-02-00165')"><i class="fas fa-comments"></i></button>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>PM-2023-02-00166</td>
+        <td>2023-03-10</td>
+        <td>Valeria Sánchez</td>
+        <td>Delgado</td>
+        <td></td>
+        <td>Ampliación de Perfiles</td>
+        <td>Estatal</td>
+        <td>Entidad: Tamaulipas</td>
+        <td>Institución: Secretaría de Seguridad y Protección Ciudadana, dependencia: Guardia Nacional, corporación: CSEN</td>
+        <td>
+          <span class="badge badge-status badge-rechazada">Rechazada</span>
+        </td>
+        <td>
+          <div class="table-actions">
+            <button (click)="onSave('PM-2023-02-00166')"><i class="fas fa-save"></i></button>
+            <button (click)="onComments('PM-2023-02-00166')"><i class="fas fa-comments"></i></button>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>PM-2023-02-00168</td>
+        <td>2023-03-12</td>
+        <td>Juan Pablo</td>
+        <td>Pérez</td>
+        <td>Mendoza</td>
+        <td>Modificación de Perfil / Adscripción</td>
+        <td>Federal</td>
+        <td>Entidad: Guerrero, municipio: Atlamajalcingo del Río</td>
+        <td>Institución: Secretaría de Seguridad y Protección Ciudadana, dependencia: Dirección General de Evaluación, Control y Prevención Social</td>
+        <td>
+          <span class="badge badge-status badge-recibido">Recibido</span>
+        </td>
+        <td>
+          <div class="table-actions">
+            <button (click)="onSave('PM-2023-02-00168')"><i class="fas fa-save"></i></button>
+            <button (click)="onComments('PM-2023-02-00168')"><i class="fas fa-comments"></i></button>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>PM-2023-02-00169</td>
+        <td>2023-03-12</td>
+        <td>Laura Isabel</td>
+        <td>Castillo</td>
+        <td>Nava</td>
+        <td>Nueva Cuenta</td>
+        <td>Municipal</td>
+        <td>Entidad: Guerrero, municipio: Atlamajalcingo del Río</td>
+        <td>Institución: Secretaría de Seguridad y Protección Ciudadana, dependencia: Dirección General de Evaluación, Control y Prevención Social</td>
+        <td>
+          <span class="badge badge-status badge-guardada">Guardada</span>
+        </td>
+        <td>
+          <div class="table-actions">
+            <button (click)="onSave('PM-2023-02-00169')"><i class="fas fa-save"></i></button>
+            <button (click)="onComments('PM-2023-02-00169')"><i class="fas fa-comments"></i></button>
+          </div>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination Indicator -->
+  <div class="pagination-indicator">
+    <span class="dot"></span>
+    <span class="dot inactive"></span>
+    <span class="dot inactive"></span>
+  </div>
+</div>

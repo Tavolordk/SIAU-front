@@ -1,0 +1,119 @@
+/* Paleta usada en tus pantallas */
+$vino: #7a2048;
+$oro:  #b89b4c;
+$gris-borde: #e0e0e0;
+$gris-texto: #222;
+$gris-suave: #f3f3f3;
+
+/* Tarjeta-modal completa */
+.modal-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.12);
+  overflow: hidden;
+}
+
+/* Barra superior vino */
+.modal-head {
+  background: $vino;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+
+  .titulo {
+    font-weight: 700;
+    font-size: 1.2rem;
+  }
+
+  .btn-x {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+
+    &:hover { background: rgba(255,255,255,.18); }
+  }
+}
+
+/* Franja blanca con sombra suave (como tarjeta dentro) */
+.info-strip {
+  margin: 10px 12px 8px;
+  background: #fff;
+  border: 1px solid $gris-borde;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0,0,0,.06);
+  padding: 10px 14px;
+
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+
+  .avatar {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: #e2e2e2;
+    border: 2px solid #d6d6d6;
+  }
+
+  .chip {
+    color: $gris-texto;
+    font-size: 1.1rem;
+
+    &.strong {
+      font-weight: 600;
+      letter-spacing: .2px;
+    }
+  }
+}
+
+.cuerpo {
+  padding: 10px 18px 18px;
+
+  .instruccion {
+    color: $gris-texto;
+    font-size: 1.05rem;
+    margin: 6px 0 14px;
+
+    .req { color: $vino; font-weight: 700; }
+  }
+
+  .opciones {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr; /* 4 en línea como en la imagen */
+    gap: 24px;
+
+    @media (max-width: 1200px) {
+      grid-template-columns: 1fr 1fr; /* responsivo */
+    }
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .opcion {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.15rem;
+    color: $gris-texto;
+    white-space: nowrap;
+
+    input[type='radio'] {
+      /* radios vino como en el diseño */
+      width: 20px; height: 20px;
+      accent-color: $vino;       /* moderno */
+      cursor: pointer;
+    }
+
+    span { line-height: 1.2; }
+  }
+}

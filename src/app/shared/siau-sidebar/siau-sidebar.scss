@@ -1,0 +1,93 @@
+$vino: #6b1840;
+
+.sidebar {
+  width: 340px;
+  background: #fff;
+  z-index: 2;
+
+  /* 🔸 Sidebar fijo que ocupa toda la altura útil y hace scroll interno */
+  &.fixed {
+    position: sticky;           /* se queda en el flujo y “pega” al top */
+    top: 110px;                 /* tu header mide 110px; si cambia, ajusta */
+    height: calc(100vh - 110px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-right: 1px solid #e0e0e0;
+    background: #fff;           /* lateral blanco completo */
+  }
+
+  .sidebar-header {
+    background: $vino;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    fa-icon { font-size: 1.7rem; }
+  }
+
+  /* 🔸 Cuerpo del menú en blanco */
+  .sidebar-menu {
+    background: #fff;
+
+    .menu-item {
+      width: 100%;
+      text-align: left;
+      padding: 18px 24px;
+      font-size: 1.3rem;
+      background: #a3a3a3;
+      color: #fff;
+      border: none;
+      border-radius: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      &.active { background: #bdbdbd; color: #222; }
+    }
+
+    .submenu {
+      background: #fff;
+
+      .submenu-item {
+        width: 100%;
+        text-align: left;
+        padding: 10px 40px;
+        font-size: 1.2rem;
+        color: #222;
+        background: #fff;
+        border: none;
+
+        &.active { font-weight: 700; color: #000; }
+      }
+    }
+
+    .menu-item-2 {
+      width: 100%;
+      text-align: left;
+      margin-top: 10px;
+      padding: 18px 24px;
+      font-size: 1.2rem;
+      color: #fff;
+      background: #a3a3a3;
+      border: none;
+      border-radius: 0;
+
+      &.active { filter: brightness(.95); }
+    }
+  }
+}
+
+/* Responsive (si no quieres fijo en móvil) */
+@media (max-width: 1200px) {
+  .sidebar.fixed {
+    position:relative;
+    height: auto;
+    overflow: visible;
+    border-right: 0;
+    width: 100%;
+  }
+}

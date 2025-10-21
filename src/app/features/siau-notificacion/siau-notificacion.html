@@ -1,0 +1,58 @@
+<div class="main-container">
+    <div class="siau-title">
+        {{ titulo }}
+    </div>
+
+    <div class="siau-content">
+        <p><b>Estimado(a) {{ nombreUsuario }}:</b></p>
+
+        <p>
+            Tu cédula de solicitud con folio <b>{{ folio }}</b> de
+            <b>{{ descripcionTipo }}</b> fue atendida exitosamente en el
+            Sistema Integral de Administración de Usuarios (SIAU).
+        </p>
+
+        <p><b>Descripción breve del resultado según requerimiento atendido:</b></p>
+
+        <!-- Sección "Nueva cuenta" (solo visible si aplica) -->
+        @if (tipoRequerimiento === 'nueva') {
+        <ul>
+            <li>
+                <b>Nueva cuenta:</b> Tu nueva cuenta ha sido creada exitosamente
+                <ul>
+                    <li>
+                        <fa-icon [icon]="faUser" class="me-1" style="color:#2e9e6f;"></fa-icon>
+                        <b>Usuario:</b> {{ cuentaUsuario || '[Cuenta de usuario]' }}
+                    </li>
+                    <li>
+                        <fa-icon [icon]="faLock" class="me-1" style="color:#2e9e6f;"></fa-icon>
+                        <b>Contraseña:</b> {{ contrasenaTemporal || '[Contraseña temporal]' }}
+                    </li>
+
+                </ul>
+            </li>
+        </ul>
+        }
+
+
+        <!-- Lista de otros casos (siempre visible para mantener el texto informativo) -->
+        <ul style="list-style-type: disc; margin-top: 1em;">
+            <li>Modificación perfiles/adscripción: Se realizaron las modificaciones conforme a la información validada.
+            </li>
+            <li>Ampliación perfiles: Se ampliaron tus perfiles conforme a la información validada.</li>
+            <li>Reactivación de cuenta: Se reactivó tu cuenta exitosamente.</li>
+        </ul>
+
+        <p style="margin-top: 1.5em;">
+            Agradecemos tu confianza y el uso del SIAU para la gestión de tus accesos.<br>
+            Atentamente,<br>
+            Sistema Integral de Administración de Usuarios (SIAU)
+        </p>
+    </div>
+
+    <div class="siau-footer mt-5">
+        Para más información o recibir asistencia, comunícate a la Mesa de Servicios:
+        <span class="mesa-servicio">Mesa de servicio: {{ mesaServicioTelefono }}</span>
+        <span class="correo">Correo: {{ correoMesa }}</span>
+    </div>
+</div>

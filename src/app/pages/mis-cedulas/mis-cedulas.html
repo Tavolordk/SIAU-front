@@ -1,0 +1,108 @@
+<!-- Header reutilizable -->
+<app-header-siau
+  [title]="'Sistema Integral de Administración de Usuarios'"
+  [userName]="usuarioNombre"
+  [userRole]="usuarioCuenta"
+  [logoSrc]="'assets/images/SSPC.png'"
+  [bgSrc]="'assets/images/encabezado.png'"
+  [height]="140">
+</app-header-siau>
+
+<!-- Layout -->
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      Gestión de Cédulas Únicas<br />
+      de Registro de Usuario
+      <span class="fa fa-bars"></span>
+    </div>
+
+    <button class="sidebar-menu" type="button" (click)="toggleCedulas()"
+            [attr.aria-expanded]="cedulasOpen">
+      Gestión de cédulas
+      <span class="float-end fa" [ngClass]="cedulasOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></span>
+    </button>
+
+    <div class="sidebar-submenu" *ngIf="cedulasOpen">
+      <button class="submenu-item active" type="button">Mis cédulas</button>
+      <button class="submenu-item" type="button">Consultar cédula</button>
+    </div>
+
+    <button class="sidebar-menu-2" type="button">
+      Gestión de contraseña
+    </button>
+  </aside>
+
+  <!-- Contenido -->
+  <main class="main-content">
+    <h1 class="main-title">Gestión de mis cédulas</h1>
+
+    <div class="main-title-shadow">
+      <button class="btn-nueva-solicitud">Nueva solicitud</button>
+    </div>
+
+    <div class="table-container">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Folio</th>
+            <th>Tipo solicitud</th>
+            <th>Fecha</th>
+            <th>Estatus</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>PM-2023-00159</td>
+            <td>Reactivar cuenta</td>
+            <td>05/12/2025</td>
+            <td><span class="estatus-btn estatus-enviada">Enviada</span></td>
+            <td>
+              <a class="acciones-link" href="#">Revisar</a>
+              <span class="acciones-icons"><i class="far fa-comment-alt"></i></span>
+            </td>
+          </tr>
+
+          <tr>
+            <td>PM-2023-00160</td>
+            <td>Modificación de perfil/adscripción</td>
+            <td>05/13/2025</td>
+            <td><span class="estatus-btn estatus-validada">Validada</span></td>
+            <td>
+              <a class="acciones-link" href="#">Revisar</a>
+              <span class="acciones-icons"><i class="far fa-comment-alt"></i></span>
+            </td>
+          </tr>
+
+          <tr>
+            <td>PM-2023-00161</td>
+            <td>Amplificación<br />de perfiles</td>
+            <td>05/19/2025</td>
+            <td><span class="estatus-btn estatus-rechazada">Rechazada</span></td>
+            <td>
+              <a class="acciones-link" href="#">Revisar</a>
+              <span class="acciones-icons"><i class="far fa-comment-alt"></i></span>
+            </td>
+          </tr>
+
+          <tr>
+            <td>-----</td>
+            <td>Modificación de perfil/adscripción</td>
+            <td>-----</td>
+            <td><span class="estatus-btn estatus-sinestatus">Sin estatus</span></td>
+            <td>
+              <a class="acciones-link" href="#">Revisar</a>
+              <span class="acciones-icons">
+                <i class="far fa-comment-alt"></i>
+                <i class="far fa-trash-alt"></i>
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>

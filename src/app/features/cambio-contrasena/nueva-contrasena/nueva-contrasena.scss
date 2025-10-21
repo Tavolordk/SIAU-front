@@ -1,0 +1,69 @@
+:host { display:block; background:#f7f7f7; }
+
+$siau-vino: #6d2040;
+$siau-oro:  #b89b4c;
+$siau-gris: #ededed;
+$siau-plata:#bdbdbd;
+$siau-text:#222;
+
+.siau-layout { position: relative; }
+
+.sidebar{
+  width:320px; background:#fff; min-height:100vh; position:fixed; left:0; border-right:0; z-index:2;
+  .sidebar-header{ background:$siau-vino; color:#fff; font-weight:700; font-size:1.1rem; padding:18px 24px; display:flex; align-items:center; justify-content:space-between; }
+  .nav-link{ border-radius:0; font-size:1.05rem; color:#444; padding:18px 24px; background:$siau-gris; border:none; margin:0 0 2px 0; text-align:left;
+    &.selected{ background:#888; color:#fff; }
+    &.disabled{ color:$siau-plata; }
+  }
+}
+
+.main-content{ margin-left:340px; padding:40px 0 0 0; }
+.main-card{ background:#fff; border-radius:16px; box-shadow:0 4px 18px rgba(0,0,0,.08); padding:0 0 24px 0; max-width:900px; margin:0 auto; }
+
+.steps{ display:flex; justify-content:space-between; align-items:center; padding:36px 24px 0; }
+.step{ text-align:center; flex:1;
+  .step-circle{ width:48px; height:48px; border-radius:50%; background:$siau-vino; color:#fff; font-size:1.4rem; font-weight:700; display:flex; align-items:center; justify-content:center; margin:0 auto 8px; }
+  .step-title{ font-size:1.05rem; font-weight:700; color:$siau-text; }
+  &.inactive{ .step-circle{ background:$siau-plata; } .step-title{ color:#888; } }
+}
+
+.tab-bar{ background:$siau-vino; color:#fff; font-weight:700; border-radius:8px 8px 0 0; padding:8px 24px; .tab{ padding:6px 12px; } }
+
+.requirements-info{ background:#e0e0e0; border-radius:8px; padding:12px 16px; margin:16px 24px 0; display:flex; align-items:center; gap:12px; color:#444; }
+
+.form-section{ display:flex; flex-wrap:wrap; gap:0; padding:0 36px; margin-top:12px; }
+.form-left{ flex:2; min-width:320px; }
+.form-right{ flex:1.2; min-width:260px; padding-left:36px; }
+
+.form-label{ font-size:1.2rem; font-weight:700; color:$siau-text; margin-bottom:8px; }
+.form-label-confirm{ @extend .form-label; margin-top:12px; }
+.form-control{ font-size:1.05rem; border-radius:8px; border:1px solid $siau-plata; }
+.input-group-text{ background:$siau-gris; border:1px solid $siau-plata; border-left:none; }
+
+.password-strength{ font-size:1rem; color:#b71c1c; }
+
+.security-req-title{ font-size:1.1rem; font-weight:700; color:$siau-text; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+.security-req-list{ list-style:none; padding:0; margin:0;
+  li{ font-size:1.02rem; color:$siau-text; margin-bottom:14px; display:flex; align-items:center; gap:10px; }
+  .dot{ width:14px; height:14px; border-radius:50%; background:$siau-plata; &.ok{ background:$siau-vino; } }
+}
+
+.footer-btns{ display:flex; justify-content:flex-end; align-items:center; gap:18px; margin-top:24px; padding:0 36px 16px; }
+.btn-regresar{ background:#888; color:#fff; font-weight:700; border:none; border-radius:8px; padding:8px 24px; display:flex; gap:8px; align-items:center; }
+.btn-continuar{ background:$siau-oro; color:#fff; font-weight:700; border:none; border-radius:8px; padding:8px 24px;
+  &:disabled{ opacity:.6; cursor:not-allowed; }
+}
+
+/* Responsivo */
+@media (max-width:1200px){
+  .main-content{ margin-left:0; padding-top:16px; }
+  .sidebar{ position:static; width:100%; min-height:auto; }
+  .main-card{ margin:0 12px; }
+}
+@media (max-width:900px){
+  .form-section{ flex-direction:column; padding:0 18px; }
+  .form-right{ padding-left:0; margin-top:24px; }
+}
+@media (max-width:600px){
+  .steps{ flex-direction:column; gap:12px; padding-top:24px; }
+}

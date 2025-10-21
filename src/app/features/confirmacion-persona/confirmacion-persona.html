@@ -1,0 +1,100 @@
+<div class="container-fluid px-0">
+    <!-- Header -->
+    <div class="header-bar">
+        <div class="header-title">
+            {{ titulo }}
+        </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="custom-table-container shadow-sm mt-0">
+        <div class="table-responsive">
+            <table class="table custom-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Fuente de datos</th>
+                        <th>Estatus cuenta</th>
+                        <th>Adscripción</th>
+                    </tr>
+                </thead>
+
+                <tbody *ngIf="hayRegistros; else noInfo">
+                    <tr *ngFor="let r of registros">
+                        <td>{{ r.usuario }}</td>
+                        <td>{{ r.fuenteDatos }}</td>
+                        <td>{{ r.estatus }}</td>
+                        <td>{{ r.adscripcion }}</td>
+                    </tr>
+                </tbody>
+
+                <ng-template #noInfo>
+                    <tbody>
+                        <tr class="no-info-row">
+                            <td colspan="4">Sin información del usuario capturado</td>
+                        </tr>
+                    </tbody>
+                </ng-template>
+            </table>
+        </div>
+    </div>
+
+    <!-- ¿Es la persona? -->
+    <div class="section text-center">
+        <span class="question-label mt-5 mb-2">¿Es la persona que busca?</span>
+
+        <div class="radio-group mb-4" [formGroup]="form">
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="personaSi" [value]="true"
+                    formControlName="esPersona" />
+                <label class="form-check-label" for="personaSi">Sí</label>
+            </div>
+
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="personaNo" [value]="false"
+                    formControlName="esPersona" />
+                <label class="form-check-label" for="personaNo">No</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tipo de requerimiento -->
+    <div class="section" [formGroup]="form">
+        <div class="requirement-bar mx-2 mb-4">
+            Tipo de requerimiento
+        </div>
+
+        <div class="requirement-options mb-4">
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="nuevaCuenta" value="nuevaCuenta"
+                    formControlName="tipoRequerimiento" name="tipoRequerimiento" />
+                <label class="form-check-label no-color" for="nuevaCuenta">Nueva cuenta</label>
+            </div>
+
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="modificacionPerfiles" value="modificacionPerfiles"
+                    formControlName="tipoRequerimiento" name="tipoRequerimiento" />
+                <label class="form-check-label no-color" for="modificacionPerfiles">Modificación de
+                    perfiles/adscripción</label>
+            </div>
+
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="ampliacionPerfiles" value="ampliacionPerfiles"
+                    formControlName="tipoRequerimiento" name="tipoRequerimiento" />
+                <label class="form-check-label no-color" for="ampliacionPerfiles">Ampliación de perfiles</label>
+            </div>
+
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="reactivacionCuenta" value="reactivacionCuenta"
+                    formControlName="tipoRequerimiento" name="tipoRequerimiento" />
+                <label class="form-check-label no-color" for="reactivacionCuenta">Reactivación de cuenta</label>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <button class="accept-btn" type="button" [disabled]="form.invalid" (click)="onAceptar()">
+                Aceptar
+            </button>
+        </div>
+    </div>
+</div>

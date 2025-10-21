@@ -1,0 +1,42 @@
+<!-- HEADER reutilizable -->
+<app-header-siau
+  [title]="'Sistema Integral de Administración de Usuarios'"
+  [userName]="usuarioNombre"
+  [userRole]="usuarioRol"
+  [logoSrc]="'assets/images/SSPC.png'"
+  [bgSrc]="'assets/images/encabezado.png'"
+  [height]="110">
+</app-header-siau>
+
+<!-- Contenido principal -->
+<div class="main-content">
+  <app-registro-progress
+    [title]="'Registro'"
+    [currentStep]="currentStep"
+    [totalSteps]="totalSteps"
+    [percent]="progressPercent"  
+    [accent]="'#7a1832'">
+  </app-registro-progress>
+
+  <div class="section-title-bar mx-auto">Validación de medios de contacto</div>
+
+  <div class="info-box mt-3 mb-4">
+    La Validación de medios de contacto añade una capa de protección a tus cuentas.
+    <br>
+    Primero ingresas un código enviado a tu correo o Telegram.
+  </div>
+
+  <div class="select-title">Selecciona el medio de contacto de tu preferencia</div>
+
+  <div class="d-flex flex-column align-items-center">
+    <button type="button" class="contact-btn mb-3" (click)="onSelect('email')">
+      Código por correo electrónico
+      <fa-icon [icon]="icMail" class="ms-3"></fa-icon>
+    </button>
+
+    <button type="button" class="contact-btn" (click)="onSelect('telegram')">
+      Código por Telegram
+      <fa-icon [icon]="icTelegram" class="ms-3"></fa-icon>
+    </button>
+  </div>
+</div>

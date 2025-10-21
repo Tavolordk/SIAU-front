@@ -1,0 +1,193 @@
+$vino: #6b1840;
+$oro: #b89a5a;
+
+:host {
+  --siau-sidebar-w: 340px;
+  --pull-up: 600px;
+}
+
+.layout {
+  position: relative;
+  background: #f7f7f7;
+  min-width: 100%;
+}
+
+/* Main */
+.main-content {
+  margin-left: var(--siau-sidebar-w);
+  padding: 0 16px 40px;
+  min-height: calc(100vh - 110px);
+  margin-top: calc(-1 * var(--pull-up));
+}
+
+.main-title {
+  font-size: 2.7rem;
+  font-weight: 700;
+  color: #7a2048;
+  text-align: center;
+  margin: 0 0 8px 0;
+}
+
+app-hero-cta {
+  display: block;
+  margin-top: 8px;
+}
+/* Bitácora */
+.bitacora-container {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 16px #00000018;
+  max-width: 900px;
+  width: 100%;
+  margin: 12px auto 0;
+  padding: 0;
+
+  .bitacora-header {
+    background: $vino;
+    color: #fff;
+    font-size: 1.3rem;
+    font-weight: 700;
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+  }
+
+  .bitacora-body {
+    padding: 30px;
+  }
+
+  .bitacora-entry {
+    margin-bottom: 18px;
+  }
+
+  .bitacora-role,
+  .bitacora-label {
+    display: inline-block;
+    background: $oro;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border-radius: 7px;
+    padding: 6px 18px;
+    margin-right: 10px;
+  }
+
+  .bitacora-user {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #222;
+    margin-right: 10px;
+  }
+
+  .bitacora-date {
+    float: right;
+    color: #222;
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+
+  .bitacora-comment {
+    background: #e0e0e0;
+    color: #222;
+    font-size: 1.1rem;
+    border-radius: 7px;
+    padding: 10px 18px;
+    margin-top: 5px;
+  }
+
+  .bitacora-add-title {
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #222;
+    margin: 18px 0 10px;
+  }
+
+  .bitacora-add-input {
+    width: 100%;
+    border-radius: 10px;
+    border: none;
+    background: #e0e0e0;
+    color: #888;
+    font-size: 1.1rem;
+    padding: 16px 18px;
+    margin-bottom: 20px;
+    outline: none;
+  }
+
+  .bitacora-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 18px;
+
+    .btn-cancelar {
+      background: #e0e0e0;
+      color: #222;
+      font-size: 1.2rem;
+      font-weight: 700;
+      border-radius: 10px;
+      padding: 10px 40px;
+      border: none;
+
+      .x {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-left: 6px;
+      }
+    }
+
+    .btn-agregar {
+      background: $oro;
+      color: #fff;
+      font-size: 1.2rem;
+      font-weight: 700;
+      border-radius: 10px;
+      padding: 10px 40px;
+      border: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      &:hover {
+        filter: brightness(.95);
+        color: #fff;
+      }
+    }
+  }
+}
+
+/* Responsive */
+@media (max-width:1200px) {
+  .main-content {
+    margin-left: 0;
+    margin-top: -16px;
+  }
+}
+
+@media (max-width:900px) {
+  .bitacora-container {
+    width: 98%;
+  }
+}
+
+@media (max-width:600px) {
+  .btn-nueva-solicitud {
+    width: 100%;
+  }
+
+  .bitacora-container {
+    width: 100%;
+    margin-top: 16px;
+    border-radius: 12px;
+  }
+}
