@@ -1,14 +1,13 @@
-<!-- Header reutilizable (sin progress bar) -->
 <app-header-siau
   [title]="'Sistema Integral de Administración de Usuarios'"
   [userName]="usuarioNombre"
   [userRole]="usuarioRol"
-  [logoSrc]="'assets/images/SSPC.png'"
-  [bgSrc]="'assets/images/encabezado.png'"
-  [height]="90">
+  [logoSrc]="'../../../assets/images/SSPC.png'"
+  [bgSrc]="'../../../assets/images/encabezado.png'"
+  [height]="90"
+  [showUser]="true">
 </app-header-siau>
 
-<!-- Contenido -->
 <div class="main-container">
   <div class="section-bar">Confirmación de solicitud</div>
 
@@ -45,18 +44,9 @@
 
     <div class="process-section-bar">Proceso de revisión</div>
     <table class="process-table">
-      <tr>
-        <td class="label">Estatus actual:</td>
-        <td class="value">{{ estatusActual }}</td>
-      </tr>
-      <tr>
-        <td class="label">Próximo paso:</td>
-        <td class="value">{{ proximoPaso }}</td>
-      </tr>
-      <tr>
-        <td class="label">Tiempo estimado:</td>
-        <td class="value">{{ tiempoEstimado }}</td>
-      </tr>
+      <tr><td class="label">Estatus actual:</td><td class="value">{{ estatusActual }}</td></tr>
+      <tr><td class="label">Próximo paso:</td><td class="value">{{ proximoPaso }}</td></tr>
+      <tr><td class="label">Tiempo estimado:</td><td class="value">{{ tiempoEstimado }}</td></tr>
     </table>
 
     <div class="confirmation-section">

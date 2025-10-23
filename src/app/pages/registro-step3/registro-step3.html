@@ -1,4 +1,4 @@
-<!-- Header (puedes reemplazar por tu shell global si ya existe) -->
+<!-- Header (si ya tienes un shell global que lo pinta, puedes quitarlo) -->
 <app-header-siau
   [title]="'Sistema Integral de Administración de Usuarios'"
   [userName]="usuarioNombre"
@@ -9,100 +9,114 @@
   [showUser]="true">
 </app-header-siau>
 
-
 <div class="container main-content">
-    <!-- Título paso y barra -->
+  <!-- Título paso y barra -->
   <app-registro-progress
     [title]="'Registro'"
     [currentStep]="currentStep"
     [totalSteps]="totalSteps"
-    [percent]="progressPercent"  
+    [percent]="progressPercent"
     [accent]="'#7a1832'">
   </app-registro-progress>
 
-    <div class="section-title">Documentos</div>
+  <div class="section-title">Documentos</div>
 
-    <div class="form-section">
-        <div class="mb-2 fw-bold" style="font-size:1rem; color:#222;">*Campos requeridos</div>
+  <div class="form-section">
+    <div class="mb-2 fw-bold" style="font-size:1rem; color:#222;">*Campos requeridos</div>
 
-        <!-- Selector tipo de documento -->
-        <div class="mb-2">
-            <label class="form-label" for="tipoDocumento">Tipo de documento <span class="required">*</span></label>
-
-            <select id="tipoDocumento" class="form-select" [formControl]="docTypeCtrl">
-                <option value="" selected>Selecciona</option>
-                <option *ngFor="let t of docTypes" [value]="t">{{ t }}</option>
-            </select>
-
-        </div>
-
-        <div class="info-text">
-            Se requiere de manera obligatoria la carga de: Identificación Oficial (INE),
-            recibo de nómina (quincena inmediata anterior) y credencial laboral.
-        </div>
-        <div class="file-info">
-            El total de los archivos a subir no puede superar los 10MB<br>
-            Archivos permitidos PDF o JPG.
-            <span class="ms-2 text-muted">(Usado: {{totalMB}} MB · Restante: {{remainingMB}} MB)</span>
-        </div>
-
-        <!-- Selector de archivo + subir -->
-        <div class="d-flex align-items-center mb-3 gap-3">
-            <input type="file" #fileInput accept=".pdf,.jpg,.jpeg" class="d-none" (change)="onFileSelected($event)">
-
-            <button type="button" class="btn btn-custom btn-upload" [disabled]="!form.get('docType')!.value"
-                (click)="triggerPick(fileInput)">
-                <fa-icon [icon]="icUpload" class="me-1"></fa-icon>
-                Elegir archivo <span class="required">*</span>
-            </button>
-
-            <div class="picked-name flex-grow-1" *ngIf="pickedFileName">
-                {{ pickedFileName }}
-            </div>
-
-            <button type="button" class="btn btn-custom" style="min-width:180px;"
-                [disabled]="!form.get('docType')!.value || !form.get('file')!.value" (click)="upload()">
-                Subir
-            </button>
-        </div>
+    <!-- Selector tipo de documento (desde catálogo) -->
+    <div class="mb-2">
+      <label class="form-label" for="tipoDocumento">Tipo de documento <span class="required">*</span></label>
+      <select id="tipoDocumento" class="form-select" formControlName="tipoDocumento" [formGroup]="form" required>
+        <option [ngValue]="null" disabled>Selecciona</option>
+        <option *ngFor="let t of tipos" [ngValue]="t.id">{{ t.nombre }}</option>
+      </select>
     </div>
 
-    <!-- Tabla -->
-    <div class="file-table mx-auto">
-        <table class="table mb-0">
-            <thead>
-                <tr>
-                    <th style="width:45%;">Tipo</th>
-                    <th style="width:35%;">Nombre de archivo</th>
-                    <th style="width:20%;">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let r of rows; let i = index">
-                    <td>{{ r.type }}</td>
-                    <td>{{ r.name }}</td>
-                    <td>
-                        <fa-icon [icon]="icEye" class="action-eye me-3" title="Visualizar" (click)="view(r)"></fa-icon>
-                        <fa-icon [icon]="icTrash" class="action-trash" title="Eliminar" (click)="delete(i)"></fa-icon>
-                    </td>
-                </tr>
-                <tr *ngIf="rows.length === 0">
-                    <td colspan="3" class="text-center text-muted">Sin documentos cargados.</td>
-                </tr>
-            </tbody>
-        </table>
+    <div class="info-text">
+      Se requiere de manera obligatoria la carga de: Identificación Oficial (INE),
+      recibo de nómina (quincena inmediata anterior) y credencial laboral.
+    </div>
+    <div class="file-info">
+      El total de los archivos a subir no puede superar los 10MB<br>
+      Archivos permitidos PDF o JPG.
+      <span class="ms-2 text-muted">(Usado: {{ totalMB }} MB · Restante: {{ remainingMB }} MB)</span>
     </div>
 
-    <!-- Botones inferior -->
-    <div class="btns-bottom">
-        <button class="btn btn-secondary-custom" type="button" (click)="onBack()">
-            <fa-icon [icon]="icLeft" class="me-1"></fa-icon>
-            Regresar
-        </button>
+    <!-- Selector de archivo + subir -->
+    <div class="d-flex align-items-center mb-3 gap-3">
+<input
+  type="file"
+  #fileInput
+  accept=".pdf,.jpg,.jpeg"
+  class="d-none"
+  (change)="onFileSelected($event)">
+<button
+  type="button"
+  class="btn btn-custom btn-upload"
+  [disabled]="!form.get('tipoDocumento')!.value"
+  (click)="fileInput.click()">
+  <fa-icon [icon]="icUpload" class="me-1"></fa-icon>
+  Elegir archivo <span class="required">*</span>
+</button>
 
-        <button class="btn btn-custom" type="button" (click)="onNext()">
-            Siguiente
-            <fa-icon [icon]="icRight" class="ms-1"></fa-icon>
-        </button>
+
+      <div class="picked-name flex-grow-1">
+        {{ form.get('archivo')?.value?.name || '' }}
+      </div>
+
+      <button type="button" class="btn btn-custom" style="min-width:180px;"
+              [disabled]="!form.get('tipoDocumento')!.value || !form.get('archivo')!.value"
+              (click)="onUpload()">
+        Subir
+      </button>
     </div>
+
+    <!-- Feedback de validación del archivo -->
+    <div class="text-danger small" *ngIf="form.get('archivo')?.touched && form.get('archivo')?.invalid">
+      <div *ngIf="form.get('archivo')?.errors?.['fileType']">Solo se permiten archivos PDF o JPG.</div>
+      <div *ngIf="form.get('archivo')?.errors?.['fileSize']">El archivo no debe superar 10 MB.</div>
+      <div *ngIf="form.get('archivo')?.errors?.['required']">Este campo es obligatorio.</div>
+    </div>
+    <div *ngIf="errorMsg" class="text-danger small mt-1">{{ errorMsg }}</div>
+  </div>
+
+  <!-- Tabla (desde FormArray) -->
+  <div class="file-table mx-auto">
+    <table class="table mb-0">
+      <thead>
+        <tr>
+          <th style="width:45%;">Tipo</th>
+          <th style="width:35%;">Nombre de archivo</th>
+          <th style="width:20%;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let g of documentosFA.controls; let i = index">
+          <td>{{ nombreTipo(g.value.tipoDocumentoId) }}</td>
+          <td>{{ g.value.nombreArchivo }}</td>
+          <td>
+            <fa-icon [icon]="icEye" class="action-eye me-3" title="Visualizar" (click)="onViewAt(i)"></fa-icon>
+            <fa-icon [icon]="icTrash" class="action-trash" title="Eliminar" (click)="onRemoveAt(i)"></fa-icon>
+          </td>
+        </tr>
+        <tr *ngIf="!documentosFA.length">
+          <td colspan="3" class="text-center text-muted">Sin documentos cargados.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Botones inferior -->
+  <div class="btns-bottom">
+    <button class="btn btn-secondary-custom" type="button" (click)="onBack()">
+      <fa-icon [icon]="icLeft" class="me-1"></fa-icon>
+      Regresar
+    </button>
+
+    <button class="btn btn-custom" type="button" (click)="onNext()">
+      Siguiente
+      <fa-icon [icon]="icRight" class="ms-1"></fa-icon>
+    </button>
+  </div>
 </div>

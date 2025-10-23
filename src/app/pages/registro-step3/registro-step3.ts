@@ -1,16 +1,23 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder, FormGroup, Validators, AbstractControl, ValidatorFn,
+  ReactiveFormsModule, FormArray
+} from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faEye, faTrashAlt, faArrowLeft, faArrowRight, faCloudUploadAlt, faUserCircle } from '@fortawesome/free-solid-svg-icons';
 import { HeaderSiauComponent } from '../../shared/header-siau/header-siau';
-import { RegistroProgressComponent } from "../../shared/registro-progress/registro-progress";
-type DocRow = {
-  type: string;
-  name: string;
-  size: number;          // bytes
-  url: string;           // blob URL para visualizar
-  mime: string;
+import { RegistroProgressComponent } from '../../shared/registro-progress/registro-progress';
+import { StepFormStateService } from '../../step-form/state/step-form-state.service';
+import { CatalogosService } from '../../services/catalogos.service';
+
+interface TipoDoc { id: number; nombre: string; }
+type Step3Doc = {
+  file: File;
+  tipoDocumentoId: number;
+  storageRuta?: string;
+  storageProveedor?: string;
+  fechaDocumento: string | undefined;
 };
 
 @Component({
@@ -20,15 +27,17 @@ type DocRow = {
   templateUrl: './registro-step3.html',
   styleUrls: ['./registro-step3.scss']
 })
-export class RegistroStep3Component implements OnDestroy {
-  // Encabezado (demo)
-  usuarioNombre = 'Luis Vargas';
-  usuarioRol = 'Capturista';
+export class RegistroStep3Component implements OnInit, OnDestroy {
+  // Header / progreso (inputs para que sea autónomo)
+  @Input() currentStep = 3;
+  @Input() maxSteps = 6;
+  @Input() usuarioNombre = 'Luis Vargas';
+  @Input() usuarioRol = 'Capturista';
+  @Output() prev = new EventEmitter<void>();
+  @Output() proceed = new EventEmitter<{ documentos: Step3Doc[] }>();
 
-  // Paso/progreso
-  totalSteps = 6;
-  currentStep = 3;
-  get progressPercent() { return Math.round((this.currentStep / this.totalSteps) * 100); }
+  get totalSteps() { return this.maxSteps; }
+  get progressPercent() { return Math.round((this.currentStep / (this.maxSteps || 1)) * 100); }
 
   // Icons
   icEye = faEye;
@@ -38,130 +47,186 @@ export class RegistroStep3Component implements OnDestroy {
   icUpload = faCloudUploadAlt;
   icUser = faUserCircle;
 
-  // Form
-  form: FormGroup;
+  // Catálogo
+  tipos: TipoDoc[] = [];
 
-  // Config
-  readonly maxTotalBytes = 10 * 1024 * 1024; // 10 MB
-  readonly allowedExt = ['pdf', 'jpg', 'jpeg'];
-  readonly allowedMime = ['application/pdf', 'image/jpeg']; // (jpg/jpeg)
+  // Estado / formulario
+  form!: FormGroup;
+  loading = false;
+  errorMsg = '';
+  readonly hoy = this.getTodayLocalISO();
 
-  // UI state
-  picking = false;
-  pickedFileName = '';
+  // Límites/validaciones
+  private readonly MAX_BYTES = 10 * 1024 * 1024;              // 10 MB
+  private readonly ALLOWED_TYPES = ['image/jpeg', 'application/pdf'];
+  private readonly ALLOWED_EXTS  = ['.jpg', '.jpeg', '.pdf'];
 
-  // Tipos de documento disponibles
-  docTypes: string[] = [
-    'Identificación oficial (INE)',
-    'Recibo de nómina (quincena inmediata anterior)',
-    'Credencial laboral'
-  ];
+  constructor(
+    private fb: FormBuilder,
+    private state: StepFormStateService,
+    private catalogos: CatalogosService
+  ) {}
 
-  // Tabla
-  rows: DocRow[] = [];
-
-  constructor(private fb: FormBuilder) {
+  // ========= Ciclo de vida =========
+  ngOnInit(): void {
+    // Form local (misma forma que el viejo)
     this.form = this.fb.group({
-      docType: [{ value: '', disabled: false }, Validators.required],
-      file: [null, Validators.required]
-    });
-  }
-
-  // Tamaño total actual
-  get totalBytes(): number {
-    return this.rows.reduce((acc, r) => acc + r.size, 0);
-  }
-  get totalMB(): string {
-    return (this.totalBytes / (1024 * 1024)).toFixed(2);
-  }
-  get remainingMB(): string {
-    const remain = (this.maxTotalBytes - this.totalBytes) / (1024 * 1024);
-    return Math.max(0, remain).toFixed(2);
-  }
-
-  triggerPick(fileInput: HTMLInputElement) {
-    this.picking = true;
-    fileInput.click();
-  }
-
-  onFileSelected(ev: Event) {
-    const input = ev.target as HTMLInputElement;
-    const file = input.files?.[0];
-    this.picking = false;
-    this.pickedFileName = file?.name ?? '';
-    this.form.patchValue({ file: file ?? null });
-    // Limpia el input para permitir re-selección del mismo archivo
-    input.value = '';
-  }
-
-  private invalidTypeOrSize(file: File): string | null {
-    if (!file) return 'No se seleccionó archivo.';
-    const ext = (file.name.split('.').pop() || '').toLowerCase();
-    if (!this.allowedExt.includes(ext) ||
-        !this.allowedMime.includes(file.type || '')) {
-      return 'Formato no permitido. Solo PDF o JPG.';
-    }
-    if (this.totalBytes + file.size > this.maxTotalBytes) {
-      return 'Se supera el límite total de 10MB.';
-    }
-    return null;
-  }
-
-  upload() {
-    const docType = this.form.get('docType')!.value as string;
-    const file: File | null = this.form.get('file')!.value;
-
-    if (!docType) return;
-    if (!file) return;
-
-    const error = this.invalidTypeOrSize(file);
-    if (error) { alert(error); return; }
-
-    // Evita duplicar tipo: si ya existe, reemplaza (o elimina esta parte si permites repetidos)
-    const idx = this.rows.findIndex(r => r.type === docType);
-    if (idx >= 0) this.delete(idx);
-
-    const url = URL.createObjectURL(file);
-    this.rows.push({
-      type: docType,
-      name: file.name,
-      size: file.size,
-      url,
-      mime: file.type
+      tipoDocumento: [null, Validators.required],
+      archivo: [null, [Validators.required, this.fileTypeValidator(), this.fileSizeValidator()]],
+      documentos: this.fb.array<FormGroup>([])
     });
 
-    this.pickedFileName = '';
-    this.form.patchValue({ file: null });
-  }
+    // Cargar catálogo de tipos
+    this.catalogos.getTiposDocumento$().subscribe(list => { this.tipos = list || []; });
 
-  view(row: DocRow) {
-    window.open(row.url, '_blank');
-  }
+    // Restaurar desde el estado
+    const prevDocs = this.state.step3?.docs ?? [];
+    prevDocs.forEach((d: Step3Doc) =>
+      this.documentosFA.push(this.createDocGroup(d.file, d.tipoDocumentoId, d.fechaDocumento))
+    );
 
-  delete(i: number) {
-    const row = this.rows[i];
-    if (row?.url) URL.revokeObjectURL(row.url);
-    this.rows.splice(i, 1);
-  }
-
-  onBack() {
-    // TODO: router.navigate(['/registro/step2']);
-    console.log('Regresar a Step 2');
-  }
-
-  onNext() {
-    // TODO: router.navigate(['/registro/step4']);
-    console.log('Docs:', this.rows);
+    // Asegura sincronía inicial
+    this.syncStateFromForm();
   }
 
   ngOnDestroy(): void {
-    // Limpia blobs
-    this.rows.forEach(r => r.url && URL.revokeObjectURL(r.url));
+    // Si tuvieras blobs generados y guardados, revócalos aquí (no generamos persistentes)
   }
-get docTypeCtrl(): FormControl<string> {
-  return this.form.get('docType') as FormControl<string>;
-}
-get fileCtrl(): FormControl<File | null> {
-  return this.form.get('file') as FormControl<File | null>;
-}
+
+  // ========= Getters / helpers =========
+  get documentosFA(): FormArray<FormGroup> {
+    return this.form.get('documentos') as FormArray<FormGroup>;
+  }
+  get archivoCtrl(): AbstractControl | null { return this.form.get('archivo'); }
+  get tipoCtrl(): AbstractControl | null { return this.form.get('tipoDocumento'); }
+
+  // totales para UI
+  get totalBytes(): number {
+    return this.documentosFA.controls.reduce((acc, g) => acc + Number(g.value.size || 0), 0);
+  }
+  get totalMB(): string { return (this.totalBytes / (1024 * 1024)).toFixed(2); }
+  get remainingMB(): string { return Math.max(0, (this.MAX_BYTES - this.totalBytes) / (1024 * 1024)).toFixed(2); }
+
+  nombreTipo(id: number) { return this.tipos.find(t => t.id === id)?.nombre ?? `Tipo ${id}`; }
+
+  private getTodayLocalISO(): string {
+    const d = new Date();
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }
+
+  private createDocGroup(file: File, tipoId: number, fecha?: string): FormGroup {
+    return this.fb.group({
+      tipoDocumentoId: [tipoId, Validators.required],
+      fechaDocumento: [fecha || this.hoy, Validators.required],
+      file: [file, Validators.required],
+      storageRuta: [null],
+      storageProveedor: [null],
+      nombreArchivo: [file.name],
+      mimeType: [file.type],
+      size: [file.size]
+    });
+  }
+
+  // ========= Eventos UI =========
+  onFileSelected(ev: Event) {
+    const input = ev.target as HTMLInputElement;
+    const f = input.files?.[0] ?? null;
+    this.archivoCtrl?.setValue(f);
+    this.archivoCtrl?.markAsTouched();
+    this.archivoCtrl?.markAsDirty();
+    this.archivoCtrl?.updateValueAndValidity({ emitEvent: true });
+    this.form.updateValueAndValidity({ emitEvent: true });
+
+    // Limpia el input para permitir volver a elegir el mismo archivo
+    input.value = '';
+  }
+
+  get canUpload(): boolean {
+    const tipoSel = this.tipoCtrl?.value != null;
+    const fileSel = !!this.archivoCtrl?.value;
+    return tipoSel && fileSel && !this.loading;
+  }
+
+  onUpload(): void {
+    this.errorMsg = '';
+    if (!this.canUpload) return;
+
+    const tipoId = this.tipoCtrl!.value as number | null;
+    const file = this.archivoCtrl!.value as File | null;
+    if (!tipoId || !file) return;
+
+    // Validación extra (además de los validators)
+    const name = (file.name || '').toLowerCase();
+    const extOk = this.ALLOWED_EXTS.some(ext => name.endsWith(ext));
+    const mimeOk = this.ALLOWED_TYPES.includes(file.type);
+    const sizeOk = (this.totalBytes + file.size) <= this.MAX_BYTES;
+    if (!extOk || !mimeOk) { this.errorMsg = 'Solo se permiten archivos PDF o JPG.'; return; }
+    if (!sizeOk) { this.errorMsg = 'El total supera 10 MB.'; return; }
+
+    // Agregar al FormArray
+    this.documentosFA.push(this.createDocGroup(file, tipoId, this.hoy));
+
+    // Limpiar selección
+    this.form.patchValue({ archivo: null /*, tipoDocumento: null*/ });
+
+    // Sincronizar estado global
+    this.syncStateFromForm();
+  }
+
+  onRemoveAt(i: number) {
+    this.documentosFA.removeAt(i);
+    this.syncStateFromForm();
+  }
+
+  onViewAt(i: number) {
+    const file = this.documentosFA.at(i).get('file')!.value as File;
+    const url = URL.createObjectURL(file);
+    window.open(url, '_blank');
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  }
+
+  // ========= Navegación =========
+  onBack() { this.prev.emit(); }
+
+  onNext() {
+    if (!this.documentosFA.length) {
+      this.errorMsg = 'Agrega al menos un documento.';
+      return;
+    }
+    // persistimos y avisamos al contenedor
+    this.syncStateFromForm();
+    this.proceed.emit({ documentos: this.state.step3?.docs ?? [] });
+  }
+
+  // ========= Validadores =========
+  private fileTypeValidator(): ValidatorFn {
+    return (c: AbstractControl) => {
+      const file = c.value as File | null;
+      if (!file) return null;
+      const mimeOk = this.ALLOWED_TYPES.includes(file.type);
+      const name = (file.name || '').toLowerCase();
+      const extOk = this.ALLOWED_EXTS.some(ext => name.endsWith(ext));
+      return (mimeOk || extOk) ? null : { fileType: true };
+    };
+  }
+  private fileSizeValidator(): ValidatorFn {
+    return (c: AbstractControl) => {
+      const file = c.value as File | null;
+      if (!file) return null;
+      return file.size <= this.MAX_BYTES ? null : { fileSize: { max: this.MAX_BYTES } };
+    };
+  }
+
+  // ========= Sync con StepFormStateService =========
+  private syncStateFromForm() {
+    const docs: Step3Doc[] = this.documentosFA.controls.map(g => ({
+      file: g.value.file as File,
+      tipoDocumentoId: g.value.tipoDocumentoId as number,
+      storageRuta: g.value.storageRuta ?? undefined,
+      storageProveedor: g.value.storageProveedor ?? undefined,
+      fechaDocumento: g.value.fechaDocumento as string
+    }));
+    this.state.step3 = { ...(this.state.step3 ?? { docs: [] }), docs };
+  }
 }

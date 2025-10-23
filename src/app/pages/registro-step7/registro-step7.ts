@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faEnvelope, faCheckCircle, faPrint } from '@fortawesome/free-solid-svg-icons';
 import { faTelegramPlane } from '@fortawesome/free-brands-svg-icons';
 import { HeaderSiauComponent } from '../../shared/header-siau/header-siau';
-import { RegistroProgressComponent } from "../../shared/registro-progress/registro-progress";
+import { RegistroProgressComponent } from '../../shared/registro-progress/registro-progress';
+import { StepFormStateService } from '../../step-form/state/step-form-state.service';
 
 @Component({
   selector: 'app-registro-step7',
@@ -14,15 +15,17 @@ import { RegistroProgressComponent } from "../../shared/registro-progress/regist
   styleUrls: ['./registro-step7.scss'],
   providers: [DatePipe],
 })
-export class RegistroStep7Component {
-  // Header (demo)
-  usuarioNombre = 'Luis Vargas';
-  usuarioRol = 'Cultura';
+export class RegistroStep7Component implements OnInit {
+  // Header / progreso
+  @Input() currentStep = 7;
+  @Input() maxSteps = 8;
+  @Input() usuarioNombre = 'Luis Vargas';
+  @Input() usuarioRol = 'Capturista';
+  @Output() back = new EventEmitter<void>();
+  @Output() finish = new EventEmitter<void>(); // para ir al Step 8
 
-  // Paso / progreso (7 de 8 para mantener consistencia con tus pasos)
-  totalSteps = 6;
-  currentStep = 6;
-  get progressPercent() { return Math.round((this.currentStep / this.totalSteps) * 100); }
+  get totalSteps() { return this.maxSteps; }
+  get progressPercent() { return Math.round((this.currentStep / (this.maxSteps || 1)) * 100); }
 
   // Íconos
   icMail = faEnvelope;
@@ -30,30 +33,42 @@ export class RegistroStep7Component {
   icCheck = faCheckCircle;
   icPrint = faPrint;
 
-  // Datos de la confirmación (ejemplo)
-  folio = 'PM-2025-05-78456';
+  // Datos del comprobante
+  folio = '';
   tipoSolicitud = 'Acceso al SIAU';
-  fechaHoraTexto = '15/05/2023 14:35 hrs.'; // puedes calcularlo dinámicamente si lo prefieres
-  documentos = ['INE_Usuario.pdf', 'Credencial_Laboral.pdf', 'Recibo_Nomina_Octubre.pdf'];
+  fechaISO = '';
+  documentos: string[] = [];
 
-  // Proceso de revisión
   estatusActual = 'En revisión';
   proximoPaso = 'Validación por el Enlace';
   tiempoEstimado = '3 a 5 días hábiles';
 
-  // Canales de contacto
+  correoUsuario = '';
+  telefonoTelegramUsuario: string | null = null;
+
+  // Contactos de resolución (ajústalos si los tienes en un catálogo)
   contactoResolucionCorreo = 'c.usuariospm@sspc.gob.mx';
   contactoResolucionTelegram = '55-XXXX-XXXX';
-  correoUsuario = 'correo@ejemplo.com'; // correo registrado
-  telefonoTelegramUsuario = '55-XXXX-XXXX'; // si tiene Telegram
 
-  // Actions
-  onPrint() {
-    window.print();
+  constructor(private state: StepFormStateService, private date: DatePipe) {}
+
+  ngOnInit(): void {
+    const r = (this.state.get('receipt') ?? {}) as any;
+    this.folio = r.folio ?? 'N/D';
+    this.fechaISO = r.fechaISO ?? new Date().toISOString();
+    this.documentos = Array.isArray(r.documentos) ? r.documentos : [];
+    this.correoUsuario = r.correoUsuario ?? '';
+    this.telefonoTelegramUsuario = r.telefonoTelegramUsuario ?? null;
   }
 
+  get fechaHoraTexto(): string {
+    return this.date.transform(this.fechaISO, "dd/MM/yyyy HH:mm 'hrs.'") ?? '';
+  }
+
+  onPrint() { window.print(); }
+
   onSendReceiptByEmail() {
-    // TODO: dispara envío de comprobante por correo
-    console.log('Enviar comprobante por correo al usuario');
+    // Aquí podrías llamar a tu servicio para enviar el comprobante por correo
+    console.log('Enviar comprobante por correo a', this.correoUsuario);
   }
 }

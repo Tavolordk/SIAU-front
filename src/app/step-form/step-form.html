@@ -1,67 +1,49 @@
-<!-- src/app/step-form/step-form.component.html -->
+<!-- step-form.html (migrated to V2 components) -->
 <ng-container>
   @if (currentStep === 1) {
-    <app-step1
-      [form]="form"
-      [tipos]="tipos"
-      [currentStep]="currentStep"
-      [maxSteps]="6"
-      (next)="nextStep()"
-      (prev)="prevStep()"
-      (proceed)="goNextFromStep1()"
-      >
-    </app-step1>
+  <app-registro-step1-v2 [currentStep]="currentStep" [maxSteps]="maxSteps" (prev)="prevStep()" (proceed)="nextStep()">
+  </app-registro-step1-v2>
   }
+
 
   @if (currentStep === 2) {
-    <app-step2
-      [form]="form"
-      [perfiles]="perfiles"
-      [currentStep]="currentStep"
-      [maxSteps]="6"
-      (addPerfil)="addPerfil()"
-      (removePerfil)="removePerfil($event)"
-      (next)="nextStep()"
-      (prev)="prevStep()">
-    </app-step2>
+  <app-registro-step2 [currentStep]="currentStep" [maxSteps]="maxSteps" (prev)="prevStep()" (proceed)="nextStep()">
+  </app-registro-step2>
   }
+
 
   @if (currentStep === 3) {
-    <app-step3
-      [currentStep]="currentStep"
-      [maxSteps]="6"
-      (removeUpload)="removeUpload($event)"
-      (next)="nextStep()"
-      (prev)="prevStep()">
-    </app-step3>
+  <app-registro-step3 [currentStep]="currentStep" [maxSteps]="maxSteps" (prev)="prevStep()" (proceed)="nextStep()">
+  </app-registro-step3>
   }
 
-  @if (currentStep === 4) {
-    <app-step4
-      [form]="form"
-      [currentStep]="currentStep"
-      [maxSteps]="6"
-      (next)="nextStep()"
-      (prev)="prevStep()">
-    </app-step4>
-  }
+
+  <app-registro-step4 [currentStep]="currentStep" [maxSteps]="maxSteps" (prev)="prevStep()" (proceed)="nextStep()">
+  </app-registro-step4>
+
 
   @if (currentStep === 5) {
-    <app-step5
-      [form]="form"
-      [currentStep]="currentStep"
-      [maxSteps]="6"
-      (validate)="onValidateCode()"
-      (prev)="prevStep()"
-      (next)="nextStep()">
-    </app-step5>
+  <app-registro-step5 [currentStep]="currentStep" [maxSteps]="maxSteps" (prev)="prevStep()" (proceed)="nextStep()">
+  </app-registro-step5>
   }
 
   @if (currentStep === 6) {
-    <app-step6
-      [currentStep]="6"
-      [maxSteps]="6"
-      [folio]="folio">
-    </app-step6>
+  <app-registro-step6 [currentStep]="currentStep" [maxSteps]="maxSteps" (prev)="currentStep = 5" (proceed)="nextStep()">
+  </app-registro-step6>
+  }
+
+  @if (currentStep === 7) {
+<app-registro-step7
+  *ngIf="currentStep===7"
+  [currentStep]="7" [maxSteps]="8"
+  (back)="currentStep=6"
+  (finish)="currentStep=8">
+</app-registro-step7>
+  }
+
+  @if (currentStep === 8) {
+<app-registro-confirmacion
+  *ngIf="currentStep===8">
+</app-registro-confirmacion>
   }
 </ng-container>

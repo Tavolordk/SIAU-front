@@ -1,4 +1,3 @@
-<!-- Header local (si tu shell ya pinta uno global, puedes quitar esta franja) -->
 <app-header-siau
   [title]="'Sistema Integral de Administración de Usuarios'"
   [userName]="usuarioNombre"
@@ -9,61 +8,81 @@
   [showUser]="true">
 </app-header-siau>
 
-<!-- Contenido principal -->
 <div class="main-content">
-    <div class="container">
-  <app-registro-progress
-    [title]="'Registro'"
-    [currentStep]="currentStep"
-    [totalSteps]="totalSteps"
-    [percent]="progressPercent"  
-    [accent]="'#7a1832'">
-  </app-registro-progress>
+  <div class="container">
+    <app-registro-progress
+      [title]="'Registro'"
+      [currentStep]="currentStep"
+      [totalSteps]="totalSteps"
+      [percent]="progressPercent"
+      [accent]="'#7a1832'">
+    </app-registro-progress>
 
-        <div class="selection-header">Selección de perfil</div>
+    <div class="selection-header">Selección de perfil</div>
 
-        <div class="row">
-            <div class="col-md-12">
-                <p class="profile-label">Perfil</p>
+    <form [formGroup]="form" (ngSubmit)="agregarPerfil()">
+      <div class="mb-3 d-flex gap-2 align-items-center">
 
-                <!-- ✅ AQUÍ el form con el formGroup -->
-                <form [formGroup]="form" (ngSubmit)="addPerfil()">
-                    <div class="mb-3 d-flex gap-2 align-items-center">
-                        <input type="text" class="form-control profile-input" placeholder="3101 SUPERVISOR IPH"
-                            formControlName="perfil" />
+        <!-- ng-select con búsqueda por clave/función -->
+        <ng-select class="profile-input flex-grow-1"
+                   [items]="perfilesDisponibles"
+                   bindLabel="funcion"
+                   bindValue="id"
+                   [searchable]="true"
+                   [searchFn]="searchPerfil"
+                   [clearable]="false"
+                   [dropdownPosition]="'auto'"
+                   [appendTo]="'body'"
+                   [hideSelected]="true"
+                   placeholder="Selecciona un perfil"
+                   formControlName="perfil"
+                   (change)="onNgSelectChange($event)">
 
-                        <button class="add-btn btn" type="submit">
-                            Agregar
-                            <!-- ancho fijo para evitar “salto” de layout -->
-                            <fa-icon [icon]="icPlus" class="ms-1" [fixedWidth]="true"></fa-icon>
-                        </button>
-                    </div>
-                </form>
+          <ng-template ng-option-tmp let-item="item">
+            {{ item.clave }} - {{ item.funcion }}
+          </ng-template>
+        </ng-select>
 
-                <div class="profile-list">
-                    <div class="profile-item" *ngFor="let p of perfiles; let i = index">
-                        <span>{{ p }}</span>
-                        <fa-icon [icon]="icTrash" class="trash-icon" (click)="removePerfil(i)" role="button"
-                            aria-label="Eliminar"></fa-icon>
-                    </div>
-                </div>
+        <button class="add-btn btn" type="submit" [disabled]="!canAgregar">
+          Agregar
+          <fa-icon [icon]="icPlus" class="ms-1" [fixedWidth]="true"></fa-icon>
+        </button>
 
-                <div class="row mt-4">
-                    <div class="col-6">
-                        <button class="btn-back" type="button" (click)="onBack()">
-                            <fa-icon [icon]="icLeft"></fa-icon>
-                            <span class="ms-1">Regresar</span>
-                        </button>
-                    </div>
-                    <div class="col-6 text-end">
-                        <button class="btn-next" type="button" (click)="onNext()">
-                            <span class="me-1">Siguiente</span>
-                            <fa-icon [icon]="icRight"></fa-icon>
-                        </button>
-                    </div>
-                </div>
+        <button type="button" class="btn btn-quitar" (click)="onQuitarClick($event)" [disabled]="!perfilesAgregados.length">
+          Quitar
+        </button>
+      </div>
+    </form>
 
-            </div>
-        </div>
+    <!-- Lista de perfiles agregados -->
+    <div class="profile-list">
+      <div class="profile-item" *ngFor="let p of perfilesAgregados; let i = index">
+        <span class="perfil-id">{{ p.clave }}</span>
+        <span class="perfil-desc">{{ p.funcion }}</span>
+        <fa-icon [icon]="icTrash" class="trash-icon" (click)="eliminarPerfil(i)" role="button" aria-label="Eliminar"></fa-icon>
+      </div>
+      <div class="text-muted" *ngIf="!perfilesAgregados.length">No hay perfiles agregados.</div>
     </div>
+
+    <!-- error de validación (al menos 1 perfil) -->
+    <div class="validation-message" *ngIf="perfilesFA.invalid && triedSubmit">
+      Debes agregar al menos un perfil.
+    </div>
+
+    <!-- Footer acciones -->
+    <div class="row mt-4">
+      <div class="col-6">
+        <button class="btn-back" type="button" (click)="prev.emit()">
+          <fa-icon [icon]="icLeft"></fa-icon>
+          <span class="ms-1">Regresar</span>
+        </button>
+      </div>
+      <div class="col-6 text-end">
+        <button class="btn-next" type="button" (click)="tryProceed($event)">
+          <span class="me-1">Siguiente</span>
+          <fa-icon [icon]="icRight"></fa-icon>
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

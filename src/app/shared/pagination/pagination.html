@@ -1,0 +1,29 @@
+<div class="custom-pagination" *ngIf="!hideOnSinglePage || totalPages > 1">
+      <button
+    type="button"
+    class="custom-page-item"
+    (click)="prev()"
+    [disabled]="currentPage === 1"
+    aria-label="Anterior">
+    &laquo;
+  </button>
+
+  <button
+    type="button"
+    class="custom-page-item"
+    *ngFor="let p of pages; trackBy: trackByIndex"
+    [class.active]="p === currentPage"
+    [attr.aria-current]="p === currentPage ? 'page' : null"
+    (click)="setPage(p)">
+    {{ p }}
+  </button>
+
+  <button
+    type="button"
+    class="custom-page-item"
+    (click)="next()"
+    [disabled]="currentPage === totalPages"
+    aria-label="Siguiente">
+    &raquo;
+  </button>
+</div>

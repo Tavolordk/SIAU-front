@@ -1,21 +1,12 @@
-<app-header-siau
-  [title]="'Sistema Integral de Administración de Usuarios'"
-  [userName]="usuarioNombre"
-  [userRole]="usuarioRol"
-  [logoSrc]="'../../../assets/images/SSPC.png'"
-  [bgSrc]="'../../../assets/images/encabezado.png'"
-  [height]="120"
-  [showUser]="true">
+<app-header-siau [title]="'Sistema Integral de Administración de Usuarios'" [userName]="usuarioNombre"
+    [userRole]="usuarioRol" [logoSrc]="'../../../assets/images/SSPC.png'"
+    [bgSrc]="'../../../assets/images/encabezado.png'" [height]="120" [showUser]="true">
 </app-header-siau>
 
 <!-- Título y avance -->
-  <app-registro-progress
-    [title]="'Registro'"
-    [currentStep]="currentStep"
-    [totalSteps]="totalSteps"
-    [percent]="progressPercent"  
-    [accent]="'#7a1832'">
-  </app-registro-progress>
+<app-registro-progress [title]="'Registro'" [currentStep]="currentStep" [totalSteps]="totalSteps ?? maxSteps"
+    [percent]="progressPercent" [accent]="'#7a1832'">
+</app-registro-progress>
 
 <p class="section-title text-center">Registro de datos de usuario</p>
 
@@ -24,59 +15,73 @@
     <div class="form-section-inner">
         <p class="form-note mb-2">*</p>
 
-        <!-- Tipo de usuario -->
-        <!-- Fuera del form principal, PERO enlazado al mismo FormGroup -->
+        <!-- Tipo de usuario (usa catálogo: tipoDeUsuario) -->
         <div class="tipo-usuario-container mb-4" [formGroup]="form">
             <label for="tipoUsuario" class="form-label required">Tipo de usuario</label>
-            <select id="tipoUsuario" class="form-select" formControlName="tipoUsuario">
-                <option value="">Seleccione un tipo</option>
+            <select id="tipoUsuario" class="form-select" formControlName="tipoUsuario" required>
+                <option [ngValue]="null" disabled>Seleccione un tipo</option>
+                <option *ngFor="let t of tipoDeUsuario" [ngValue]="t.id">{{ t.nombre }}</option>
             </select>
         </div>
 
         <h2 class="form-section mb-0">Información personal</h2>
         <p class="form-note mt-2 mb-2">*Campos requeridos</p>
 
-        <form [formGroup]="form" (ngSubmit)="onSiguiente()">
+        <!-- Formulario principal -->
+        <form [formGroup]="form" (ngSubmit)="tryProceed($event)">
+            <!-- Honeypot (debe quedar vacío) -->
+            <input type="text" formControlName="hp" tabindex="-1" aria-hidden="true"
+                style="position:absolute; left:-9999px;" />
+
             <!-- ¿Personal de Seguridad Pública? -->
             <div class="form-row mb-2">
                 <div class="form-group">
                     <label class="form-label required">¿Eres personal de Seguridad Pública?</label><br>
                     <div class="form-check form-check-inline">
-                        <input id="personalSi" class="form-check-input" type="radio" value="si"
-                            formControlName="personalSeguridad">
-                        <label class="form-check-label" for="personalSi">Sí</label>
+                        <input id="seguridadSi" class="form-check-input" type="radio" value="Si"
+                            formControlName="esSeguridad">
+                        <label class="form-check-label" for="seguridadSi">Sí</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input id="personalNo" class="form-check-input" type="radio" value="no"
-                            formControlName="personalSeguridad">
-                        <label class="form-check-label" for="personalNo">No</label>
+                        <input id="seguridadNo" class="form-check-input" type="radio" value="No"
+                            formControlName="esSeguridad">
+                        <label class="form-check-label" for="seguridadNo">No</label>
                     </div>
                 </div>
             </div>
 
-            <!-- CURP -->
+            <!-- CURP + CAPTCHA -->
             <div class="form-row mb-2">
                 <div class="form-group">
                     <label class="form-label required" for="curp">CURP</label>
-                    <input id="curp" class="form-control" type="text" formControlName="curp">
-                    <div><a class="captcha-link" href="#">¿No sabes tu CURP?</a></div>
+                    <input id="curp" class="form-control" type="text" maxlength="18" formControlName="curp">
+                    <div><a class="captcha-link" href="https://www.gob.mx/curp/" target="_blank">¿No sabes tu CURP?</a>
+                    </div>
                 </div>
             </div>
 
-            <!-- CAPTCHA -->
+            <!-- CAPTCHA real (sustituye imagen estática e input 'captchaText') -->
             <div class="form-row mb-2 align-items-end">
                 <div class="form-group-captcha">
                     <label class="form-label" for="captcha">Código</label>
-                    <img class="captcha-img" alt="Captcha"
-                        src="https://replicate.delivery/xezq/OoPa6jdqDI7oBR10t6FLmBdh4eZKa0TPok0WDHRA2vezIgfqA/out-0.png">
-                    <span>Ingresar código</span>
-                    <input class="form-control" type="text" style="width:120px;" formControlName="captchaText">
-                    <a class="captcha-link ms-2" href="#">¿Otro código?</a>
+
+                    <!-- El componente emite (changed) y (refreshed) en tu versión vieja -->
+                    <app-captcha-box (changed)="onCaptchaChange($event)"></app-captcha-box>
+
+                    <!-- Feedback opcional del captcha (basado en 'captchaCode') -->
+                    <div *ngIf="form.get('captchaCode')?.pending" class="text-info mt-2">Verificando…</div>
+                    <div *ngIf="form.get('captchaCode')?.touched && form.get('captchaCode')?.errors as e"
+                        class="text-danger mt-2">
+                        <div *ngIf="e['required']">El código es obligatorio.</div>
+                        <div *ngIf="e['pattern']">El código debe tener 6 dígitos.</div>
+                        <div *ngIf="e['captchaInvalid']">Código incorrecto o expirado.</div>
+                        <div *ngIf="e['captchaError']">No se pudo verificar el código. Intenta de nuevo.</div>
+                    </div>
                 </div>
             </div>
 
             <div class="form-row mb-2">
-                <button type="button" class="verify-btn" (click)="onVerificarCurp()">Verificar CURP</button>
+                <button type="button" class="verify-btn" (click)="onVerifyCurp()">Verificar CURP</button>
             </div>
 
             <!-- Nombres -->
@@ -100,13 +105,15 @@
                 <div class="form-group">
                     <label class="form-label required" for="sexo">Sexo</label>
                     <select id="sexo" class="form-select" formControlName="sexo">
-                        <option value="">Seleccionar</option>
+                        <option [ngValue]="null" disabled>Seleccionar</option>
+                        <option *ngFor="let s of sexos" [ngValue]="s.id">{{ s.nombre }}</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label required" for="fechaNacimiento">Fecha de nacimiento</label>
                     <div class="input-group">
-                        <input id="fechaNacimiento" class="form-control" type="text" formControlName="fechaNacimiento">
+                        <input id="fechaNacimiento" class="form-control" type="date" formControlName="fechaNacimiento"
+                            [attr.min]="'1900-01-01'" [attr.max]="todayISO">
                         <span class="input-group-text" style="background:#ededed; border:none;">
                             <fa-icon [icon]="icCalendar"></fa-icon>
                         </span>
@@ -114,15 +121,21 @@
                 </div>
             </div>
 
-            <!-- Nacionalidad / País -->
+            <!-- Nacionalidad / País de nacimiento -->
             <div class="form-row mb-2">
                 <div class="form-group">
                     <label class="form-label required" for="nacionalidad">Nacionalidad</label>
-                    <input id="nacionalidad" class="form-control" type="text" formControlName="nacionalidad">
+                    <select id="nacionalidad" class="form-select" formControlName="nacionalidad">
+                        <option [ngValue]="null" disabled>Selecciona</option>
+                        <option *ngFor="let n of nacionalidades" [ngValue]="n.id">{{ n.nombre }}</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label required" for="paisNacimiento">País de nacimiento</label>
-                    <input id="paisNacimiento" class="form-control" type="text" formControlName="paisNacimiento">
+                    <select id="paisNacimiento" class="form-select" formControlName="paisNacimiento">
+                        <option [ngValue]="null" disabled>Selecciona</option>
+                        <option *ngFor="let p of paises" [ngValue]="p.id">{{ p.nombre }}</option>
+                    </select>
                 </div>
             </div>
 
@@ -130,29 +143,32 @@
             <div class="form-row mb-2">
                 <div class="form-group">
                     <label class="form-label required" for="entidadNacimiento">Entidad de nacimiento</label>
-                    <input id="entidadNacimiento" class="form-control" type="text" formControlName="entidadNacimiento">
+                    <select id="entidadNacimiento" class="form-select" formControlName="entidadNacimiento">
+                        <option [ngValue]="null" disabled>Selecciona</option>
+                        <option *ngFor="let e of entidades" [ngValue]="e.id">{{ e.nombre }}</option>
+                    </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label required" for="municipioNacimiento">Municipio/Alcaldía</label>
-                    <select id="municipioNacimiento" class="form-select" formControlName="municipioNacimiento">
-                        <option value="">Selecciona</option>
+                    <label class="form-label required" for="municipioAlcaldia">Municipio/Alcaldía</label>
+                    <select id="municipioAlcaldia" class="form-select" formControlName="municipioAlcaldia">
+                        <option [ngValue]="null" disabled>Selecciona</option>
+                        <option *ngFor="let m of municipiosNacimiento" [ngValue]="m.id">{{ m.nombre }}</option>
                     </select>
                 </div>
             </div>
 
-            <!-- Estado civil -->
+            <!-- Estado civil / RFC / CUIP -->
             <div class="form-row mb-2">
                 <div class="form-group">
                     <label class="form-label" for="estadoCivil">Estado Civil</label>
-                    <input id="estadoCivil" class="form-control" type="text" formControlName="estadoCivil">
+                    <select id="estadoCivil" class="form-select" formControlName="estadoCivil">
+                        <option [ngValue]="null" disabled>Selecciona</option>
+                        <option *ngFor="let ec of estadosCiviles" [ngValue]="ec.id">{{ ec.nombre }}</option>
+                    </select>
                 </div>
-            </div>
-
-            <!-- RFC / CUIP -->
-            <div class="form-row mb-2">
                 <div class="form-group">
                     <label class="form-label required" for="rfc">RFC</label>
-                    <input id="rfc" class="form-control" type="text" formControlName="rfc">
+                    <input id="rfc" class="form-control" type="text" maxlength="13" formControlName="rfc">
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="cuip">CUIP</label>
@@ -166,7 +182,8 @@
                 <div class="form-group">
                     <label class="form-label required" for="tipoInstitucion">Tipo de institución</label>
                     <select id="tipoInstitucion" class="form-select" formControlName="tipoInstitucion">
-                        <option value="">Selecciona</option>
+                        <option [ngValue]="null" disabled>Selecciona</option>
+                        <option *ngFor="let a of ambitos" [ngValue]="a.id">{{ a.nombre }}</option>
                     </select>
                 </div>
             </div>
@@ -175,13 +192,15 @@
                 <div class="form-group">
                     <label class="form-label required" for="entidad">Entidad</label>
                     <select id="entidad" class="form-select" formControlName="entidad">
-                        <option value="">Selecciona</option>
+                        <option [ngValue]="null" disabled>Selecciona</option>
+                        <option *ngFor="let e of entidades" [ngValue]="e.id">{{ e.nombre }}</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label required" for="municipio">Municipio/Alcaldía</label>
-                    <select id="municipio" class="form-select" formControlName="municipio">
-                        <option value="">Selecciona</option>
+                    <label class="form-label required" for="municipioAlcaldia2">Municipio/Alcaldía</label>
+                    <select id="municipioAlcaldia2" class="form-select" formControlName="municipioAlcaldia2">
+                        <option [ngValue]="null" disabled>Selecciona</option>
+                        <option *ngFor="let m of municipiosAdscripcion" [ngValue]="m.id">{{ m.nombre }}</option>
                     </select>
                 </div>
             </div>
@@ -190,13 +209,15 @@
                 <div class="form-group">
                     <label class="form-label required" for="institucion">Institución</label>
                     <select id="institucion" class="form-select" formControlName="institucion">
-                        <option value="">Selecciona</option>
+                        <option [ngValue]="null" disabled>Selecciona</option>
+                        <option *ngFor="let i of instituciones" [ngValue]="i.id">{{ i.nombre }}</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label required" for="dependencia">Dependencia</label>
+                    <label class="form-label" for="dependencia">Dependencia</label>
                     <select id="dependencia" class="form-select" formControlName="dependencia">
-                        <option value="">Selecciona</option>
+                        <option [ngValue]="null" disabled>Selecciona</option>
+                        <option *ngFor="let d of dependencias" [ngValue]="d.id">{{ d.nombre }}</option>
                     </select>
                 </div>
             </div>
@@ -205,112 +226,97 @@
                 <div class="form-group">
                     <label class="form-label" for="corporacion">Corporación</label>
                     <select id="corporacion" class="form-select" formControlName="corporacion">
-                        <option value="">Selecciona</option>
+                        <option [ngValue]="null" disabled>Selecciona</option>
+                        <option *ngFor="let c of corporaciones" [ngValue]="c.id">{{ c.nombre }}</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="area">Área</label>
-                    <input id="area" class="form-control" type="text" formControlName="area">
-                </div>
-            </div>
-
-            <div class="form-row mb-2">
-                <div class="form-group">
-                    <label class="form-label" for="cargo">Cargo</label>
-                    <input id="cargo" class="form-control" type="text" formControlName="cargo">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="funciones">Funciones</label>
-                    <input id="funciones" class="form-control" type="text" formControlName="funciones">
+                    <select id="area" class="form-select" formControlName="area">
+                        <option [ngValue]="null" disabled>Selecciona</option>
+                        <option *ngFor="let a of areas" [ngValue]="a.id">{{ a.nombre }}</option>
+                    </select>
                 </div>
             </div>
 
             <div class="form-row mb-2">
                 <div class="form-group">
                     <label class="form-label required" for="fechaIngreso">Fecha de ingreso</label>
-                    <input id="fechaIngreso" class="form-control" placeholder="dd/mm/aaaa" type="text"
-                        formControlName="fechaIngreso">
+                    <input id="fechaIngreso" class="form-control" type="date" formControlName="fechaIngreso"
+                        [attr.min]="minFechaIngreso" [attr.max]="todayISO">
                 </div>
                 <div class="form-group">
-                    <label class="form-label required" for="numEmpleado">Número de empleado</label>
-                    <input id="numEmpleado" class="form-control" type="text" formControlName="numEmpleado">
+                    <label class="form-label required" for="numeroEmpleado">Número de empleado</label>
+                    <input id="numeroEmpleado" class="form-control" type="text" formControlName="numeroEmpleado">
                 </div>
             </div>
 
-            <!-- Comisionado -->
+            <!-- Comisión -->
             <h3 class="form-section-gold mt-4 mb-0">En caso de estar comisionado</h3>
             <div class="form-row mb-2 mt-3">
                 <div class="form-group">
                     <label class="form-label required">¿Está comisionado?</label><br>
                     <div class="form-check form-check-inline">
-                        <input id="comisionadoSi" class="form-check-input" type="radio" value="si"
+                        <input id="comisionadoSi" class="form-check-input" type="radio" value="Si"
                             formControlName="comisionado">
                         <label for="comisionadoSi" class="form-check-label">Sí</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input id="comisionadoNo" class="form-check-input" type="radio" value="no"
+                        <input id="comisionadoNo" class="form-check-input" type="radio" value="No"
                             formControlName="comisionado">
                         <label for="comisionadoNo" class="form-check-label">No</label>
                     </div>
                 </div>
             </div>
 
-            <div class="form-row mb-2">
+            <div class="form-row mb-2" [class.section-disabled]="form.get('comisionado')?.value !== 'Si'">
                 <div class="form-group">
-                    <label class="form-label required" for="paisComision">País</label>
-                    <select id="paisComision" class="form-select" formControlName="paisComision">
-                        <option value="">Selecciona</option>
+                    <label class="form-label required" for="tipoInstitucion2">Tipo de institución</label>
+                    <select id="tipoInstitucion2" class="form-select" formControlName="tipoInstitucion2">
+                        <option [ngValue]="null" disabled>Selecciona</option>
+                        <option *ngFor="let a of ambitos" [ngValue]="a.id">{{ a.nombre }}</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label required" for="tipoInstitucionComision">Tipo de institución</label>
-                    <select id="tipoInstitucionComision" class="form-select" formControlName="tipoInstitucionComision">
-                        <option value="">Selecciona</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-row mb-2">
-                <div class="form-group">
-                    <label class="form-label required" for="institucionComision">Institución</label>
-                    <select id="institucionComision" class="form-select" formControlName="institucionComision">
-                        <option value="">Selecciona</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label required" for="entidadComision">Entidad</label>
-                    <select id="entidadComision" class="form-select" formControlName="entidadComision">
-                        <option value="">Selecciona</option>
+                    <label class="form-label required" for="entidad2">Entidad</label>
+                    <select id="entidad2" class="form-select" formControlName="entidad2">
+                        <option [ngValue]="null" disabled>Selecciona</option>
+                        <option *ngFor="let e of entidades" [ngValue]="e.id">{{ e.nombre }}</option>
                     </select>
                 </div>
             </div>
 
-            <div class="form-row mb-2">
+            <div class="form-row mb-2" [class.section-disabled]="form.get('comisionado')?.value !== 'Si'">
                 <div class="form-group">
-                    <label class="form-label required" for="municipioComision">Municipio</label>
-                    <select id="municipioComision" class="form-select" formControlName="municipioComision">
-                        <option value="">Selecciona</option>
+                    <label class="form-label required" for="municipioAlcaldia3">Municipio</label>
+                    <select id="municipioAlcaldia3" class="form-select" formControlName="municipioAlcaldia3">
+                        <option [ngValue]="null" disabled>Selecciona</option>
+                        <option *ngFor="let m of municipiosComision" [ngValue]="m.id">{{ m.nombre }}</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="dependenciaComision">Dependencia</label>
-                    <select id="dependenciaComision" class="form-select" formControlName="dependenciaComision">
-                        <option value="">Selecciona</option>
+                    <label class="form-label required" for="institucion2">Institución</label>
+                    <select id="institucion2" class="form-select" formControlName="institucion2">
+                        <option [ngValue]="null" disabled>Selecciona</option>
+                        <option *ngFor="let i of instituciones2" [ngValue]="i.id">{{ i.nombre }}</option>
                     </select>
                 </div>
             </div>
 
-            <div class="form-row mb-2">
+            <div class="form-row mb-2" [class.section-disabled]="form.get('comisionado')?.value !== 'Si'">
                 <div class="form-group">
-                    <label class="form-label" for="corporacionComision">Corporación</label>
-                    <select id="corporacionComision" class="form-select" formControlName="corporacionComision">
-                        <option value="">Selecciona</option>
+                    <label class="form-label" for="dependencia2">Dependencia</label>
+                    <select id="dependencia2" class="form-select" formControlName="dependencia2">
+                        <option [ngValue]="null" disabled>Selecciona</option>
+                        <option *ngFor="let d of dependencias2" [ngValue]="d.id">{{ d.nombre }}</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="especificarComision">Especificar</label>
-                    <input id="especificarComision" class="form-control" type="text"
-                        formControlName="especificarComision">
+                    <label class="form-label" for="corporacion2">Corporación</label>
+                    <select id="corporacion2" class="form-select" formControlName="corporacion2">
+                        <option [ngValue]="null" disabled>Selecciona</option>
+                        <option *ngFor="let c of corporaciones2" [ngValue]="c.id">{{ c.nombre }}</option>
+                    </select>
                 </div>
             </div>
 
@@ -328,10 +334,11 @@
 
             <!-- Acciones -->
             <div class="form-actions">
-                <button type="button" class="btn btn-secondary-custom" (click)="onRegresar()">
+                <button type="button" class="btn btn-secondary-custom" (click)="prev.emit()">
                     <fa-icon [icon]="icLeft"></fa-icon>
                     Regresar
                 </button>
+
                 <button type="submit" class="btn btn-custom">
                     Siguiente
                     <fa-icon [icon]="icRight"></fa-icon>

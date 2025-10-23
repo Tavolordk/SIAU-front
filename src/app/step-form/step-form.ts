@@ -1,11 +1,13 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Step1Component } from './step1/step1';
-import { Step2Component } from './step2/step2';
-import { Step3Component } from './step3/step3';
-import { Step4Component } from './step4/step4';
-import { Step5Component } from './step5/step5';
-import { Step6Component } from './step6/step6';
+import { RegistroStep1V2Component } from '../pages/registro-step1-v2/registro-step1-v2';
+import { RegistroStep2Component } from '../pages/registro-step2-v2/registro-step2';
+import { RegistroStep3Component } from '../pages/registro-step3/registro-step3';
+import { RegistroStep4Component } from '../pages/registro-step4/registro-step4';
+import { RegistroStep5Component } from '../pages/registro-step5/registro-step5';
+import { RegistroStep6Component } from '../pages/registro-step6/registro-step6';
+import { RegistroStep7Component } from '../pages/registro-step7/registro-step7';
+import { RegistroConfirmacionComponent } from '../pages/registro-confirmacion/registro-confirmacion';
 import { CommonModule } from '@angular/common';
 import { StepFormModel } from '../services/personas.service';
 import { PersonasService } from '../services/personas.service';
@@ -16,7 +18,7 @@ import { emailBasicValidator, phoneMxValidator } from '../shared/validators';
   templateUrl: './step-form.html',
   styleUrls: ['./step-form.scss'],
   standalone: true,
-  imports: [Step1Component, Step2Component, Step3Component, Step4Component, Step5Component, Step6Component, CommonModule, ReactiveFormsModule]
+  imports: [RegistroStep1V2Component, RegistroStep2Component, RegistroStep3Component, RegistroStep4Component, RegistroStep5Component, RegistroStep6Component,RegistroStep7Component ,RegistroConfirmacionComponent,CommonModule, ReactiveFormsModule]
 })
 export class StepFormComponent implements OnInit {
   private personas = inject(PersonasService);
@@ -25,7 +27,7 @@ export class StepFormComponent implements OnInit {
   model!: StepFormModel;
   form!: FormGroup;
   currentStep = 1;
-  maxSteps = 6;
+  maxSteps = 8;
   tipos = [];
   perfiles: CatPerfilDto[] = [];       // 👈 catálogo completo
   documentos = [

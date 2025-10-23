@@ -11,7 +11,7 @@
 
 /* Botón menú */
 .sidebar-btn{
-  position:fixed; top: clamp(12px,2vw,24px); left: clamp(12px,2vw,24px);
+  position:relative; top: clamp(12px,2vw,24px); left: clamp(12px,2vw,24px);
   background:var(--guinda); color:#fff; border:none; width:32px; height:32px;
   border-radius:4px; display:flex; align-items:center; justify-content:center; z-index:1000;
 }
@@ -97,4 +97,32 @@
 }
 @media (max-width: 576px){
   .custom-table{ min-width: 780px; }
+}
+/* Dropdown tipo “tarjeta” con panel */
+.filter-dropdown{
+  background:#fff;
+  border-radius:8px 8px 0 0;
+  box-shadow:0 2px 8px rgba(109,33,79,0.08);
+  padding:0;
+
+  .btn.dropdown-toggle{
+    background:#fff; color:#222; font-weight:600; font-size:14px;
+    border-radius:8px 8px 0 0; border:1px solid #e0e0e0;
+    width:50%; text-align:left; padding:10px 16px;
+  }
+
+  .dropdown-menu{
+    display:block; /* usamos *ngIf, no Bootstrap JS */
+    width:50%; min-width:320px; background:#fff;
+    padding:16px; margin-top:-1px; border:1px solid #e0e0e0;
+    border-radius:0 0 8px 8px; font-size:13px;
+
+    label{ font-weight:500; font-size:12px; margin-bottom:2px; }
+    input, select{ font-size:13px; }
+  }
+}
+
+/* Responsive: que los filtros apilen correctamente */
+@media (max-width: 1200px){
+  .filter-dropdown{ min-width:50%; }
 }

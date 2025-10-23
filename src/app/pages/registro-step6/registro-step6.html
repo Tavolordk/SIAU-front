@@ -1,21 +1,19 @@
-<!-- Header reutilizable -->
 <app-header-siau
   [title]="'Sistema Integral de Administración de Usuarios'"
   [userName]="usuarioNombre"
   [userRole]="usuarioRol"
-  [logoSrc]="'assets/images/SSPC.png'"
-  [bgSrc]="'assets/images/encabezado.png'"
-  [height]="110">
+  [logoSrc]="'../../../assets/images/SSPC.png'"
+  [bgSrc]="'../../../assets/images/encabezado.png'"
+  [height]="110"
+  [showUser]="true">
 </app-header-siau>
 
-<!-- Contenido principal -->
 <div class="main-content">
-  <!-- Reutilizable: título + progress + paso -->
   <app-registro-progress
     [title]="'Registro'"
     [currentStep]="currentStep"
     [totalSteps]="totalSteps"
-    [percent]="progressPercent"  
+    [percent]="progressPercent"
     [accent]="'#7a1832'">
   </app-registro-progress>
 
@@ -27,9 +25,12 @@
   </div>
 
   <div class="form-section">
-    <div class="form-label-custom mb-3">
+    <div class="form-label-custom mb-2">
       Ingresa el código enviado a tu {{ channelLabel }}
     </div>
+
+    <!-- QA: mostrar código simulado si existe -->
+    <div *ngIf="otpSim" class="text-muted small mb-2">Código (simulado): {{ otpSim }}</div>
 
     <form [formGroup]="form" (ngSubmit)="verify()">
       <input
@@ -47,19 +48,18 @@
         El código ha expirado.
       </div>
 
-      <button type="button" class="resend-link btn btn-link p-0" (click)="resend()">
+      <button type="button" class="resend-link btn btn-link p-0" (click)="resend()" [disabled]="loading">
         ¿No recibiste el código? Reenviar
       </button>
 
       <div class="action-buttons mt-4">
-        <button type="button" class="btn btn-regresar" (click)="onBack()">
+        <button type="button" class="btn btn-regresar" (click)="onBack()" [disabled]="loading">
           <span>Regresar</span>
           <fa-icon [icon]="icLeft"></fa-icon>
         </button>
 
-        <button type="submit" class="btn btn-verificar"
-                [disabled]="form.invalid || expired">
-          Verificar
+        <button type="submit" class="btn btn-verificar" [disabled]="form.invalid || expired || loading">
+          {{ loading ? 'Verificando…' : 'Verificar' }}
         </button>
       </div>
     </form>

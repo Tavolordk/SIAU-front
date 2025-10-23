@@ -1,43 +1,175 @@
 <!-- Header reutilizable a 100% -->
-<app-header-siau
-  [title]="'Sistema Integral de Administración de Usuarios'"
-  [userName]="usuarioNombre"
-  [userRole]="usuarioRol"
-  [logoSrc]="'assets/images/SSPC.png'"
-  [bgSrc]="'assets/images/encabezado.png'"
-  [height]="110">
+<app-header-siau [title]="'Sistema Integral de Administración de Usuarios'" [userName]="usuarioNombre"
+  [userRole]="usuarioRol" [logoSrc]="'assets/images/SSPC.png'" [bgSrc]="'assets/images/encabezado.png'" [height]="110">
 </app-header-siau>
-
-<!-- Botón flotante de menú -->
-<button class="sidebar-btn" type="button" (click)="onToggleSidebar()">
-  <fa-icon [icon]="icBars"></fa-icon>
-</button>
 
 <!-- Página full width -->
 <div class="page-shell container-fluid px-0">
   <h1 class="main-title">Consultar Cédulas</h1>
   <button class="new-request-btn" type="button">Nueva solicitud</button>
-
+  <!-- Botón flotante de menú -->
+  <button class="sidebar-btn" type="button" (click)="onToggleSidebar()">
+    <fa-icon [icon]="icBars"></fa-icon>
+  </button>
   <!-- Filtros -->
   <div class="filter-card shadow-sm">
     <div class="d-flex flex-wrap align-items-center mb-2 gap-2">
-      <div class="dropdown filter-dropdown">
-        <button class="btn btn-light dropdown-toggle w-100 text-start" type="button" data-bs-toggle="dropdown">
-          Información Personal
-        </button>
-      </div>
-      <div class="dropdown filter-dropdown">
-        <button class="btn btn-light dropdown-toggle w-100 text-start" type="button" data-bs-toggle="dropdown">
-          Información de Solicitud
-        </button>
-      </div>
-      <div class="dropdown filter-dropdown">
-        <button class="btn btn-light dropdown-toggle w-100 text-start" type="button" data-bs-toggle="dropdown">
-          Información Institucional/Estatal
-        </button>
-      </div>
-    </div>
 
+      <!-- Información Personal -->
+      <div class="filter-dropdown" [class.open]="open==='personal'">
+        <button class="btn btn-light dropdown-toggle w-100 text-start" type="button"
+          (click)="toggleDropdown('personal', $event)">
+          Información Personal
+          <fa-icon [icon]="icons.chevronDown" class="float-end"></fa-icon>
+        </button>
+
+        <div class="dropdown-menu" *ngIf="open==='personal'" (click)="$event.stopPropagation()">
+          <div class="row g-2">
+            <div class="col-6">
+              <label>Usuario</label>
+              <input type="text" class="form-control" />
+            </div>
+            <div class="col-6">
+              <label>Nombre (s)</label>
+              <input type="text" class="form-control" />
+            </div>
+            <div class="col-6">
+              <label>Primer Apellido</label>
+              <input type="text" class="form-control" />
+            </div>
+            <div class="col-6">
+              <label>Segundo Apellido</label>
+              <input type="text" class="form-control" />
+            </div>
+            <div class="col-6">
+              <label>CURP</label>
+              <input type="text" class="form-control" />
+            </div>
+            <div class="col-6">
+              <label>RFC</label>
+              <input type="text" class="form-control" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información de Solicitud -->
+      <div class="filter-dropdown" [class.open]="open==='solicitud'">
+        <button class="btn btn-light dropdown-toggle w-100 text-start" type="button"
+          (click)="toggleDropdown('solicitud', $event)">
+          Información de Solicitud
+          <fa-icon [icon]="icons.chevronDown" class="float-end"></fa-icon>
+        </button>
+
+        <div class="dropdown-menu" *ngIf="open==='solicitud'" (click)="$event.stopPropagation()">
+          <div class="row g-2">
+            <div class="col-6">
+              <label>Fecha Desde:</label>
+              <input type="date" class="form-control" />
+            </div>
+            <div class="col-6">
+              <label>Hasta:</label>
+              <input type="date" class="form-control" />
+            </div>
+            <div class="col-6">
+              <label>Folio</label>
+              <input type="text" class="form-control" />
+            </div>
+            <div class="col-6">
+              <label>Tipo de Solicitud</label>
+              <select class="form-select">
+                <option>Seleccionar...</option>
+                <option>Nueva Cuenta</option>
+                <option>Modificación de Perfil / Adscripción</option>
+                <option>Reactivación de Cuenta</option>
+                <option>Ampliación de Perfiles</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label>Estatus</label>
+              <select class="form-select">
+                <option>Seleccionar...</option>
+                <option>Recibida</option>
+                <option>Guardada</option>
+                <option>Validada</option>
+                <option>Aprobada</option>
+                <option>Cancelada</option>
+                <option>Rechazada</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información Institucional/Estatal -->
+      <div class="filter-dropdown" [class.open]="open==='institucional'">
+        <button class="btn btn-light dropdown-toggle w-100 text-start" type="button"
+          (click)="toggleDropdown('institucional', $event)">
+          Información Institucional/Estatal
+          <fa-icon [icon]="icons.chevronDown" class="float-end"></fa-icon>
+        </button>
+
+        <div class="dropdown-menu" *ngIf="open==='institucional'" (click)="$event.stopPropagation()">
+          <div class="row g-2">
+            <div class="col-6">
+              <label>Tipo de Institución</label>
+              <select class="form-select">
+                <option>Municipal</option>
+                <option>Estatal</option>
+                <option>Federal</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label>Entidad</label>
+              <select class="form-select">
+                <option>Coahuila de Zaragoza</option>
+                <option>Michoacán de Ocampo</option>
+                <option>Tamaulipas</option>
+                <option>Estado de México</option>
+                <option>Guerrero</option>
+                <option>Oaxaca</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label>Municipio</label>
+              <select class="form-select">
+                <option>San Juan de Sabinas</option>
+                <option>Bejucal de Ocampo</option>
+                <option>Atlamajalcingo del Río</option>
+                <option>Yaxcabá</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label>Institución</label>
+              <select class="form-select">
+                <option>Secretaría de Gobierno</option>
+                <option>SSPC</option>
+                <option>FGR</option>
+                <option>CNI</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label>Dependencia</label>
+              <select class="form-select">
+                <option>Seleccionar...</option>
+                <option>División Científica</option>
+                <option>Guardia Nacional</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label>Corporación</label>
+              <select class="form-select">
+                <option>Seleccionar...</option>
+                <option>CSEN</option>
+                <option>Policía Estatal</option>
+                <option>Policía Municipal</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
     <div class="d-flex flex-wrap align-items-center mb-2 gap-2">
       <span class="filter-info">Fecha: 2025-03-01 / 2025-03-15 <i class="far fa-calendar-alt"></i></span>
       <span class="filter-info">Entidad: Chiapas <i class="fas fa-map-marker-alt"></i></span>
@@ -75,239 +207,45 @@
           </tr>
         </thead>
         <tbody>
-          <tr>
+          <tr *ngFor="let row of pageRows; trackBy: trackByFolio">
             <td><input type="checkbox" class="table-checkbox"></td>
-            <td>PM-2023-02-0195</td>
-            <td>2025-03-05</td>
-            <td>Manuel Alejandro</td>
-            <td>Lira</td>
-            <td>Blanco</td>
-            <td>u174Q7PL203L</td>
-            <td>Reactivación de Cuenta</td>
-            <td>Municipal</td>
-            <td>Entidad: Coahuila de Zaragoza, municipio: San Juan de Sabinas</td>
-            <td>Institución: Secretaría de Seguridad y Protección Ciudadana, dependencia: Área de Pruebas para Eventos, Corporación: Área de Pruebas para Eventos</td>
-            <td>Estatus: Activo, tipo de dependencia: Municipal, dependencia: Secretaría de Seguridad y Protección Ciudadana, entidad: Ciudad de México, municipio: La Magdalena Contreras</td>
-            <td>Estatus: Activo, tipo de dependencia: Municipal, dependencia: Secretaría de Seguridad y Protección Ciudadana, entidad: Ciudad de México, municipio: La Magdalena Contreras</td>
-            <td>Aprobado, vigente</td>
-            <td><span class="status-badge status-rechazada">Rechazada</span></td>
-            <td class="action-icons">
-              <i class="far fa-comment-alt"></i>
-              <i class="far fa-file-alt"></i>
-              <i class="far fa-eye"></i>
+            <td>{{ row.folio }}</td>
+            <td>{{ row.fecha }}</td>
+            <td>{{ row.nombres }}</td>
+            <td>{{ row.primerApellido }}</td>
+            <td>{{ row.segundoApellido }}</td>
+            <td>{{ row.usuario }}</td>
+            <td>{{ row.tipoSolicitud }}</td>
+            <td>{{ row.tipoInstitucion }}</td>
+            <td>{{ row.entidadMunicipio }}</td>
+            <td>{{ row.instDepCorp }}</td>
+            <td>{{ row.rnpsp }}</td>
+            <td>{{ row.sau }}</td>
+            <td>{{ row.resultadoEccc }}</td>
+            <td>
+              <span class="status-badge" [ngClass]="row.estatusClase">{{ row.estatusTexto }}</span>
             </td>
-          </tr>
-          <tr>
-            <td><input type="checkbox" class="table-checkbox"></td>
-            <td>PM-2023-02-0106</td>
-            <td>2025-03-05</td>
-            <td>Andrea Sofía</td>
-            <td>Ramírez</td>
-            <td>Luna</td>
-            <td>-----</td>
-            <td>Nueva Cuenta</td>
-            <td>Federal</td>
-            <td>-----</td>
-            <td>Institución: Petróleos Mexicanos</td>
-            <td>-----</td>
-            <td>-----</td>
-            <td>-----</td>
-            <td><span class="status-badge status-pendiente">Pendiente</span></td>
             <td class="action-icons">
-              <i class="far fa-comment-alt"></i>
-              <i class="far fa-file-alt"></i>
-              <i class="far fa-eye"></i>
-            </td>
-          </tr>
-          <tr>
-            <td><input type="checkbox" class="table-checkbox"></td>
-            <td>PM-2023-02-0101</td>
-            <td>2025-03-06</td>
-            <td>María Fernanda</td>
-            <td>López</td>
-            <td>Rodríguez</td>
-            <td>-----</td>
-            <td>Nueva Cuenta</td>
-            <td>Municipal</td>
-            <td>Entidad: Chiapas, municipio: Biquipal de Ocampo</td>
-            <td>Institución: Fiscalía General de la República</td>
-            <td>-----</td>
-            <td>-----</td>
-            <td>-----</td>
-            <td><span class="status-badge status-cancelada">Cancelada</span></td>
-            <td class="action-icons">
-              <i class="far fa-comment-alt"></i>
-              <i class="far fa-file-alt"></i>
-              <i class="far fa-eye"></i>
-            </td>
-          </tr>
-          <tr>
-            <td><input type="checkbox" class="table-checkbox"></td>
-            <td>PM-2023-02-0102</td>
-            <td>2025-03-07</td>
-            <td>José Manuel</td>
-            <td>Hernández</td>
-            <td>García</td>
-            <td>u179TQ102G5</td>
-            <td>Ampliación de Perfiles</td>
-            <td>Estatal</td>
-            <td>Entidad: Michoacán de Ocampo</td>
-            <td>Institución: Secretaría de Seguridad y Protección Ciudadana, dependencia: Guardia Nacional, corporación: CESN</td>
-            <td>-----</td>
-            <td>-----</td>
-            <td>-----</td>
-            <td><span class="status-badge status-aprobada">Aprobada</span></td>
-            <td class="action-icons">
-              <i class="far fa-comment-alt"></i>
-              <i class="far fa-file-alt"></i>
-              <i class="far fa-eye"></i>
-            </td>
-          </tr>
-          <tr>
-            <td><input type="checkbox" class="table-checkbox"></td>
-            <td>PM-2023-02-0103</td>
-            <td>2025-03-07</td>
-            <td>Carlos Alberto</td>
-            <td>Martínez</td>
-            <td>Flores</td>
-            <td>u0697H2025K</td>
-            <td>Modificación de Perfil / Adscripción</td>
-            <td>Estatal</td>
-            <td>Entidad: Oaxaca</td>
-            <td>Institución: Secretaría de Seguridad y Protección Ciudadana, dependencia: Centro Nacional de Inteligencia (CNI), corporación: CESN</td>
-            <td>Estatus: Activo, tipo de dependencia: Estatal, dependencia: Secretaría de la Defensa Nacional, entidad: Jalisco, municipio: Arandas</td>
-            <td>Estatus: Activo, tipo de dependencia: Federal, dependencia: Procuraduría General de Justicia del Estado, entidad: Puebla, municipio: Atlixco</td>
-            <td>Aprobado, vigente</td>
-            <td><span class="status-badge status-aprobada">Aprobada</span></td>
-            <td class="action-icons">
-              <i class="far fa-comment-alt"></i>
-              <i class="far fa-file-alt"></i>
-              <i class="far fa-eye"></i>
-            </td>
-          </tr>
-          <tr>
-            <td><input type="checkbox" class="table-checkbox"></td>
-            <td>PM-2023-02-0104</td>
-            <td>2025-03-07</td>
-            <td>Ana Karen</td>
-            <td>Gutiérrez</td>
-            <td>Morales</td>
-            <td>-----</td>
-            <td>Nueva Cuenta</td>
-            <td>Federal</td>
-            <td>-----</td>
-            <td>-----</td>
-            <td>-----</td>
-            <td>-----</td>
-            <td>-----</td>
-            <td><span class="status-badge status-pendiente">Pendiente</span></td>
-            <td class="action-icons">
-              <i class="far fa-comment-alt"></i>
-              <i class="far fa-file-alt"></i>
-              <i class="far fa-eye"></i>
-            </td>
-          </tr>
-          <tr>
-            <td><input type="checkbox" class="table-checkbox"></td>
-            <td>PM-2023-02-0105</td>
-            <td>2025-03-10</td>
-            <td>Luis Enrique</td>
-            <td>Torres</td>
-            <td>Vargas</td>
-            <td>u2597WQ4201T</td>
-            <td>Reactivación de Cuenta</td>
-            <td>Estatal</td>
-            <td>Entidad: México, municipio: Xonacatlán</td>
-            <td>Institución: Secretaría de Seguridad y Protección Ciudadana, dependencia: Centro Nacional de Inteligencia (CNI), corporación: CESN</td>
-            <td>Estatus: Activo, tipo de dependencia: Estatal, dependencia: Secretaría de la Defensa Nacional, entidad: Jalisco, municipio: Arandas</td>
-            <td>Estatus: Activo, tipo de dependencia: Federal, dependencia: Procuraduría General de Justicia del Estado, entidad: Puebla, municipio: Atlixco</td>
-            <td>No aprobado, no vigente</td>
-            <td><span class="status-badge status-espera">En espera</span></td>
-            <td class="action-icons">
-              <i class="far fa-comment-alt"></i>
-              <i class="far fa-file-alt"></i>
-              <i class="far fa-eye"></i>
-            </td>
-          </tr>
-          <tr>
-            <td><input type="checkbox" class="table-checkbox"></td>
-            <td>PM-2023-02-0106</td>
-            <td>2025-03-10</td>
-            <td>Valeria</td>
-            <td>Sánchez</td>
-            <td>Delgado</td>
-            <td>u070VH4201N</td>
-            <td>Ampliación de Perfiles</td>
-            <td>Estatal</td>
-            <td>Entidad: Tamaulipas</td>
-            <td>Institución: Secretaría de Seguridad y Protección Ciudadana, dependencia: Centro Nacional de Inteligencia (CNI), corporación: CESN</td>
-            <td>Estatus: Activo, tipo de dependencia: Estatal, dependencia: Secretaría de la Defensa Nacional, entidad: Jalisco, municipio: Arandas</td>
-            <td>Estatus: Activo, tipo de dependencia: Federal, dependencia: Procuraduría General de Justicia del Estado, entidad: Puebla, municipio: Atlixco</td>
-            <td>No aprobado, no vigente</td>
-            <td><span class="status-badge status-cancelada">Cancelada</span></td>
-            <td class="action-icons">
-              <i class="far fa-comment-alt"></i>
-              <i class="far fa-file-alt"></i>
-              <i class="far fa-eye"></i>
-            </td>
-          </tr>
-          <tr>
-            <td><input type="checkbox" class="table-checkbox"></td>
-            <td>PM-2023-02-0108</td>
-            <td>2025-03-12</td>
-            <td>Juan Pablo</td>
-            <td>Pérez</td>
-            <td>Mendoza</td>
-            <td>u1747HQ2025K</td>
-            <td>Modificación de Perfil / Adscripción</td>
-            <td>Federal</td>
-            <td>Entidad: Guerrero, municipio: Acapulco de Juárez</td>
-            <td>Institución: Consejo Estatal de Seguridad Pública, dependencia: Secretaría de Seguridad Pública, corporación: Policía Estatal</td>
-            <td>Estatus: Activo, tipo de dependencia: Estatal, dependencia: Secretaría de Seguridad Pública, entidad: Puebla, municipio: Atlixco</td>
-            <td>-----</td>
-            <td>No aprobado, no vigente</td>
-            <td><span class="status-badge status-espera">En espera</span></td>
-            <td class="action-icons">
-              <i class="far fa-comment-alt"></i>
-              <i class="far fa-file-alt"></i>
-              <i class="far fa-eye"></i>
-            </td>
-          </tr>
-          <tr>
-            <td><input type="checkbox" class="table-checkbox"></td>
-            <td>PM-2023-02-0109</td>
-            <td>2025-03-12</td>
-            <td>Laura Isabel</td>
-            <td>Castillo</td>
-            <td>Nava</td>
-            <td>-----</td>
-            <td>Nueva Cuenta</td>
-            <td>Municipal</td>
-            <td>Entidad: Guerrero, municipio: Acapulco de Juárez</td>
-            <td>Institución: Secretaría de Seguridad Pública, dependencia: Dirección General de Prevención y Readaptación Social</td>
-            <td>-----</td>
-            <td>-----</td>
-            <td>-----</td>
-            <td><span class="status-badge status-pendiente">Pendiente</span></td>
-            <td class="action-icons">
-              <i class="far fa-comment-alt"></i>
-              <i class="far fa-file-alt"></i>
-              <i class="far fa-eye"></i>
+              <button class="icon-btn" type="button" (click)="onComment(row)">
+                <fa-icon [icon]="icons.comment"></fa-icon>
+              </button>
+              <button class="icon-btn" type="button" (click)="onDocs(row)">
+                <fa-icon [icon]="icons.file"></fa-icon>
+              </button>
+              <button class="icon-btn" type="button" (click)="onView(row)">
+                <fa-icon [icon]="icons.eye"></fa-icon>
+              </button>
             </td>
           </tr>
         </tbody>
+
       </table>
     </div>
 
     <div class="table-footer">
       <button class="approve-btn" type="button" (click)="onAprobar()">Aprobar</button>
-      <nav>
-        <ul class="pagination mb-0">
-          <li class="page-item"><a class="page-link" href="#">1</a></li>
-          <li class="page-item active"><a class="page-link" href="#">2</a></li>
-          <li class="page-item"><a class="page-link" href="#">3</a></li>
-        </ul>
-      </nav>
+      <app-pagination [items]="rows" [pageSize]="10" [hideOnSinglePage]="false" (pageItemsChange)="pageRows = $event">
+      </app-pagination>
     </div>
   </div>
 </div>
