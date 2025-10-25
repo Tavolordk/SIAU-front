@@ -73,7 +73,7 @@
                     <div *ngIf="form.get('captchaCode')?.touched && form.get('captchaCode')?.errors as e"
                         class="text-danger mt-2">
                         <div *ngIf="e['required']">El código es obligatorio.</div>
-                        <div *ngIf="e['pattern']">El código debe tener 6 dígitos.</div>
+                        <div *ngIf="e['pattern']">El código debe tener 5 dígitos.</div>
                         <div *ngIf="e['captchaInvalid']">Código incorrecto o expirado.</div>
                         <div *ngIf="e['captchaError']">No se pudo verificar el código. Intenta de nuevo.</div>
                     </div>

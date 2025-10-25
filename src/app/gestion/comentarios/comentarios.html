@@ -1,58 +1,79 @@
-<app-header-siau [title]="'Sistema Integral de Administración de Usuarios'" [userName]="usuarioNombre"
-    [userRole]="usuarioCuenta" [logoSrc]="'assets/images/SSPC.png'" [bgSrc]="'assets/images/encabezado.png'"
-    [height]="110">
+<app-header-siau
+  [title]="'Sistema Integral de Administración de Usuarios'"
+  [userName]="usuarioNombre"
+  [userRole]="usuarioCuenta"
+  [logoSrc]="'assets/images/SSPC.png'"
+  [bgSrc]="'assets/images/encabezado.png'"
+  [height]="110">
 </app-header-siau>
+
 <div class="layout">
-        <app-siau-sidebar [fixed]="true" [top]="110" [activeMain]="'cedulas'" [activeSub]="'mis'"
-            (navigate)="onSidebarNavigate($event)">
-        </app-siau-sidebar>
-        <main class="main-content">
-            <h1 class="main-title">Gestión de mis cédulas</h1>
+  <app-siau-sidebar
+    [fixed]="true"
+    [top]="110"
+    [activeMain]="'cedulas'"
+    [activeSub]="'mis'"
+    (navigate)="onSidebarNavigate($event)">
+  </app-siau-sidebar>
 
-            <app-hero-cta label="Nueva solicitud" color="vino" size="lg" (clicked)="onCancelar()">
-            </app-hero-cta>
+  <main class="main-content">
+    <h1 class="main-title">Gestión de mis cédulas</h1>
 
+    <app-hero-cta label="Nueva solicitud" color="vino" size="lg" (clicked)="onNuevaSolicitud()">
+    </app-hero-cta>
 
-            <section class="bitacora-container">
-                <div class="bitacora-header">
-                    Bitácora de comentarios
-                    <button class="close-btn" type="button" (click)="onCerrarBitacora()">
-                        <fa-icon [icon]="icons.close"></fa-icon>
-                    </button>
-                </div>
+    <section class="bitacora-container">
+      <div class="bitacora-header">
+        Bitácora de comentarios
+        <button class="close-btn" type="button" (click)="onCerrarBitacora()">
+          <fa-icon [icon]="icons.close"></fa-icon>
+        </button>
+      </div>
 
-                <div class="bitacora-body">
-                    <div class="bitacora-entry">
-                        <span class="bitacora-role">Administrador</span>
-                        <span class="bitacora-user">María Gómez</span>
-                        <span class="bitacora-date">20/05/2025 - 10:15</span>
-                        <div class="bitacora-comment mt-2">
-                            Documentación incompleta, faltan los anexos requeridos
-                        </div>
-                    </div>
+      <!-- Mantengo la misma caja y clases -->
+      <div class="bitacora-body" [formGroup]="form">
 
-                    <div class="bitacora-entry">
-                        <span class="bitacora-label">Enlace</span>
-                        <span class="bitacora-user">Juan Pérez</span>
-                        <span class="bitacora-date">19/05/2025 - 14:30</span>
-                        <div class="bitacora-comment mt-2">
-                            Solicitud aprobada mediante enlace de validación
-                        </div>
-                    </div>
+        <!-- Mensajes (no cambian estilos base) -->
+        <div class="small text-muted" *ngIf="loading">Cargando comentarios…</div>
+        <div class="small text-danger" *ngIf="!loading && error">{{ error }}</div>
 
-                    <div class="bitacora-add-title">Agregar nuevo comentario</div>
-                    <input class="bitacora-add-input" type="text"
-                        placeholder="Ingrese comentarios o motivos de rechazo/aprobación" />
+        <!-- Lista dinámica de comentarios con mismas clases -->
+        <div class="bitacora-entry" *ngFor="let c of comentarios">
+          <span class="bitacora-role">{{ c.rol }}</span>
+          <span class="bitacora-user">{{ c.autor }}</span>
+          <span class="bitacora-date">{{ formatFecha(c.fecha) }}</span>
+          <div class="bitacora-comment mt-2">
+            {{ c.texto }}
+          </div>
+        </div>
 
-                    <div class="bitacora-actions">
-                        <button class="btn-cancelar" type="button" (click)="onCancelar()">
-                            Cancelar <span class="x">X</span>
-                        </button>
-                        <button class="btn-agregar" type="button" (click)="onAgregar()">
-                            <fa-icon [icon]="icons.plus"></fa-icon> Agregar
-                        </button>
-                    </div>
-                </div>
-            </section>
-        </main>
+        <!-- Cuando no hay comentarios -->
+        <div class="bitacora-entry" *ngIf="!loading && !error && comentarios.length === 0">
+          <span class="bitacora-role">—</span>
+          <span class="bitacora-user">Sin comentarios</span>
+          <span class="bitacora-date">—</span>
+          <div class="bitacora-comment mt-2">
+            Aún no hay comentarios para este folio.
+          </div>
+        </div>
+
+        <!-- Sección de agregar (mismos controles visuales) -->
+        <div class="bitacora-add-title">Agregar nuevo comentario</div>
+        <input
+          class="bitacora-add-input"
+          type="text"
+          placeholder="Ingrese comentarios o motivos de rechazo/aprobación"
+          formControlName="texto" />
+
+        <div class="bitacora-actions">
+          <button class="btn-cancelar" type="button" (click)="onCancelar()">
+            Cancelar <span class="x">X</span>
+          </button>
+          <button class="btn-agregar" type="button" (click)="onAgregar()" [disabled]="form.invalid || loading">
+            <fa-icon [icon]="icons.plus"></fa-icon> Agregar
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
 </div>

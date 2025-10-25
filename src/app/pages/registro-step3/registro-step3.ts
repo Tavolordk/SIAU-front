@@ -31,8 +31,8 @@ export class RegistroStep3Component implements OnInit, OnDestroy {
   // Header / progreso (inputs para que sea autónomo)
   @Input() currentStep = 3;
   @Input() maxSteps = 6;
-  @Input() usuarioNombre = 'Luis Vargas';
-  @Input() usuarioRol = 'Capturista';
+  @Input() usuarioNombre = 'Octavio Olea';
+  @Input() usuarioRol = 'Administrador';
   @Output() prev = new EventEmitter<void>();
   @Output() proceed = new EventEmitter<{ documentos: Step3Doc[] }>();
 

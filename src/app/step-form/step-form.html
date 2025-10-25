@@ -1,49 +1,61 @@
-<!-- step-form.html (migrated to V2 components) -->
 <ng-container>
   @if (currentStep === 1) {
-  <app-registro-step1-v2 [currentStep]="currentStep" [maxSteps]="maxSteps" (prev)="prevStep()" (proceed)="nextStep()">
+  <app-registro-step1-v2
+    [currentStep]="currentStep" [maxSteps]="maxSteps"
+    (prev)="prevStep()"
+    (proceed)="onStep1Proceed($event)">
   </app-registro-step1-v2>
   }
 
-
   @if (currentStep === 2) {
-  <app-registro-step2 [currentStep]="currentStep" [maxSteps]="maxSteps" (prev)="prevStep()" (proceed)="nextStep()">
+  <app-registro-step2
+    [currentStep]="currentStep" [maxSteps]="maxSteps"
+    (prev)="prevStep()"
+    (proceed)="nextStep()">
   </app-registro-step2>
   }
 
-
   @if (currentStep === 3) {
-  <app-registro-step3 [currentStep]="currentStep" [maxSteps]="maxSteps" (prev)="prevStep()" (proceed)="nextStep()">
+  <app-registro-step3
+    [currentStep]="currentStep" [maxSteps]="maxSteps"
+    (prev)="prevStep()"
+    (proceed)="nextStep()">
   </app-registro-step3>
   }
 
-
-  <app-registro-step4 [currentStep]="currentStep" [maxSteps]="maxSteps" (prev)="prevStep()" (proceed)="nextStep()">
+  @if (currentStep === 4) {
+  <app-registro-step4
+    [currentStep]="currentStep" [maxSteps]="maxSteps"
+    (prev)="prevStep()"
+    (proceed)="nextStep()">
   </app-registro-step4>
-
+  }
 
   @if (currentStep === 5) {
-  <app-registro-step5 [currentStep]="currentStep" [maxSteps]="maxSteps" (prev)="prevStep()" (proceed)="nextStep()">
+  <app-registro-step5
+    [currentStep]="currentStep" [maxSteps]="maxSteps"
+    (prev)="prevStep()"
+    (proceed)="nextStep()">
   </app-registro-step5>
   }
 
   @if (currentStep === 6) {
-  <app-registro-step6 [currentStep]="currentStep" [maxSteps]="maxSteps" (prev)="currentStep = 5" (proceed)="nextStep()">
+  <app-registro-step6
+    [currentStep]="currentStep" [maxSteps]="maxSteps"
+    (prev)="currentStep = 5"
+    (proceed)="onOtpVerified()">
   </app-registro-step6>
   }
 
   @if (currentStep === 7) {
-<app-registro-step7
-  *ngIf="currentStep===7"
-  [currentStep]="7" [maxSteps]="8"
-  (back)="currentStep=6"
-  (finish)="currentStep=8">
-</app-registro-step7>
+  <app-registro-step7
+    [currentStep]="7" [maxSteps]="8"
+    (back)="currentStep=6"
+    (finish)="goToConfirm()">
+  </app-registro-step7>
   }
 
   @if (currentStep === 8) {
-<app-registro-confirmacion
-  *ngIf="currentStep===8">
-</app-registro-confirmacion>
+  <app-registro-confirmacion></app-registro-confirmacion>
   }
 </ng-container>

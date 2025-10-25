@@ -1,12 +1,13 @@
-// File: src/app/auth/login/login.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { UsuarioService } from '../../services/usuario.service';
-import { LoginResponse } from '../../models/login-response.model';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+
+import { LoginService } from '../../services/login.service';
+import { LoginRequest } from '../../models/login-request.model';
+import { LoginResponse } from '../../models/login-response.model';
 
 @Component({
   selector: 'app-login',
@@ -16,27 +17,26 @@ import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
   styleUrls: ['./login.scss']
 })
 export class LoginComponent implements OnInit {
-  loginForm!: FormGroup;
-  mensajeError: string | null = null;
+  private fb = inject(FormBuilder);
+  private api = inject(LoginService);
+  private router = inject(Router);
+
+  faEye = faEye;
+  faEyeSlash = faEyeSlash;
+
+  hidePassword = true;
   loading = false;
-  hidePassword = true;            // ← nueva línea
-  faEye = faEye;                  // ← nueva línea
-  faEyeSlash = faEyeSlash;        // ← nueva línea
+  mensajeError: string | null = null;
 
-  togglePassword() {              // ← nueva función
+  loginForm = this.fb.group({
+    usuario: ['', Validators.required],
+    contrasena: ['', Validators.required],
+  });
+
+  ngOnInit(): void {}
+
+  togglePassword(): void {
     this.hidePassword = !this.hidePassword;
-  }
-  constructor(
-    private fb: FormBuilder,
-    private usuarioService: UsuarioService,
-    private router: Router
-  ) {}
-
-  ngOnInit(): void {
-    this.loginForm = this.fb.group({
-      usuario: ['', Validators.required],
-      contrasena: ['', Validators.required]
-    });
   }
 
   iniciarSesion(): void {
@@ -46,32 +46,40 @@ export class LoginComponent implements OnInit {
       return;
     }
 
-    const { usuario, contrasena } = this.loginForm.value;
-    this.mensajeError = null;
-    this.loading = true;
+    const { usuario, contrasena } = this.loginForm.getRawValue();
+    const payload: LoginRequest = {
+      Usuario: String(usuario ?? ''),
+      Contrasena: String(contrasena ?? '')
+    };
 
-    this.usuarioService.loginAsync(usuario, contrasena).subscribe({
-      next: (res: LoginResponse | null) => {
+    this.loading = true;
+    this.mensajeError = null;
+
+    this.api.login(payload).subscribe({
+      next: (res: LoginResponse) => {
         this.loading = false;
-        if (res?.token) {
-          localStorage.setItem('authToken', res.token);
-          this.router.navigate(['/solicitudes']);
+
+        // ✅ criterio correcto con el nuevo backend
+        if (res?.success === 1) {
+          // Guarda lo que necesites para el resto de la sesión:
+          localStorage.setItem('user_id', String(res.user_id ?? ''));
+          localStorage.setItem('rol_id', String(res.fk_cat_tp_usuarios ?? ''));
+          // Si algún día el backend regresa 'code' como token, guárdalo aquí.
+          // if (res.code) localStorage.setItem('authToken', res.code);
+
+          this.router.navigate(['/bienvenida']);
         } else {
-          this.mensajeError = 'Usuario o contraseña incorrectos.';
+          this.mensajeError = res?.message ?? 'Usuario o contraseña incorrectos.';
         }
       },
-      error: (err) => {
+      error: (e: any) => {
         this.loading = false;
-        this.mensajeError = err?.error?.message || 'Usuario o contraseña incorrectos.';
+        this.mensajeError = e?.message ?? 'No se pudo iniciar sesión.';
       }
     });
   }
 
-  // Getters para el template si quieres mostrar errores puntuales
-  get usuarioControl() {
-    return this.loginForm.get('usuario');
-  }
-  get contrasenaControl() {
-    return this.loginForm.get('contrasena');
-  }
+  // Getters útiles en el template
+  get usuarioCtrl() { return this.loginForm.get('usuario'); }
+  get contrasenaCtrl() { return this.loginForm.get('contrasena'); }
 }

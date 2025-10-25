@@ -24,8 +24,8 @@ export class RegistroStep5Component {
   // Header / progreso
   @Input() currentStep = 5;
   @Input() maxSteps = 6;
-  @Input() usuarioNombre = 'Luis Vargas';
-  @Input() usuarioRol = 'Capturista';
+  @Input() usuarioNombre = 'Octavio Olea';
+  @Input() usuarioRol = 'Administrador';
   @Output() proceed = new EventEmitter<Canal>();   // avanza a Step6 con el canal elegido
   @Output() prev = new EventEmitter<void>();
 

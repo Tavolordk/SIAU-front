@@ -1,32 +1,4 @@
-<!-- Header reutilizable -->
-<app-header-siau
-  [title]="'Sistema Integral de Administración de Usuarios'"
-  [userName]="usuarioNombre"
-  [userRole]="usuarioCuenta"
-  [logoSrc]="'assets/images/SSPC.png'"
-  [bgSrc]="'assets/images/encabezado.png'"
-  [height]="headerOffset">
-</app-header-siau>
-
 <div class="layout">
-
-  <!-- Sidebar -->
-  <aside class="sidebar" [style.top.px]="headerOffset">
-    <div class="sidebar-header">
-      <div>Gestión de Cédulas Únicas<br />de Registro de Usuario</div>
-      <fa-icon [icon]="i.bars" class="ms-auto"></fa-icon>
-    </div>
-
-    <button class="nav-btn w-100 text-start">
-      Gestión de cédulas
-      <fa-icon [icon]="i.chevronDown" class="float-end"></fa-icon>
-    </button>
-
-    <button class="nav-btn active w-100 text-start">
-      Gestión de contraseña
-    </button>
-  </aside>
-
   <!-- Contenido -->
   <main class="main">
     <div class="card main-card">
@@ -67,7 +39,7 @@
 
       <!-- Acción -->
       <div class="text-center pb-4">
-        <button class="btn btn-oro" type="button" (click)="onVolver()">Volver al sistema</button>
+          <button class="btn btn-oro" (click)="onVolver()">Volver al sistema</button>
       </div>
     </div>
   </main>

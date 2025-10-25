@@ -12,7 +12,7 @@ type TipoRequerimiento = 'nueva' | 'modificacion' | 'ampliacion' | 'reactivacion
 })
 export class SiauSolicitudNoAtendidaComponent {
   @Input() titulo = 'Sistema Integral de Administración de Usuarios (SIAU)';
-  @Input() nombreUsuario = 'Juan Pérez';
+  @Input() nombreUsuario = 'Octavio Olea';
   @Input() folio = 'PM-2025-10-12345';
   @Input() tipoRequerimiento: TipoRequerimiento = 'nueva';
 

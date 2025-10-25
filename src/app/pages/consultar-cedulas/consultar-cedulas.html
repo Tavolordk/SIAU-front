@@ -1,54 +1,29 @@
-<!-- Header reutilizable a 100% -->
-<app-header-siau [title]="'Sistema Integral de Administración de Usuarios'" [userName]="usuarioNombre"
-  [userRole]="usuarioRol" [logoSrc]="'assets/images/SSPC.png'" [bgSrc]="'assets/images/encabezado.png'" [height]="110">
-</app-header-siau>
+<!-- Página full width dentro del Shell (sin header/aside locales) -->
+<div class="page-shell">
 
-<!-- Página full width -->
-<div class="page-shell container-fluid px-0">
   <h1 class="main-title">Consultar Cédulas</h1>
-  <button class="new-request-btn" type="button">Nueva solicitud</button>
-  <!-- Botón flotante de menú -->
-  <button class="sidebar-btn" type="button" (click)="onToggleSidebar()">
-    <fa-icon [icon]="icBars"></fa-icon>
-  </button>
+  <button class="new-request-btn" type="button" (click)="nuevaSolicitud()">Nueva solicitud</button>
+
   <!-- Filtros -->
-  <div class="filter-card shadow-sm">
+  <div class="filter-card shadow-sm" [formGroup]="form">
     <div class="d-flex flex-wrap align-items-center mb-2 gap-2">
 
       <!-- Información Personal -->
       <div class="filter-dropdown" [class.open]="open==='personal'">
         <button class="btn btn-light dropdown-toggle w-100 text-start" type="button"
-          (click)="toggleDropdown('personal', $event)">
+                (click)="toggleDropdown('personal', $event)">
           Información Personal
           <fa-icon [icon]="icons.chevronDown" class="float-end"></fa-icon>
         </button>
 
         <div class="dropdown-menu" *ngIf="open==='personal'" (click)="$event.stopPropagation()">
           <div class="row g-2">
-            <div class="col-6">
-              <label>Usuario</label>
-              <input type="text" class="form-control" />
-            </div>
-            <div class="col-6">
-              <label>Nombre (s)</label>
-              <input type="text" class="form-control" />
-            </div>
-            <div class="col-6">
-              <label>Primer Apellido</label>
-              <input type="text" class="form-control" />
-            </div>
-            <div class="col-6">
-              <label>Segundo Apellido</label>
-              <input type="text" class="form-control" />
-            </div>
-            <div class="col-6">
-              <label>CURP</label>
-              <input type="text" class="form-control" />
-            </div>
-            <div class="col-6">
-              <label>RFC</label>
-              <input type="text" class="form-control" />
-            </div>
+            <div class="col-6"><label>Usuario</label><input type="text" class="form-control" formControlName="cuenta_codigo" /></div>
+            <div class="col-6"><label>Nombre (s)</label><input type="text" class="form-control" formControlName="nombres" /></div>
+            <div class="col-6"><label>Primer Apellido</label><input type="text" class="form-control" formControlName="primer_apellido" /></div>
+            <div class="col-6"><label>Segundo Apellido</label><input type="text" class="form-control" formControlName="segundo_apellido" /></div>
+            <div class="col-6"><label>CURP</label><input type="text" class="form-control" formControlName="curp" /></div>
+            <div class="col-6"><label>RFC</label><input type="text" class="form-control" formControlName="rfc" /></div>
           </div>
         </div>
       </div>
@@ -56,45 +31,38 @@
       <!-- Información de Solicitud -->
       <div class="filter-dropdown" [class.open]="open==='solicitud'">
         <button class="btn btn-light dropdown-toggle w-100 text-start" type="button"
-          (click)="toggleDropdown('solicitud', $event)">
+                (click)="toggleDropdown('solicitud', $event)">
           Información de Solicitud
           <fa-icon [icon]="icons.chevronDown" class="float-end"></fa-icon>
         </button>
 
         <div class="dropdown-menu" *ngIf="open==='solicitud'" (click)="$event.stopPropagation()">
           <div class="row g-2">
-            <div class="col-6">
-              <label>Fecha Desde:</label>
-              <input type="date" class="form-control" />
-            </div>
-            <div class="col-6">
-              <label>Hasta:</label>
-              <input type="date" class="form-control" />
-            </div>
-            <div class="col-6">
-              <label>Folio</label>
-              <input type="text" class="form-control" />
-            </div>
+            <div class="col-6"><label>Fecha Desde:</label><input type="date" class="form-control" formControlName="fecha_desde" /></div>
+            <div class="col-6"><label>Hasta:</label><input type="date" class="form-control" formControlName="fecha_hasta" /></div>
+            <div class="col-6"><label>Folio</label><input type="text" class="form-control" formControlName="folio" /></div>
             <div class="col-6">
               <label>Tipo de Solicitud</label>
-              <select class="form-select">
-                <option>Seleccionar...</option>
-                <option>Nueva Cuenta</option>
-                <option>Modificación de Perfil / Adscripción</option>
-                <option>Reactivación de Cuenta</option>
-                <option>Ampliación de Perfiles</option>
+              <select class="form-select" formControlName="tipo_tramite">
+                <option value="">Seleccionar...</option>
+                <option value="Nueva Cuenta">Nueva Cuenta</option>
+                <option value="Modificación de Perfil / Adscripción">Modificación de Perfil / Adscripción</option>
+                <option value="Reactivación de Cuenta">Reactivación de Cuenta</option>
+                <option value="Ampliación de Perfiles">Ampliación de Perfiles</option>
               </select>
             </div>
             <div class="col-6">
               <label>Estatus</label>
-              <select class="form-select">
-                <option>Seleccionar...</option>
-                <option>Recibida</option>
-                <option>Guardada</option>
-                <option>Validada</option>
-                <option>Aprobada</option>
-                <option>Cancelada</option>
-                <option>Rechazada</option>
+              <select class="form-select" formControlName="estatus">
+                <option value="">Seleccionar...</option>
+                <option value="Recibida">Recibida</option>
+                <option value="Guardada">Guardada</option>
+                <option value="Validada">Validada</option>
+                <option value="Aprobada">Aprobada</option>
+                <option value="Cancelada">Cancelada</option>
+                <option value="Rechazada">Rechazada</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="En espera">En espera</option>
               </select>
             </div>
           </div>
@@ -104,7 +72,7 @@
       <!-- Información Institucional/Estatal -->
       <div class="filter-dropdown" [class.open]="open==='institucional'">
         <button class="btn btn-light dropdown-toggle w-100 text-start" type="button"
-          (click)="toggleDropdown('institucional', $event)">
+                (click)="toggleDropdown('institucional', $event)">
           Información Institucional/Estatal
           <fa-icon [icon]="icons.chevronDown" class="float-end"></fa-icon>
         </button>
@@ -113,72 +81,56 @@
           <div class="row g-2">
             <div class="col-6">
               <label>Tipo de Institución</label>
-              <select class="form-select">
-                <option>Municipal</option>
-                <option>Estatal</option>
-                <option>Federal</option>
+              <select class="form-select" formControlName="tipo_institucion">
+                <option value="">Seleccionar...</option>
+                <option value="Municipal">Municipal</option>
+                <option value="Estatal">Estatal</option>
+                <option value="Federal">Federal</option>
               </select>
             </div>
             <div class="col-6">
               <label>Entidad</label>
-              <select class="form-select">
-                <option>Coahuila de Zaragoza</option>
-                <option>Michoacán de Ocampo</option>
-                <option>Tamaulipas</option>
-                <option>Estado de México</option>
-                <option>Guerrero</option>
-                <option>Oaxaca</option>
-              </select>
+              <input type="text" class="form-control" formControlName="entidad" />
             </div>
             <div class="col-6">
               <label>Municipio</label>
-              <select class="form-select">
-                <option>San Juan de Sabinas</option>
-                <option>Bejucal de Ocampo</option>
-                <option>Atlamajalcingo del Río</option>
-                <option>Yaxcabá</option>
-              </select>
+              <input type="text" class="form-control" formControlName="municipio" />
             </div>
             <div class="col-6">
               <label>Institución</label>
-              <select class="form-select">
-                <option>Secretaría de Gobierno</option>
-                <option>SSPC</option>
-                <option>FGR</option>
-                <option>CNI</option>
-              </select>
+              <input type="text" class="form-control" formControlName="institucion" />
             </div>
             <div class="col-6">
               <label>Dependencia</label>
-              <select class="form-select">
-                <option>Seleccionar...</option>
-                <option>División Científica</option>
-                <option>Guardia Nacional</option>
-              </select>
+              <input type="text" class="form-control" formControlName="dependencia" />
             </div>
             <div class="col-6">
               <label>Corporación</label>
-              <select class="form-select">
-                <option>Seleccionar...</option>
-                <option>CSEN</option>
-                <option>Policía Estatal</option>
-                <option>Policía Municipal</option>
-              </select>
+              <input type="text" class="form-control" formControlName="corporacion" />
+            </div>
+            <div class="col-6">
+              <label>Área</label>
+              <input type="text" class="form-control" formControlName="area" />
             </div>
           </div>
         </div>
       </div>
 
     </div>
+
+    <!-- Chips informativos (estáticos de ejemplo) -->
     <div class="d-flex flex-wrap align-items-center mb-2 gap-2">
-      <span class="filter-info">Fecha: 2025-03-01 / 2025-03-15 <i class="far fa-calendar-alt"></i></span>
-      <span class="filter-info">Entidad: Chiapas <i class="fas fa-map-marker-alt"></i></span>
-      <span class="filter-info">Tipo de Solicitud: Nueva Cuenta <i class="fas fa-file-alt"></i></span>
+      <span class="filter-info">Fecha: {{ form.value.fecha_desde || '----' }} / {{ form.value.fecha_hasta || '----' }} <i class="far fa-calendar-alt"></i></span>
+      <span class="filter-info" *ngIf="form.value.entidad">Entidad: {{ form.value.entidad }} <i class="fas fa-map-marker-alt"></i></span>
+      <span class="filter-info" *ngIf="form.value.tipo_tramite">Tipo de Solicitud: {{ form.value.tipo_tramite }} <i class="fas fa-file-alt"></i></span>
     </div>
 
     <div class="d-flex flex-wrap align-items-center mb-2 gap-2">
-      <button class="filter-btn" type="button" (click)="onBuscar()">Buscar</button>
-      <button class="filter-btn-secondary" type="button" (click)="onLimpiar()">Limpiar</button>
+      <button class="filter-btn" type="button" (click)="onBuscar()" [disabled]="loading">Buscar</button>
+      <button class="filter-btn-secondary" type="button" (click)="onLimpiar()" [disabled]="loading">Limpiar</button>
+      <span *ngIf="loading" class="ms-2">Cargando…</span>
+      <span *ngIf="!loading && error" class="text-danger ms-2">{{ error }}</span>
+      <span *ngIf="!loading && !error" class="ms-2">Total: {{ total }}</span>
     </div>
   </div>
 
@@ -206,6 +158,7 @@
             <th>Acciones</th>
           </tr>
         </thead>
+
         <tbody>
           <tr *ngFor="let row of pageRows; trackBy: trackByFolio">
             <td><input type="checkbox" class="table-checkbox"></td>
@@ -222,19 +175,11 @@
             <td>{{ row.rnpsp }}</td>
             <td>{{ row.sau }}</td>
             <td>{{ row.resultadoEccc }}</td>
-            <td>
-              <span class="status-badge" [ngClass]="row.estatusClase">{{ row.estatusTexto }}</span>
-            </td>
+            <td><span class="status-badge" [ngClass]="row.estatusClase">{{ row.estatusTexto }}</span></td>
             <td class="action-icons">
-              <button class="icon-btn" type="button" (click)="onComment(row)">
-                <fa-icon [icon]="icons.comment"></fa-icon>
-              </button>
-              <button class="icon-btn" type="button" (click)="onDocs(row)">
-                <fa-icon [icon]="icons.file"></fa-icon>
-              </button>
-              <button class="icon-btn" type="button" (click)="onView(row)">
-                <fa-icon [icon]="icons.eye"></fa-icon>
-              </button>
+              <button class="icon-btn" type="button" (click)="onComment(row)"><fa-icon [icon]="icons.comment"></fa-icon></button>
+              <button class="icon-btn" type="button" (click)="onDocs(row)"><fa-icon [icon]="icons.file"></fa-icon></button>
+              <button class="icon-btn" type="button" (click)="onView(row)"><fa-icon [icon]="icons.eye"></fa-icon></button>
             </td>
           </tr>
         </tbody>
@@ -244,7 +189,11 @@
 
     <div class="table-footer">
       <button class="approve-btn" type="button" (click)="onAprobar()">Aprobar</button>
-      <app-pagination [items]="rows" [pageSize]="10" [hideOnSinglePage]="false" (pageItemsChange)="pageRows = $event">
+      <app-pagination
+        [items]="rows"
+        [pageSize]="pageSize"
+        [hideOnSinglePage]="false"
+        (pageItemsChange)="pageRows = $event">
       </app-pagination>
     </div>
   </div>

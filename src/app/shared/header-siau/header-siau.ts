@@ -7,6 +7,7 @@ import { faCircleUser } from '@fortawesome/free-solid-svg-icons';
 import { Overlay, OverlayRef, OverlayModule } from '@angular/cdk/overlay';
 import { TemplatePortal, PortalModule } from '@angular/cdk/portal';
 import { UserMenuCardComponent } from '../user-menu-card/user-menu-card';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-header-siau',
@@ -24,18 +25,21 @@ export class HeaderSiauComponent {
   @Input() bgSrc: string | null = 'assets/images/encabezado.png';
   @Input() height = 120;
   @Input() showUser = true;
-  @Input() userEmail = 'juan.perez@correo.com';
+  @Input() userEmail = 'octavio.olea@sspc.gob.mx';
   @Input() userCity  = 'Ciudad de México';
 
   icUser = faCircleUser;
   isOpen = false;
 
+logout(): void {
+  this.auth.logout();                  // 👈 un solo punto de verdad
+}
   @ViewChild('userBtn', { read: ElementRef }) userBtn!: ElementRef<HTMLElement>;
   @ViewChild('menuTpl') menuTpl!: TemplateRef<any>;
 
   private overlayRef?: OverlayRef;
 
-  constructor(private overlay: Overlay, private vcr: ViewContainerRef, private host: ElementRef<HTMLElement>) {}
+  constructor(private overlay: Overlay, private vcr: ViewContainerRef, private host: ElementRef<HTMLElement>, private auth: AuthService) {}
 
   toggleMenu(ev: MouseEvent) {
     ev.stopPropagation();

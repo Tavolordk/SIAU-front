@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./user-menu-card.scss']
 })
 export class UserMenuCardComponent {
-  @Input() email = 'juan.perez@correo.com';
+  @Input() email = 'octavio.olea@sspc.gob.mx';
   @Input() city  = 'Ciudad de México';
 
   @Output() logout = new EventEmitter<void>();

@@ -22,9 +22,10 @@
 
     <!-- Radios -->
     <div class="opciones">
-      <label class="opcion">
-        <input type="radio" formControlName="tipo" value="NUEVA_CUENTA" />
-        <span>Nueva cuenta</span>
+      <label class="opcion" [class.is-disabled]="disableNuevaCuenta">
+        <input type="radio" formControlName="tipo" value="NUEVA_CUENTA" [disabled]="disableNuevaCuenta"
+          aria-disabled="true" />
+        <span class="label">Nueva cuenta</span>
       </label>
 
       <label class="opcion">

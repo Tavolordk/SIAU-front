@@ -21,13 +21,18 @@
 
   <div class="section-title">Documentos</div>
 
-  <div class="form-section">
+  <!-- ✅ TODO el bloque controlado por el formulario -->
+  <div class="form-section" [formGroup]="form">
     <div class="mb-2 fw-bold" style="font-size:1rem; color:#222;">*Campos requeridos</div>
 
     <!-- Selector tipo de documento (desde catálogo) -->
     <div class="mb-2">
       <label class="form-label" for="tipoDocumento">Tipo de documento <span class="required">*</span></label>
-      <select id="tipoDocumento" class="form-select" formControlName="tipoDocumento" [formGroup]="form" required>
+      <select
+        id="tipoDocumento"
+        class="form-select"
+        formControlName="tipoDocumento"
+        required>
         <option [ngValue]="null" disabled>Selecciona</option>
         <option *ngFor="let t of tipos" [ngValue]="t.id">{{ t.nombre }}</option>
       </select>
@@ -45,29 +50,32 @@
 
     <!-- Selector de archivo + subir -->
     <div class="d-flex align-items-center mb-3 gap-3">
-<input
-  type="file"
-  #fileInput
-  accept=".pdf,.jpg,.jpeg"
-  class="d-none"
-  (change)="onFileSelected($event)">
-<button
-  type="button"
-  class="btn btn-custom btn-upload"
-  [disabled]="!form.get('tipoDocumento')!.value"
-  (click)="fileInput.click()">
-  <fa-icon [icon]="icUpload" class="me-1"></fa-icon>
-  Elegir archivo <span class="required">*</span>
-</button>
+      <input
+        type="file"
+        #fileInput
+        accept=".pdf,.jpg,.jpeg"
+        class="d-none"
+        (change)="onFileSelected($event)">
 
+      <button
+        type="button"
+        class="btn btn-custom btn-upload"
+        [disabled]="!form.get('tipoDocumento')!.value"
+        (click)="fileInput.click()">
+        <fa-icon [icon]="icUpload" class="me-1"></fa-icon>
+        Elegir archivo <span class="required">*</span>
+      </button>
 
       <div class="picked-name flex-grow-1">
         {{ form.get('archivo')?.value?.name || '' }}
       </div>
 
-      <button type="button" class="btn btn-custom" style="min-width:180px;"
-              [disabled]="!form.get('tipoDocumento')!.value || !form.get('archivo')!.value"
-              (click)="onUpload()">
+      <button
+        type="button"
+        class="btn btn-custom"
+        style="min-width:180px;"
+        [disabled]="!form.get('tipoDocumento')!.value || !form.get('archivo')!.value"
+        (click)="onUpload()">
         Subir
       </button>
     </div>
@@ -96,8 +104,18 @@
           <td>{{ nombreTipo(g.value.tipoDocumentoId) }}</td>
           <td>{{ g.value.nombreArchivo }}</td>
           <td>
-            <fa-icon [icon]="icEye" class="action-eye me-3" title="Visualizar" (click)="onViewAt(i)"></fa-icon>
-            <fa-icon [icon]="icTrash" class="action-trash" title="Eliminar" (click)="onRemoveAt(i)"></fa-icon>
+            <fa-icon
+              [icon]="icEye"
+              class="action-eye me-3"
+              title="Visualizar"
+              (click)="onViewAt(i)">
+            </fa-icon>
+            <fa-icon
+              [icon]="icTrash"
+              class="action-trash"
+              title="Eliminar"
+              (click)="onRemoveAt(i)">
+            </fa-icon>
           </td>
         </tr>
         <tr *ngIf="!documentosFA.length">

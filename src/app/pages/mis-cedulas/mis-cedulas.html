@@ -1,108 +1,137 @@
-<!-- Header reutilizable -->
-<app-header-siau
-  [title]="'Sistema Integral de Administración de Usuarios'"
-  [userName]="usuarioNombre"
-  [userRole]="usuarioCuenta"
-  [logoSrc]="'assets/images/SSPC.png'"
-  [bgSrc]="'assets/images/encabezado.png'"
-  [height]="140">
-</app-header-siau>
+<!-- Cuando NO está abierto el detalle, muestro la lista -->
+<section class="page" *ngIf="!showDetalle">
+  <h1 class="main-title">Gestión de mis cédulas</h1>
 
-<!-- Layout -->
-<div class="layout">
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      Gestión de Cédulas Únicas<br />
-      de Registro de Usuario
-      <span class="fa fa-bars"></span>
+  <div class="main-title-shadow">
+    <button class="btn-nueva-solicitud" (click)="nuevaSolicitud()">Nueva solicitud</button>
+  </div>
+
+  <!-- Filtros -->
+  <form class="filters" [formGroup]="form" (ngSubmit)="buscar()">
+    <input class="filtro-input" type="text" placeholder="Buscar folio / texto…" formControlName="busca" />
+
+    <select class="filtro-select" formControlName="estatus">
+      <option [value]="''">Todos los estatus</option>
+      <option *ngFor="let e of estatusOpts" [value]="e" [disabled]="e === ''">{{ e }}</option>
+    </select>
+
+    <select class="filtro-select" formControlName="tipo_tramite">
+      <option *ngFor="let t of tiposTramite" [value]="t">{{ t || 'Todos los trámites' }}</option>
+    </select>
+
+    <label class="filtro-label">
+      Desde
+      <input class="filtro-input" type="date" formControlName="fecha_desde" />
+    </label>
+    <label class="filtro-label">
+      Hasta
+      <input class="filtro-input" type="date" formControlName="fecha_hasta" />
+    </label>
+
+    <button class="btn-filtrar" type="submit" [disabled]="loading">Buscar</button>
+    <button class="btn-limpiar" type="button" (click)="limpiar()" [disabled]="loading">Limpiar</button>
+  </form>
+
+  <!-- Paginación arriba -->
+  <div class="pager">
+    <div class="pager-left">
+      <label>Mostrar
+        <select [value]="limit" (change)="onLimitChange($event)">
+          <option *ngFor="let s of pageSizes" [value]="s">{{ s }}</option>
+        </select>
+        por página
+      </label>
     </div>
-
-    <button class="sidebar-menu" type="button" (click)="toggleCedulas()"
-            [attr.aria-expanded]="cedulasOpen">
-      Gestión de cédulas
-      <span class="float-end fa" [ngClass]="cedulasOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></span>
-    </button>
-
-    <div class="sidebar-submenu" *ngIf="cedulasOpen">
-      <button class="submenu-item active" type="button">Mis cédulas</button>
-      <button class="submenu-item" type="button">Consultar cédula</button>
+    <div class="pager-right">
+      <button class="pager-btn" (click)="prevPage()" [disabled]="offset===0 || loading">Anterior</button>
+      <span class="pager-span">Página {{ pageIndex() }} de {{ totalPages() }}</span>
+      <button class="pager-btn" (click)="nextPage()"
+        [disabled]="(offset + limit) >= total || loading">Siguiente</button>
     </div>
+  </div>
 
-    <button class="sidebar-menu-2" type="button">
-      Gestión de contraseña
-    </button>
-  </aside>
+  <div class="table-container">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>Folio</th>
+          <th>Tipo solicitud</th>
+          <th>Fecha</th>
+          <th>Estatus</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
 
-  <!-- Contenido -->
-  <main class="main-content">
-    <h1 class="main-title">Gestión de mis cédulas</h1>
+      <tbody>
+        <!-- Loading -->
+        <tr *ngIf="loading">
+          <td colspan="5">Cargando…</td>
+        </tr>
 
-    <div class="main-title-shadow">
-      <button class="btn-nueva-solicitud">Nueva solicitud</button>
+        <!-- Error -->
+        <tr *ngIf="!loading && error">
+          <td colspan="5">{{ error }}</td>
+        </tr>
+
+        <!-- Sin resultados -->
+        <tr *ngIf="!loading && !error && rows.length === 0">
+          <td colspan="5">No se encontraron cédulas con los filtros seleccionados.</td>
+        </tr>
+
+        <!-- Datos -->
+        <tr *ngFor="let r of rows; trackBy: trackById">
+          <td>{{ r.folio }}</td>
+          <td>{{ r.tipo }}</td>
+          <td>
+            <ng-container *ngIf="r.fecha !== '-----'; else sinFecha">
+              {{ r.fecha | date:'dd/MM/yyyy' }}
+            </ng-container>
+            <ng-template #sinFecha>-----</ng-template>
+          </td>
+          <td>
+            <span class="estatus-btn" [class.estatus-enviada]="r.estatus==='Enviada'"
+              [class.estatus-validada]="r.estatus==='Validada'" [class.estatus-rechazada]="r.estatus==='Rechazada'"
+              [class.estatus-sinestatus]="r.estatus==='Sin estatus'">
+              {{ r.estatus }}
+            </span>
+          </td>
+          <td>
+            <button class="acciones-link" (click)="revisar(r)">Revisar</button>
+            <span class="acciones-icons">
+              <button class="acciones-link" (click)="comentarios(r)" title="Comentarios">
+                <fa-icon [icon]="icons.comment" class="me-1"></fa-icon>
+                Comentarios
+              </button>
+
+              <button class="acciones-link" (click)="eliminar(r)" title="Eliminar">
+                <fa-icon [icon]="icons.trash"></fa-icon>
+              </button>
+            </span>
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginación abajo (opcional) -->
+  <div class="pager">
+    <div class="pager-left">
+      <span>Total: {{ total }}</span>
     </div>
-
-    <div class="table-container">
-      <table class="custom-table">
-        <thead>
-          <tr>
-            <th>Folio</th>
-            <th>Tipo solicitud</th>
-            <th>Fecha</th>
-            <th>Estatus</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          <tr>
-            <td>PM-2023-00159</td>
-            <td>Reactivar cuenta</td>
-            <td>05/12/2025</td>
-            <td><span class="estatus-btn estatus-enviada">Enviada</span></td>
-            <td>
-              <a class="acciones-link" href="#">Revisar</a>
-              <span class="acciones-icons"><i class="far fa-comment-alt"></i></span>
-            </td>
-          </tr>
-
-          <tr>
-            <td>PM-2023-00160</td>
-            <td>Modificación de perfil/adscripción</td>
-            <td>05/13/2025</td>
-            <td><span class="estatus-btn estatus-validada">Validada</span></td>
-            <td>
-              <a class="acciones-link" href="#">Revisar</a>
-              <span class="acciones-icons"><i class="far fa-comment-alt"></i></span>
-            </td>
-          </tr>
-
-          <tr>
-            <td>PM-2023-00161</td>
-            <td>Amplificación<br />de perfiles</td>
-            <td>05/19/2025</td>
-            <td><span class="estatus-btn estatus-rechazada">Rechazada</span></td>
-            <td>
-              <a class="acciones-link" href="#">Revisar</a>
-              <span class="acciones-icons"><i class="far fa-comment-alt"></i></span>
-            </td>
-          </tr>
-
-          <tr>
-            <td>-----</td>
-            <td>Modificación de perfil/adscripción</td>
-            <td>-----</td>
-            <td><span class="estatus-btn estatus-sinestatus">Sin estatus</span></td>
-            <td>
-              <a class="acciones-link" href="#">Revisar</a>
-              <span class="acciones-icons">
-                <i class="far fa-comment-alt"></i>
-                <i class="far fa-trash-alt"></i>
-              </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="pager-right">
+      <button class="pager-btn" (click)="prevPage()" [disabled]="offset===0 || loading">Anterior</button>
+      <span class="pager-span">Página {{ pageIndex() }} de {{ totalPages() }}</span>
+      <button class="pager-btn" (click)="nextPage()"
+        [disabled]="(offset + limit) >= total || loading">Siguiente</button>
     </div>
-  </main>
-</div>
+  </div>
+</section>
+
+<!-- Detalle: Registro de Cédula -->
+<section *ngIf="showDetalle">
+  <!-- Pasamos el folio seleccionado; RegistroCedulaComponent hará la consulta con ese folio -->
+  <app-registro-cedula [folio]="selectedFolio" (cancelar)="cerrarDetalle()" (validar)="onDetalleValidado($event)"
+    (rechazar)="onDetalleRechazado($event)" (guardar)="onDetalleGuardado($event)">
+  </app-registro-cedula>
+</section>

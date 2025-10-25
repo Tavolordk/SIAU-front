@@ -29,8 +29,8 @@ export class RegistroStep2Component implements OnInit, OnDestroy {
   @Input() currentStep = 2;
   @Input() maxSteps = 6;
   get totalSteps() { return this.maxSteps; } // alias para el template
-  @Input() usuarioNombre = 'Luis Vargas';
-  @Input() usuarioRol = 'Capturista';
+  @Input() usuarioNombre = 'Octavio Olea';
+  @Input() usuarioRol = 'Administrador';
 
   @Output() prev = new EventEmitter<void>();
   @Output() proceed = new EventEmitter<{ perfiles: CatPerfilDto[] }>();

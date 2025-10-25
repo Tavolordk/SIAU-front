@@ -1,33 +1,4 @@
-<!-- Header va fuera, tú lo colocas con <app-header-siau ...> -->
-<app-header-siau [title]="'Sistema Integral de Administración de Usuarios'" [userName]="usuarioNombre"
-    [userRole]="usuarioCuenta" [logoSrc]="'assets/images/SSPC.png'" [bgSrc]="'assets/images/encabezado.png'"
-    [height]="140">
-</app-header-siau>
-
 <div class="siau-layout">
-
-  <!-- Sidebar -->
-  <aside class="sidebar" [style.top.px]="headerOffset">
-    <div class="sidebar-header">
-      <div>
-        Gestión de Cédulas Únicas<br />de Registro de Usuario
-      </div>
-      <fa-icon [icon]="icons.bars" class="ms-auto"></fa-icon>
-    </div>
-
-    <ul class="sidebar-menu list-unstyled mb-0">
-      <li>
-        <button class="sidebar-item" disabled>
-          Gestión de cédulas
-          <fa-icon [icon]="icons.chevronDown" class="float-end muted"></fa-icon>
-        </button>
-      </li>
-      <li>
-        <button class="sidebar-item active" disabled>Gestión de contraseña</button>
-      </li>
-    </ul>
-  </aside>
-
   <!-- Main -->
   <main class="main-content">
     <div class="main-card">

@@ -117,3 +117,22 @@ $gris-suave: #f3f3f3;
     span { line-height: 1.2; }
   }
 }
+.opcion {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.opcion.is-disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.opcion.is-disabled input {
+  cursor: not-allowed;
+  accent-color: #cfcfcf; // color del radio (si el navegador lo soporta)
+}
+
+.opcion.is-disabled .label {
+  color: #8a8a8a;
+}

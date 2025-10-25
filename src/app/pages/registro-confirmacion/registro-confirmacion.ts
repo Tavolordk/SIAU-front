@@ -14,8 +14,8 @@ import { StepFormStateService } from '../../step-form/state/step-form-state.serv
   styleUrls: ['./registro-confirmacion.scss'],
 })
 export class RegistroConfirmacionComponent implements OnInit {
-  usuarioNombre = 'Luis Vargas';
-  usuarioRol = 'Capturista';
+  usuarioNombre = 'Octavio Olea';
+  usuarioRol = 'Administrador';
 
   icCheck = faCheckCircle;
   icMail  = faEnvelope;

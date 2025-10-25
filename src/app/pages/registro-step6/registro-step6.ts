@@ -22,8 +22,8 @@ export class RegistroStep6Component implements OnInit, OnDestroy {
   // Header / progreso
   @Input() currentStep = 6;
   @Input() maxSteps = 6;
-  @Input() usuarioNombre = 'Luis Vargas';
-  @Input() usuarioRol = 'Capturista';
+  @Input() usuarioNombre = 'Octavio Olea';
+  @Input() usuarioRol = 'Administrador';
 
   @Output() prev = new EventEmitter<void>();
   @Output() proceed = new EventEmitter<void>();   // al siguiente paso (7)

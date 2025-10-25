@@ -22,7 +22,7 @@ export class SeleccionRequerimientosComponent {
   @Input() folio = 'PM-2023-00161';
   @Input() fecha = '20/05/2025';
   @Input() hora = '13:30';
-
+@Input() disableNuevaCuenta = false; 
   // Valor inicial seleccionado (opcional)
   @Input() set selected(value: TipoRequerimiento | null) {
     if (value) this.form.patchValue({ tipo: value }, { emitEvent: false });

@@ -1,227 +1,289 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faBars, faChevronDown } from '@fortawesome/free-solid-svg-icons';
-import { HeaderSiauComponent } from '../../shared/header-siau/header-siau';
-import { faCommentDots, faFileLines, faEye } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faChevronDown, faCommentDots, faFileLines, faEye } from '@fortawesome/free-solid-svg-icons';
 import { PaginationComponent } from '../../shared/pagination/pagination';
+import { SiauShellBusService } from '../../siau-shell/siau-shell-bus.service';
+
+import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
+import { finalize } from 'rxjs/operators';
+
+import { LoginAdminBusquedaFullService } from '../../services/login-admin-busqueda-full.service';
+import {
+  AdminBusquedaFullRequest
+} from '../../models/admin-busqueda-full-request.model';
+import { AdminBusquedaFullItem, AdminBusquedaFullResponse } from '../../models/admin-busqueda-full-response.model';
+import { Router } from '@angular/router';
+
+type Row = {
+  id: number;
+  folio: string;
+  fecha: string;
+  nombres: string;
+  primerApellido: string;
+  segundoApellido: string;
+  usuario: string;
+  tipoSolicitud: string;
+  tipoInstitucion: string;
+  entidadMunicipio: string;
+  instDepCorp: string;
+  rnpsp: string;
+  sau: string;
+  resultadoEccc: string;
+  estatusTexto: string;
+  estatusClase: string;
+};
 
 @Component({
   selector: 'app-consultar-cedulas',
   standalone: true,
-  imports: [CommonModule, FontAwesomeModule, HeaderSiauComponent, PaginationComponent],
+  imports: [CommonModule, FontAwesomeModule, PaginationComponent, ReactiveFormsModule],
   templateUrl: './consultar-cedulas.html',
   styleUrls: ['./consultar-cedulas.scss']
 })
-export class ConsultarCedulasComponent implements OnInit{
-  ngOnInit(): void {
-    this.pageRows = this.rows.slice(0, this.pageSize);
-  }
-  // Header
-  pageSize = 10; 
-  usuarioNombre = 'Luis Vargas';
-  usuarioRol = 'Capturista';
-  trackByFolio = (_: number, r: any) => r.folio;
+export class ConsultarCedulasComponent implements OnInit {
 
+  constructor(private shellBus: SiauShellBusService, private route:Router) {}
+  nuevaSolicitud() {
+    this.route.navigate(['/stepform']);
+  }
+  private fb = inject(FormBuilder);
+  private svc = inject(LoginAdminBusquedaFullService);
+
+  // UI / icons
+  pageSize = 10;
   icBars = faBars;
-  icons = { chevronDown: faChevronDown, comment: faCommentDots,
+  icons = {
+    chevronDown: faChevronDown,
+    comment: faCommentDots,
     file: faFileLines,
-    eye: faEye, };
+    eye: faEye,
+  };
 
-  // cuál panel está abierto
+  // dropdown filtros
   open: 'personal' | 'solicitud' | 'institucional' | null = null;
-row: any;
-// Datos de la tabla (mueve aquí tus filas actuales)
-rows: any[] = [
-  {
-    folio: 'PM-2023-02-0195',
-    fecha: '2025-03-05',
-    nombres: 'Manuel Alejandro',
-    primerApellido: 'Lira',
-    segundoApellido: 'Blanco',
-    usuario: 'u174Q7PL203L',
-    tipoSolicitud: 'Reactivación de Cuenta',
-    tipoInstitucion: 'Municipal',
-    entidadMunicipio: 'Entidad: Coahuila de Zaragoza, municipio: San Juan de Sabinas',
-    instDepCorp: 'Institución: Secretaría de Seguridad y Protección Ciudadana, dependencia: Área de Pruebas para Eventos, Corporación: Área de Pruebas para Eventos',
-    rnpsp: 'Estatus: Activo, tipo de dependencia: Municipal, dependencia: Secretaría de Seguridad y Protección Ciudadana, entidad: Ciudad de México, municipio: La Magdalena Contreras',
-    sau: 'Estatus: Activo, tipo de dependencia: Municipal, dependencia: Secretaría de Seguridad y Protección Ciudadana, entidad: Ciudad de México, municipio: La Magdalena Contreras',
-    resultadoEccc: 'Aprobado, vigente',
-    estatusTexto: 'Rechazada',
-    estatusClase: 'status-rechazada'
-  },
-  {
-    folio: 'PM-2023-02-0106',
-    fecha: '2025-03-05',
-    nombres: 'Andrea Sofía',
-    primerApellido: 'Ramírez',
-    segundoApellido: 'Luna',
-    usuario: '-----',
-    tipoSolicitud: 'Nueva Cuenta',
-    tipoInstitucion: 'Federal',
-    entidadMunicipio: '-----',
-    instDepCorp: 'Institución: Petróleos Mexicanos',
-    rnpsp: '-----',
-    sau: '-----',
-    resultadoEccc: '-----',
-    estatusTexto: 'Pendiente',
-    estatusClase: 'status-pendiente'
-  },
-  {
-    folio: 'PM-2023-02-0101',
-    fecha: '2025-03-06',
-    nombres: 'María Fernanda',
-    primerApellido: 'López',
-    segundoApellido: 'Rodríguez',
-    usuario: '-----',
-    tipoSolicitud: 'Nueva Cuenta',
-    tipoInstitucion: 'Municipal',
-    entidadMunicipio: 'Entidad: Chiapas, municipio: Biquipal de Ocampo',
-    instDepCorp: 'Institución: Fiscalía General de la República',
-    rnpsp: '-----',
-    sau: '-----',
-    resultadoEccc: '-----',
-    estatusTexto: 'Cancelada',
-    estatusClase: 'status-cancelada'
-  },
-  {
-    folio: 'PM-2023-02-0102',
-    fecha: '2025-03-07',
-    nombres: 'José Manuel',
-    primerApellido: 'Hernández',
-    segundoApellido: 'García',
-    usuario: 'u179TQ102G5',
-    tipoSolicitud: 'Ampliación de Perfiles',
-    tipoInstitucion: 'Estatal',
-    entidadMunicipio: 'Entidad: Michoacán de Ocampo',
-    instDepCorp: 'Institución: Secretaría de Seguridad y Protección Ciudadana, dependencia: Guardia Nacional, corporación: CESN',
-    rnpsp: '-----',
-    sau: '-----',
-    resultadoEccc: '-----',
-    estatusTexto: 'Aprobada',
-    estatusClase: 'status-aprobada'
-  },
-  {
-    folio: 'PM-2023-02-0103',
-    fecha: '2025-03-07',
-    nombres: 'Carlos Alberto',
-    primerApellido: 'Martínez',
-    segundoApellido: 'Flores',
-    usuario: 'u0697H2025K',
-    tipoSolicitud: 'Modificación de Perfil / Adscripción',
-    tipoInstitucion: 'Estatal',
-    entidadMunicipio: 'Entidad: Oaxaca',
-    instDepCorp: 'Institución: Secretaría de Seguridad y Protección Ciudadana, dependencia: Centro Nacional de Inteligencia (CNI), corporación: CESN',
-    rnpsp: 'Estatus: Activo, tipo de dependencia: Estatal, dependencia: Secretaría de la Defensa Nacional, entidad: Jalisco, municipio: Arandas',
-    sau: 'Estatus: Activo, tipo de dependencia: Federal, dependencia: Procuraduría General de Justicia del Estado, entidad: Puebla, municipio: Atlixco',
-    resultadoEccc: 'Aprobado, vigente',
-    estatusTexto: 'Aprobada',
-    estatusClase: 'status-aprobada'
-  },
-  {
-    folio: 'PM-2023-02-0104',
-    fecha: '2025-03-07',
-    nombres: 'Ana Karen',
-    primerApellido: 'Gutiérrez',
-    segundoApellido: 'Morales',
-    usuario: '-----',
-    tipoSolicitud: 'Nueva Cuenta',
-    tipoInstitucion: 'Federal',
-    entidadMunicipio: '-----',
-    instDepCorp: '-----',
-    rnpsp: '-----',
-    sau: '-----',
-    resultadoEccc: '-----',
-    estatusTexto: 'Pendiente',
-    estatusClase: 'status-pendiente'
-  },
-  {
-    folio: 'PM-2023-02-0105',
-    fecha: '2025-03-10',
-    nombres: 'Luis Enrique',
-    primerApellido: 'Torres',
-    segundoApellido: 'Vargas',
-    usuario: 'u2597WQ4201T',
-    tipoSolicitud: 'Reactivación de Cuenta',
-    tipoInstitucion: 'Estatal',
-    entidadMunicipio: 'Entidad: México, municipio: Xonacatlán',
-    instDepCorp: 'Institución: Secretaría de Seguridad y Protección Ciudadana, dependencia: Centro Nacional de Inteligencia (CNI), corporación: CESN',
-    rnpsp: 'Estatus: Activo, tipo de dependencia: Estatal, dependencia: Secretaría de la Defensa Nacional, entidad: Jalisco, municipio: Arandas',
-    sau: 'Estatus: Activo, tipo de dependencia: Federal, dependencia: Procuraduría General de Justicia del Estado, entidad: Puebla, municipio: Atlixco',
-    resultadoEccc: 'No aprobado, no vigente',
-    estatusTexto: 'En espera',
-    estatusClase: 'status-espera'
-  },
-  {
-    folio: 'PM-2023-02-0106',
-    fecha: '2025-03-10',
-    nombres: 'Valeria',
-    primerApellido: 'Sánchez',
-    segundoApellido: 'Delgado',
-    usuario: 'u070VH4201N',
-    tipoSolicitud: 'Ampliación de Perfiles',
-    tipoInstitucion: 'Estatal',
-    entidadMunicipio: 'Entidad: Tamaulipas',
-    instDepCorp: 'Institución: Secretaría de Seguridad y Protección Ciudadana, dependencia: Centro Nacional de Inteligencia (CNI), corporación: CESN',
-    rnpsp: 'Estatus: Activo, tipo de dependencia: Estatal, dependencia: Secretaría de la Defensa Nacional, entidad: Jalisco, municipio: Arandas',
-    sau: 'Estatus: Activo, tipo de dependencia: Federal, dependencia: Procuraduría General de Justicia del Estado, entidad: Puebla, municipio: Atlixco',
-    resultadoEccc: 'No aprobado, no vigente',
-    estatusTexto: 'Cancelada',
-    estatusClase: 'status-cancelada'
-  },
-  {
-    folio: 'PM-2023-02-0108',
-    fecha: '2025-03-12',
-    nombres: 'Juan Pablo',
-    primerApellido: 'Pérez',
-    segundoApellido: 'Mendoza',
-    usuario: 'u1747HQ2025K',
-    tipoSolicitud: 'Modificación de Perfil / Adscripción',
-    tipoInstitucion: 'Federal',
-    entidadMunicipio: 'Entidad: Guerrero, municipio: Acapulco de Juárez',
-    instDepCorp: 'Institución: Consejo Estatal de Seguridad Pública, dependencia: Secretaría de Seguridad Pública, corporación: Policía Estatal',
-    rnpsp: 'Estatus: Activo, tipo de dependencia: Estatal, dependencia: Secretaría de Seguridad Pública, entidad: Puebla, municipio: Atlixco',
-    sau: '-----',
-    resultadoEccc: 'No aprobado, no vigente',
-    estatusTexto: 'En espera',
-    estatusClase: 'status-espera'
-  },
-  {
-    folio: 'PM-2023-02-0109',
-    fecha: '2025-03-12',
-    nombres: 'Laura Isabel',
-    primerApellido: 'Castillo',
-    segundoApellido: 'Nava',
-    usuario: '-----',
-    tipoSolicitud: 'Nueva Cuenta',
-    tipoInstitucion: 'Municipal',
-    entidadMunicipio: 'Entidad: Guerrero, municipio: Acapulco de Juárez',
-    instDepCorp: 'Institución: Secretaría de Seguridad Pública, dependencia: Dirección General de Prevención y Readaptación Social',
-    rnpsp: '-----',
-    sau: '-----',
-    resultadoEccc: '-----',
-    estatusTexto: 'Pendiente',
-    estatusClase: 'status-pendiente'
+
+  // tabla
+  rows: Row[] = [];
+  pageRows: Row[] = [];
+
+  // estados
+  loading = false;
+  error: string | null = null;
+  total = 0;
+
+  // ====== Filtros (reactivos) ======
+  form = this.fb.group({
+    // Información Personal
+    cuenta_codigo: [''],
+    nombres: [''],
+    primer_apellido: [''],
+    segundo_apellido: [''],
+    curp: [''],
+    rfc: [''],
+
+    // Información de Solicitud
+    fecha_desde: [''],
+    fecha_hasta: [''],
+    folio: [''],
+    tipo_tramite: [''],
+    estatus: [''],
+
+    // Información Institucional/Estatal
+    tipo_institucion: [''],
+    entidad: [''],
+    municipio: [''],
+    institucion: [''],
+    dependencia: [''],
+    corporacion: [''],
+    area: [''],
+
+    // texto libre
+    busca: ['']
+  });
+
+  ngOnInit(): void {
+    // Si quieres precargar la primera búsqueda:
+    this.onBuscar();
   }
-];
 
-
-/// Slice que se muestra en la página actual
-pageRows: any[] = [];
-
+  // dropdowns filtros
   toggleDropdown(which: 'personal' | 'solicitud' | 'institucional', ev: MouseEvent) {
     ev.stopPropagation();
     this.open = (this.open === which) ? null : which;
   }
+  @HostListener('document:click') closeAll() { this.open = null; }
 
-  @HostListener('document:click')
-  closeAll() { this.open = null; }
-  onComment(row?: any){ console.log('comentarios', row); }
-  onDocs(row?: any){ console.log('documentos', row); }
-  onView(row?: any){ console.log('ver', row); }
+  // acciones tabla
+  onComment(row?: any) { console.log('comentarios', row); }
+  onDocs(row?: any)    { console.log('documentos', row); }
+  onView(row?: any)    { console.log('ver', row); }
 
-  onToggleSidebar() { console.log('toggle sidebar'); }
-  onBuscar() { console.log('buscar'); }
-  onLimpiar() { console.log('limpiar'); }
-  onAprobar() { console.log('aprobar'); }
+  // acciones filtros/pie tabla
+  onBuscar()  {
+    this.loading = true;
+    this.error = null;
+
+    const body = this.buildRequest();
+    // NOTA: aquí paginamos en cliente con lo que devuelva el backend.
+    // Si tu backend trae muchos, puedes limitar (p. ej. body.limit = 500).
+    this.svc.buscar(body)
+      .pipe(finalize(() => (this.loading = false)))
+      .subscribe({
+        next: (resp: AdminBusquedaFullResponse) => {
+          this.total = resp.total ?? 0;
+          const items = resp.items ?? [];
+          this.rows = items.map(this.mapItemToRow);
+          // primer page para que tu app-pagination tenga datos de arranque
+          this.pageRows = this.rows.slice(0, this.pageSize);
+        },
+        error: (err: { status?: number; message?: string }) => {
+          this.error = err?.message || 'Error al cargar resultados';
+          this.rows = [];
+          this.pageRows = [];
+          this.total = 0;
+        }
+      });
+  }
+
+  onLimpiar() {
+    this.form.reset({
+      cuenta_codigo: '',
+      nombres: '',
+      primer_apellido: '',
+      segundo_apellido: '',
+      curp: '',
+      rfc: '',
+      fecha_desde: '',
+      fecha_hasta: '',
+      folio: '',
+      tipo_tramite: '',
+      estatus: '',
+      tipo_institucion: '',
+      entidad: '',
+      municipio: '',
+      institucion: '',
+      dependencia: '',
+      corporacion: '',
+      area: '',
+      busca: ''
+    });
+    this.onBuscar();
+  }
+
+  // Para app-pagination (paginación cliente)
+  trackByFolio = (_: number, r: Row) => r.folio;
+
+  // ====== helpers ======
+  private toNull = (s?: string | null) =>
+    s === undefined || s === null || String(s).trim() === '' ? null : String(s).trim();
+
+  private buildRequest(): AdminBusquedaFullRequest {
+    const v = this.form.getRawValue();
+
+    // Puedes forzar el usuario logueado aquí si aplica:
+    // const cuenta = localStorage.getItem('cuenta_codigo') || v.cuenta_codigo || null;
+
+    return {
+      cuenta_codigo: this.toNull(v.cuenta_codigo),
+      nombres: this.toNull(v.nombres),
+      primer_apellido: this.toNull(v.primer_apellido),
+      segundo_apellido: this.toNull(v.segundo_apellido),
+      curp: this.toNull(v.curp),
+      rfc: this.toNull(v.rfc),
+
+      folio: this.toNull(v.folio),
+      tipo_tramite: this.toNull(v.tipo_tramite),
+      estatus: this.toNull(v.estatus),
+      fecha_desde: this.toNull(v.fecha_desde),
+      fecha_hasta: this.toNull(v.fecha_hasta),
+
+      tipo_institucion: this.toNull(v.tipo_institucion),
+      entidad: this.toNull(v.entidad),
+      municipio: this.toNull(v.municipio),
+      institucion: this.toNull(v.institucion),
+      dependencia: this.toNull(v.dependencia),
+      corporacion: this.toNull(v.corporacion),
+      area: this.toNull(v.area),
+
+      busca: this.toNull(v.busca),
+
+      // Como la tabla usa paginación cliente, pedimos "bastantes" filas.
+      // Ajusta si tu endpoint lo requiere.
+      limit: 500,
+      offset: 0
+    };
+  }
+
+  private mapItemToRow = (it: AdminBusquedaFullItem): Row => {
+    const entidadMunicipio = [
+      this.toNull(it.entidad) ? `Entidad: ${it.entidad}` : null,
+      this.toNull(it.municipio) ? `municipio: ${it.municipio}` : null
+    ].filter(Boolean).join(', ');
+
+    const instDepCorp = [
+      this.toNull(it.institucion) ? `Institución: ${it.institucion}` : null,
+      this.toNull(it.dependencia) ? `dependencia: ${it.dependencia}` : null,
+      this.toNull(it.corporacion) ? `corporación: ${it.corporacion}` : null
+    ].filter(Boolean).join(', ');
+
+    const estatusTexto = this.toNull(it.estatus) ?? 'Pendiente';
+    const estatusClase = this.statusClass(estatusTexto);
+
+    return {
+      id: it.id,
+      folio: it.folio || '-----',
+      fecha: it.fecha || '-----',
+
+      nombres: it.nombres || '-----',
+      primerApellido: it.primer_apellido || '-----',
+      segundoApellido: this.toNull(it.segundo_apellido) ?? '-----',
+
+      usuario: this.toNull(it.cuenta_codigo) ?? '-----',
+      tipoSolicitud: this.toNull(it.tipo_solicitud) ?? '-----',
+      tipoInstitucion: this.toNull(it.tipo_institucion) ?? '-----',
+
+      entidadMunicipio: entidadMunicipio || '-----',
+      instDepCorp: instDepCorp || '-----',
+
+      rnpsp: '-----',            // tu API no los trae; deja placeholder
+      sau: '-----',
+      resultadoEccc: '-----',
+
+      estatusTexto,
+      estatusClase
+    };
+  };
+
+  private statusClass(s: string): string {
+    const t = s.toLowerCase();
+    if (t.includes('aprob')) return 'status-aprobada';
+    if (t.includes('rechaz')) return 'status-rechazada';
+    if (t.includes('cancel')) return 'status-cancelada';
+    if (t.includes('espera') || t.includes('en espera')) return 'status-espera';
+    if (t.includes('pend')) return 'status-pendiente';
+    if (t.includes('valid')) return 'status-aprobada'; // ajusta si tienes clase específica
+    if (t.includes('recib')) return 'status-pendiente';
+    return 'status-pendiente';
+  }
+
+  // toolbar (sidebar shell)
+  onToggleSidebar() {
+    const anyBus = this.shellBus as any;
+    if (typeof anyBus.requestMinimize === 'function') {
+      anyBus.requestMinimize(); return;
+    }
+    if (typeof anyBus.requestToggle === 'function') {
+      anyBus.requestToggle('minimize'); return;
+    }
+    window.dispatchEvent(new CustomEvent('siau-shell:sidebar', { detail: 'minimize' }));
+  }
+
+  // paginación cliente: el <app-pagination> te emite los renglones de la página
+  // y acá solo los pintamos en la tabla.
+  // (Ya lo traes en el template con (pageItemsChange)="pageRows = $event")
+  onAprobar() {
+  // TODO: aquí iría tu flujo real de aprobación
+  console.log('Aprobar', this.pageRows);
+}
 }

@@ -1,43 +1,40 @@
-<aside class="sidebar" [class.fixed]="fixed" [style.top.px]="fixed ? top : null">
+<aside class="sidebar" [class.fixed]="fixed" [class.collapsed]="collapsed" [style.top.px]="fixed ? top : null">
+
+  <!-- Encabezado guinda + botón hamburguesa (el botón SIEMPRE visible) -->
   <div class="sidebar-header">
-    <div>{{ titleLine1 }}<br />{{ titleLine2 }}</div>
-    <fa-icon [icon]="icons.bars"></fa-icon>
+    <button class="hamburger-btn" type="button" (click)="toggleCollapsed()" [attr.aria-expanded]="!collapsed"
+      title="Menú">
+      <fa-icon [icon]="icons.bars"></fa-icon>
+    </button>
+
+    <!-- Título solo cuando NO está colapsado -->
+    <div class="title" *ngIf="!collapsed">
+      {{ titleLine1 }}<br />{{ titleLine2 }}
+    </div>
   </div>
 
-  <div class="sidebar-menu">
+  <!-- Menú completo (se oculta en modo colapsado) -->
+  <div class="sidebar-menu" *ngIf="!collapsed">
     <!-- Gestión de cédulas -->
-    <button
-      type="button"
-      class="menu-item"
-      [class.active]="activeMain === 'cedulas'"
-      (click)="goMain('cedulas')">
+    <button type="button" class="menu-item" [class.active]="activeMain === 'cedulas'" (click)="toggleCedulasSubmenu()">
       Gestión de cédulas
       <fa-icon [icon]="icons.chevronDown"></fa-icon>
     </button>
 
     <div class="submenu" *ngIf="showCedulasSubmenu">
-      <button
-        type="button"
-        class="submenu-item"
-        [class.active]="activeSub === 'mis'"
-        (click)="goSub('mis')">
+      <button type="button" class="submenu-item" [class.active]="activeSub === 'mis'" (click)="selectSub('mis')">
         Mis cédulas
       </button>
-      <button
-        type="button"
-        class="submenu-item"
-        [class.active]="activeSub === 'consultar'"
-        (click)="goSub('consultar')">
+
+      <button type="button" class="submenu-item" [class.active]="activeSub === 'consultar'"
+        (click)="selectSub('consultar')">
         Consultar cédula
       </button>
     </div>
 
-    <!-- Gestión de contraseña -->
-    <button
-      type="button"
-      class="menu-item-2"
-      [class.active]="activeMain === 'contrasena'"
-      (click)="goMain('contrasena')">
+    <!-- Gestión de contraseña (solo placeholder por ahora) -->
+    <button type="button" class="menu-item-2" [class.active]="activeMain === 'contrasena'"
+      (click)="selectMain('contrasena')">
       Gestión de contraseña
     </button>
   </div>

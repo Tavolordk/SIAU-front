@@ -14,7 +14,7 @@ type TipoRequerimiento = 'nueva' | 'modificacion' | 'ampliacion' | 'reactivacion
 export class SiauNotificacionComponent {
   faUser = faUser;
   faLock = faLock;
-  @Input() nombreUsuario = 'Juan Pérez';                       // "Juan Pérez"
+  @Input() nombreUsuario = 'Octavio Olea';                       // "Octavio Olea"
   @Input() folio = 'PM-2025-10-123456';                               // "PM-2025-10-123456"
   @Input() tipoRequerimiento: TipoRequerimiento = 'nueva';
 

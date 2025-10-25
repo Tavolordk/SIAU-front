@@ -1,66 +1,88 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { HeaderSiauComponent } from "../../shared/header-siau/header-siau";
-import { faEye, faTrash, faFloppyDisk } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { SeleccionRequerimientosComponent } from "../seleccion-requerimientos/seleccion-requerimientos";
+import { faEye, faTrash, faFloppyDisk } from '@fortawesome/free-solid-svg-icons';
+import { finalize } from 'rxjs/operators';
+
+import { HeaderSiauComponent } from "../../shared/header-siau/header-siau";
+import { SeleccionRequerimientosComponent, TipoRequerimiento } from "../seleccion-requerimientos/seleccion-requerimientos";
 import { HeroCtaComponent } from "../../shared/hero-cta/hero-cta";
+
+// Servicios y modelos
+import { AdminCedulaDetalleService } from '../../services/admin-cedula-detalle.service';
+import { AdminCedulaDetalleResponse } from '../../models/admin-cedula-detalle.model';
+import { LoginActualizarEstadoService } from '../../services/login-actualizar-estado.service';
+import { EstadoCedula } from '../../models/actualizar-estado-request.model';
 
 type Opcion = { value: string; label: string; };
 
 @Component({
   selector: 'app-registro-cedula',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, HeaderSiauComponent, FontAwesomeModule, SeleccionRequerimientosComponent, HeroCtaComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FontAwesomeModule,
+    HeaderSiauComponent,
+    SeleccionRequerimientosComponent,
+    HeroCtaComponent,
+  ],
   templateUrl: './registro-cedula.html',
   styleUrls: ['./registro-cedula.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RegistroCedulaComponent {
-onCerrarModal() {
-throw new Error('Method not implemented.');
-}
-    icons = {
-    eye: faEye,
-    trash: faTrash,            // también puedes usar faTrashCan si prefieres ese estilo
-    save: faFloppyDisk,        // (en v6 reemplaza a faSave)
-  };
+  // Icons
+  icons = { eye: faEye, trash: faTrash, save: faFloppyDisk };
 
-  private fb = inject(FormBuilder);
+  // Inyección
+  private fb         = inject(FormBuilder);
+  private detalleApi = inject(AdminCedulaDetalleService);
+  private estadoApi  = inject(LoginActualizarEstadoService);
 
-  // Catálogos (puedes sobreescribir desde el padre)
-  @Input() sexos: Opcion[] = [{ value: 'M', label: 'Masculino' }, { value: 'F', label: 'Femenino' }];
-  @Input() nacionalidades: Opcion[] = [{ value: 'MX', label: 'Mexicana' }];
-  @Input() paises: Opcion[] = [{ value: 'MX', label: 'México' }];
-  @Input() entidades: Opcion[] = [{ value: 'CDMX', label: 'CDMX' }];
-  @Input() municipios: Opcion[] = [{ value: 'AO', label: 'Álvaro Obregón' }];
-  @Input() estadosCiviles: Opcion[] = [{ value: 'SOLTERO', label: 'Soltero(a)' }, { value: 'CASADO', label: 'Casado(a)' }];
-  @Input() tiposInstitucion: Opcion[] = [{ value: 'FEDERAL', label: 'Federal' }, { value: 'ESTATAL', label: 'Estatal' }];
-  @Input() instituciones: Opcion[] = [{ value: 'GN', label: 'Guardia Nacional' }];
-  @Input() dependencias: Opcion[] = [{ value: 'SSPC', label: 'Secretaría de Seguridad y Protección Ciudadana' }];
-  @Input() corporaciones: Opcion[] = [{ value: 'GN', label: 'Guardia Nacional' }];
-  @Input() areas: Opcion[] = [{ value: 'AREA01', label: 'Área 01' }];
-  @Input() perfilesConsulta: Opcion[] = [
-    { value: 'D401', label: 'Consulta - Perfil 1: D401' },
-    { value: 'D402', label: 'Consulta - Perfil 2: D402' },
-    { value: 'D405', label: 'Consulta - Perfil 3: D405' },
-    { value: 'D409', label: 'Consulta - Perfil 4: D409' },
-  ];
-  @Input() tiposDocumento: Opcion[] = [
-    { value: 'INE', label: 'Identificación oficial (INE)' },
-    { value: 'RECIBO_NOMINA', label: 'Recibo de nómina (quincena inmediata anterior)' },
-    { value: 'CREDENCIAL_LAB', label: 'Credencial laboral' },
-  ];
+  // Inputs para carga automática
+  @Input() cedulaId?: number | null;
+  @Input() folio?: string | null;
 
-  // Acciones
-  @Output() guardar = new EventEmitter<any>();
-  @Output() validar = new EventEmitter<any>();
-  @Output() rechazar = new EventEmitter<any>();
-  @Output() cancelar = new EventEmitter<void>();
+  // Catálogos (el contenedor puede sobreescribirlos)
+  @Input() sexos: Opcion[] = [];
+  @Input() nacionalidades: Opcion[] = [];
+  @Input() paises: Opcion[] = [];
+  @Input() entidades: Opcion[] = [];
+  @Input() municipios: Opcion[] = [];
+  @Input() estadosCiviles: Opcion[] = [];
+  @Input() tiposInstitucion: Opcion[] = [];
+  @Input() instituciones: Opcion[] = [];
+  @Input() dependencias: Opcion[] = [];
+  @Input() corporaciones: Opcion[] = [];
+  @Input() areas: Opcion[] = [];
+  @Input() perfilesConsulta: Opcion[] = [];
+  @Input() tiposDocumento: Opcion[] = [];
+
+  // Outputs
+  @Output() guardar   = new EventEmitter<any>();
+  @Output() validar   = new EventEmitter<any>();
+  @Output() rechazar  = new EventEmitter<any>();
+  @Output() cancelar  = new EventEmitter<void>();
   @Output() visualizarDocumento = new EventEmitter<{ index: number }>();
 
-  // ==== FORM COMPLETO (coincide con el HTML) ====
+  // UI state
+  loadingConsulta = false;
+  loadingEstado   = false;
+  apiError: string | null = null;
+
+  // Header dinámico
+  usuarioNombre: string = '';
+  usuarioCuenta: string = '';
+
+  // Seleccion de requerimiento (TIPADO!)
+  tipoSeleccionado: TipoRequerimiento | null = null;
+
+  // Último detalle
+  detalle?: AdminCedulaDetalleResponse;
+
+  // Form
   form: FormGroup = this.fb.group({
     personal: this.fb.group({
       esPersonalSP: [null as boolean | null, Validators.required],
@@ -112,32 +134,164 @@ throw new Error('Method not implemented.');
     perfiles: this.fb.array<FormControl<string>>([]),
     documentos: this.fb.array<FormGroup>([]),
 
-    // selects auxiliares
     perfilSeleccionado: [null as string | null],
     tipoDocumentoActual: [null as string | null],
   });
-usuarioNombre: string='Juan Pérez';
-usuarioCuenta: string='jperez';
 
-  // Getters de conveniencia
-  get fPersonal()  { return this.form.get('personal') as FormGroup; }
-  get fAds()       { return this.form.get('adscripcionActual') as FormGroup; }
-  get fComision()  { return this.form.get('comision') as FormGroup; }
-  get perfilesFA() { return this.form.get('perfiles') as FormArray<FormControl<string>>; }
-  get documentosFA(){ return this.form.get('documentos') as FormArray<FormGroup>; }
+  // Getters
+  get fPersonal()     { return this.form.get('personal') as FormGroup; }
+  get fAds()          { return this.form.get('adscripcionActual') as FormGroup; }
+  get fComision()     { return this.form.get('comision') as FormGroup; }
+  get perfilesFA()    { return this.form.get('perfiles') as FormArray<FormControl<string>>; }
+  get documentosFA()  { return this.form.get('documentos') as FormArray<FormGroup>; }
 
-  // Habilitar/deshabilitar campos de comisión
+  // Init
+  ngOnInit() {
+    if (this.cedulaId != null) {
+      this.cargarPorId(this.cedulaId);
+    } else if (this.folio) {
+      this.cargarPorFolio(this.folio);
+    }
+  }
+
+  // Consultas
+  cargarPorId(id: number) {
+    this.apiError = null;
+    this.loadingConsulta = true;
+    this.detalleApi.porId(id)
+      .pipe(finalize(() => this.loadingConsulta = false))
+      .subscribe({
+        next: (d) => { this.detalle = d; this.patchDetalle(d); },
+        error: (e) => { this.apiError = e?.message ?? 'Error al consultar'; },
+      });
+  }
+
+  cargarPorFolio(folio: string) {
+    this.apiError = null;
+    this.loadingConsulta = true;
+    this.detalleApi.porFolio(folio)
+      .pipe(finalize(() => this.loadingConsulta = false))
+      .subscribe({
+        next: (d) => { this.detalle = d; this.patchDetalle(d); },
+        error: (e) => { this.apiError = e?.message ?? 'Error al consultar'; },
+      });
+  }
+
+  // Mapear backend → form y encabezado
+  private patchDetalle(d: AdminCedulaDetalleResponse) {
+    // Encabezado
+    this.usuarioNombre = d.usuario_sistema_nombre
+      ?? `${(d.nombres ?? '').trim()} ${(d.primer_apellido ?? '').trim()}`.trim();
+    this.usuarioCuenta = d.cuenta_codigo ?? '';
+
+    // Tipo de requerimiento (enum tipado)
+    this.tipoSeleccionado = this.mapTipoTramiteToReq(d.tipo_tramite);
+
+    // Personal
+    this.fPersonal.patchValue({
+      esPersonalSP: d.personal_seguridad === 1,
+      usuario: d.cuenta_codigo ?? null,
+      curp: d.curp ?? '',
+      nombre: d.nombres ?? '',
+      primerApellido: d.primer_apellido ?? '',
+      segundoApellido: d.segundo_apellido ?? '',
+      sexo: d.sexo ?? null,
+      fechaNacimiento: d.fecha_nacimiento ?? null,
+      nacionalidad: d.nacionalidad ?? null,
+      paisNacimiento: d.pais_nacimiento ?? null,
+      entidadNacimiento: d.entidad_nacimiento ?? null,
+      municipioNacimiento: d.municipio_alcaldia ?? null,
+      estadoCivil: d.estado_civil ?? null,
+      rfc: d.rfc ?? '',
+      cuip: d.cuip ?? '',
+      correo: d.correo_electronico ?? '',
+      celular: d.telefono ?? '',
+      aplicativo: d.tiene_telegram === 1,
+    }, { emitEvent: false });
+
+    // Adscripción
+    this.fAds.patchValue({
+      tipoInstitucion: d.tipo_institucion ?? null,
+      entidad: d.entidad ?? null,
+      municipio: d.municipio ?? null,
+      institucion: d.institucion ?? null,
+      dependencia: d.dependencia ?? null,
+      corporacion: d.corporacion ?? null,
+      area: d.area ?? null,
+      funciones: d.funciones ?? '',
+      cargo: d.cargo ?? '',
+      fechaIngreso: d.fecha_ingreso ?? null,
+      numeroEmpleado: d.numero_empleado ?? '',
+    }, { emitEvent: false });
+
+    // Comisión
+    const esta = d.esta_comisionado === 1;
+    this.fComision.patchValue({
+      estaComisionado: esta,
+      pais: d.pais_comision ?? null,
+      tipoInstitucion: d.tipo_institucion_comision ?? null,
+      entidad: d.entidad_comision ?? null,
+      municipio: d.municipio_comision ?? null,
+      institucion: d.institucion_comision ?? null,
+      dependencia: d.dependencia_comision ?? null,
+      corporacion: d.corporacion_comision ?? null,
+      especificar: d.especificar_comision ?? '',
+    }, { emitEvent: false });
+    this.onCambioComisionado(esta);
+
+    // Perfiles
+    this.perfilesFA.clear();
+    (d.perfiles ?? []).forEach((p: any) => {
+      const code = typeof p === 'string' ? p : (p?.codigo ?? p?.code ?? null);
+      if (code) this.perfilesFA.push(new FormControl<string>(code, { nonNullable: true }));
+    });
+  }
+
+  // Mapear string del backend → enum del selector
+  private mapTipoTramiteToReq(s?: string | null): TipoRequerimiento | null {
+    if (!s) return null;
+    const t = s.toLowerCase();
+    if (t.includes('nueva_cuenta')) return 'NUEVA_CUENTA';
+    if (t.includes('reacti')) return 'REACTIVACION';
+    if (t.includes('ampli') || t.includes('modific')) return 'MODIFICACION';
+    return null;
+    // Ajusta reglas si tu backend usa otros textos
+  }
+
+  // Handler del output (cambio) del selector
+  onCambioRequerimiento(v: TipoRequerimiento | null) {
+    this.tipoSeleccionado = v;
+  }
+
+  // Estado (validar / rechazar)
+  onValidar()  { this.actualizarEstado('Validada'); }
+  onRechazar() { this.actualizarEstado('Rechazada'); }
+
+  private actualizarEstado(nuevo: EstadoCedula | 'Validada' | 'Rechazada') {
+    if (!this.detalle?.id) { this.apiError = 'No hay cédula cargada'; return; }
+    this.apiError = null;
+    this.loadingEstado = true;
+
+    this.estadoApi.actualizarUno(this.detalle.id, nuevo as EstadoCedula)
+      .pipe(finalize(() => this.loadingEstado = false))
+      .subscribe({
+        next: () => { this.detalle = { ...(this.detalle!), estado_solicitud: (nuevo as string) }; },
+        error: (e) => { this.apiError = e?.message ?? 'Error al actualizar estado'; },
+      });
+  }
+
+  // Comisión
   onCambioComisionado(value: boolean | null) {
     const keys = ['pais','tipoInstitucion','entidad','municipio','institucion','dependencia','corporacion','especificar'];
     keys.forEach(k => {
       const c = this.fComision.get(k)!;
-      value ? c.enable({emitEvent:false}) : c.disable({emitEvent:false});
-      if (!value) c.reset(null, {emitEvent:false});
+      value ? c.enable({ emitEvent: false }) : c.disable({ emitEvent: false });
+      if (!value) c.reset(null, { emitEvent: false });
     });
   }
 
   // CURP (stubs)
-  buscarCurp() {}
+  buscarCurp()  {}
   validarCurp() {}
 
   // Perfiles
@@ -145,10 +299,11 @@ usuarioCuenta: string='jperez';
     const v = this.form.get('perfilSeleccionado')!.value as string | null;
     if (!v) return;
     if (this.perfilesFA.value.includes(v)) return;
-    this.perfilesFA.push(new FormControl(v, { nonNullable: true }));
+    this.perfilesFA.push(new FormControl<string>(v, { nonNullable: true }));
     this.form.get('perfilSeleccionado')!.reset();
   }
   eliminarPerfil(i: number) { this.perfilesFA.removeAt(i); }
+  labelPerfil(v: string) { return this.perfilesConsulta.find(o => o.value === v)?.label ?? v; }
 
   // Documentos
   onArchivoSeleccionado(e: Event) {
@@ -168,16 +323,18 @@ usuarioCuenta: string='jperez';
     input.value = '';
     this.form.get('tipoDocumentoActual')!.reset();
   }
-  verDocumento(i: number) { this.visualizarDocumento.emit({ index: i }); }
+  verDocumento(i: number)      { this.visualizarDocumento.emit({ index: i }); }
   eliminarDocumento(i: number) { this.documentosFA.removeAt(i); }
-
-  // Helpers de etiquetas (para evitar arrow functions en el template)
-  labelPerfil(v: string)     { return this.perfilesConsulta.find(o => o.value === v)?.label ?? v; }
-  labelDocumento(v: string)  { return this.tiposDocumento.find(o => o.value === v)?.label ?? v; }
+  labelDocumento(v: string) { return this.tiposDocumento.find(o => o.value === v)?.label ?? v; }
 
   // Botonera
   onGuardar()  { this.guardar.emit(this.form.getRawValue()); }
-  onValidar()  { this.validar.emit(this.form.getRawValue()); }
-  onRechazar() { this.rechazar.emit(this.form.getRawValue()); }
   onCancelar() { this.cancelar.emit(); }
+
+  // (si sigues emitiendo además de llamar servicios)
+  onValidarEmit()  { this.validar.emit(this.form.getRawValue()); }
+  onRechazarEmit() { this.rechazar.emit(this.form.getRawValue()); }
+
+  // Modal
+  onCerrarModal() { /* no-op si usas modal */ }
 }

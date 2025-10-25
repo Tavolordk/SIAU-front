@@ -1,27 +1,4 @@
-<!-- Header -->
-<app-header-siau
-  [title]="'Sistema Integral de Administración de Usuarios'"
-  [userName]="usuarioNombre"
-  [userRole]="usuarioCuenta"
-  [logoSrc]="'assets/images/SSPC.png'"
-  [bgSrc]="'assets/images/encabezado.png'"
-  [height]="headerOffset">
-</app-header-siau>
-
 <div class="siau-layout">
-  <!-- Sidebar -->
-  <aside class="sidebar" [style.top.px]="headerOffset">
-    <div class="sidebar-header">
-      <div>Gestión de Cédulas Únicas<br>de Registro de Usuario</div>
-      <fa-icon [icon]="icons.bars"></fa-icon>
-    </div>
-    <button class="nav-link w-100 text-start disabled">
-      Gestión de cédulas
-      <fa-icon [icon]="icons.chevronDown" class="float-end"></fa-icon>
-    </button>
-    <button class="nav-link selected w-100 text-start">Gestión de contraseña</button>
-  </aside>
-
   <!-- Main -->
   <main class="main-content">
     <div class="main-card shadow">

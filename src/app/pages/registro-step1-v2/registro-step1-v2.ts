@@ -49,8 +49,8 @@ export class RegistroStep1V2Component implements OnInit, OnDestroy {
 
   @Input() currentStep = 1;
   @Input() maxSteps = 6;
-  @Input() usuarioNombre = 'Luis Vargas';
-  @Input() usuarioRol = 'Capturista';
+  @Input() usuarioNombre = 'Octavio Olea';
+  @Input() usuarioRol = 'Administrador';
 
   @Output() prev = new EventEmitter<void>();
   // Emitimos snapshot útil al contenedor (opcional para tu modelo)
@@ -103,11 +103,11 @@ totalSteps: number|undefined;
     // Form del Paso 1 (idéntico al viejo, renombrando controles como estaban)
     this.form = this.fb.group({
       hp: [''],
-      tipoUsuario: [null, Validators.required],
-      esSeguridad: [null, Validators.required],
+      tipoUsuario: [null],
+      esSeguridad: [null],
       curp: ['', [Validators.required, Validators.maxLength(18), curpValidator()]],
       captchaCode: ['', {
-        validators: [Validators.required, Validators.pattern(/^\d{6}$/)],
+        validators: [Validators.required, Validators.pattern(/^\d{5}$/)],
         asyncValidators: [this.captchaCorrectAsyncValidator()],
         updateOn: 'change'
       }],
@@ -116,22 +116,22 @@ totalSteps: number|undefined;
       primerApellido: ['', [Validators.required, Validators.maxLength(100), notOnlyWhitespaceValidator]],
       segundoApellido: [''],
 
-      sexo: [null, Validators.required],
+      sexo: [null],
       fechaNacimiento: ['', [Validators.required, dateISOValidator(), minDate('1900-01-01'), maxDate(this.todayISO)]],
 
-      nacionalidad: [null, Validators.required],
-      paisNacimiento: [null, Validators.required],
-      entidadNacimiento: [null, Validators.required],
-      municipioAlcaldia: [null, Validators.required], // municipio nacimiento
+      nacionalidad: [null],
+      paisNacimiento: [null],
+      entidadNacimiento: [null],
+      municipioAlcaldia: [null], // municipio nacimiento
 
       estadoCivil: [null],
       rfc: ['', [Validators.required, Validators.maxLength(13), rfcValidator()]],
       cuip: [''],
 
-      tipoInstitucion: [null, Validators.required],
-      entidad: [null, Validators.required],
-      municipioAlcaldia2: [null, Validators.required],
-      institucion: [null, Validators.required],
+      tipoInstitucion: [null],
+      entidad: [null],
+      municipioAlcaldia2: [null],
+      institucion: [null],
       dependencia: [null],
       corporacion: [null],
       area: [null],
@@ -140,7 +140,7 @@ totalSteps: number|undefined;
       cargo: [''],
       funciones: [''],
       numeroEmpleado: ['', [Validators.required, Validators.pattern(/^\d+$/)]],
-      comisionado: [null, Validators.required], // "Si" | "No"
+      comisionado: [null], // "Si" | "No"
 
       // Comisión
       tipoInstitucion2: [null],
@@ -150,7 +150,7 @@ totalSteps: number|undefined;
       dependencia2: [null],
       corporacion2: [null],
 
-      aceptaTerminos: [false, Validators.requiredTrue],
+      aceptaTerminos: [null],
     });
 
     // encendidos dinámicos

@@ -31,8 +31,8 @@ export class RegistroStep4Component implements OnInit {
   // Encabezado / progreso (los recibimos del contenedor)
   @Input() currentStep = 4;
   @Input() maxSteps   = 6;
-  @Input() usuarioNombre = 'Luis Vargas';
-  @Input() usuarioRol    = 'Capturista';
+  @Input() usuarioNombre = 'Octavio Olea';
+  @Input() usuarioRol    = 'Administrador';
 
   @Output() prev = new EventEmitter<void>();
   @Output() proceed = new EventEmitter<void>();
